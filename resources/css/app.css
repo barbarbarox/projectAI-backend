@@ -1,0 +1,35 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --color-bg-utama: #0a0e1a;
+    --color-bg-kartu: #0f1629;
+    --color-bg-sidebar: #080c18;
+    --color-border-dim: #1e2d4a;
+    --color-cyan-aksen: #00d4ff;
+    --color-ungu-aksen: #7c3aed;
+}
+
+@layer base {
+    body {
+        background-color: var(--color-bg-utama);
+        color: #e2e8f0;
+        font-family: var(--font-sans);
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: var(--color-bg-utama);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--color-border-dim);
+        border-radius: 3px;
+    }
+}

@@ -1,0 +1,482 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+class AIProviderService
+{
+    /**
+     * Deteksi provider dari API key dan ambil model yang tersedia.
+     */
+    public function detectAndListModels(string $apiKey): array
+    {
+        // Coba Google AI Studio / Gemini
+        $google = $this->tryGoogleAI($apiKey);
+        if ($google['detected']) return $google;
+
+        // Coba OpenAI
+        $openai = $this->tryOpenAI($apiKey);
+        if ($openai['detected']) return $openai;
+
+        // Coba Anthropic
+        $anthropic = $this->tryAnthropic($apiKey);
+        if ($anthropic['detected']) return $anthropic;
+
+        // Coba NVIDIA NIM
+        $nvidia = $this->tryNvidia($apiKey);
+        if ($nvidia['detected']) return $nvidia;
+
+        // Coba Groq
+        $groq = $this->tryGroq($apiKey);
+        if ($groq['detected']) return $groq;
+
+        // Coba OpenRouter
+        $openrouter = $this->tryOpenRouter($apiKey);
+        if ($openrouter['detected']) return $openrouter;
+
+        return [
+            'detected' => false,
+            'provider' => 'tidak_dikenal',
+            'label' => 'Provider Tidak Dikenal',
+            'models' => [],
+            'error' => 'API key tidak dapat dikenali. Pastikan key valid.',
+        ];
+    }
+
+    protected function tryGoogleAI(string $apiKey): array
+    {
+        try {
+            $response = Http::timeout(10)->get(
+                "https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}"
+            );
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $models = collect($data['models'] ?? [])
+                    ->filter(fn($m) => str_contains($m['name'] ?? '', 'gemini'))
+                    ->map(fn($m) => [
+                        'id' => str_replace('models/', '', $m['name']),
+                        'name' => $m['displayName'] ?? $m['name'],
+                        'description' => $m['description'] ?? '',
+                        'input_token_limit' => $m['inputTokenLimit'] ?? null,
+                        'output_token_limit' => $m['outputTokenLimit'] ?? null,
+                    ])
+                    ->values()
+                    ->toArray();
+
+                return [
+                    'detected' => true,
+                    'provider' => 'google',
+                    'label' => 'Google AI Studio (Gemini)',
+                    'models' => $models,
+                    'error' => null,
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::debug('Google AI detection failed: ' . $e->getMessage());
+        }
+
+        return ['detected' => false];
+    }
+
+    protected function tryOpenAI(string $apiKey): array
+    {
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders(['Authorization' => "Bearer {$apiKey}"])
+                ->get('https://api.openai.com/v1/models');
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $models = collect($data['data'] ?? [])
+                    ->filter(fn($m) => str_contains($m['id'], 'gpt'))
+                    ->map(fn($m) => [
+                        'id' => $m['id'],
+                        'name' => $m['id'],
+                        'description' => 'OpenAI ' . $m['id'],
+                    ])
+                    ->sortBy('id')
+                    ->values()
+                    ->toArray();
+
+                return [
+                    'detected' => true,
+                    'provider' => 'openai',
+                    'label' => 'OpenAI',
+                    'models' => $models,
+                    'error' => null,
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::debug('OpenAI detection failed: ' . $e->getMessage());
+        }
+
+        return ['detected' => false];
+    }
+
+    protected function tryAnthropic(string $apiKey): array
+    {
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders([
+                    'x-api-key' => $apiKey,
+                    'anthropic-version' => '2023-06-01',
+                ])
+                ->get('https://api.anthropic.com/v1/models');
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $models = collect($data['data'] ?? [])
+                    ->map(fn($m) => [
+                        'id' => $m['id'],
+                        'name' => $m['display_name'] ?? $m['id'],
+                        'description' => 'Anthropic ' . ($m['display_name'] ?? $m['id']),
+                    ])
+                    ->values()
+                    ->toArray();
+
+                return [
+                    'detected' => true,
+                    'provider' => 'anthropic',
+                    'label' => 'Anthropic (Claude)',
+                    'models' => $models,
+                    'error' => null,
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::debug('Anthropic detection failed: ' . $e->getMessage());
+        }
+
+        return ['detected' => false];
+    }
+
+    protected function tryOpenRouter(string $apiKey): array
+    {
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders(['Authorization' => "Bearer {$apiKey}"])
+                ->get('https://openrouter.ai/api/v1/models');
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $models = collect($data['data'] ?? [])
+                    ->take(50)
+                    ->map(fn($m) => [
+                        'id' => $m['id'],
+                        'name' => $m['name'] ?? $m['id'],
+                        'description' => $m['description'] ?? '',
+                    ])
+                    ->values()
+                    ->toArray();
+
+                return [
+                    'detected' => true,
+                    'provider' => 'openrouter',
+                    'label' => 'OpenRouter',
+                    'models' => $models,
+                    'error' => null,
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::debug('OpenRouter detection failed: ' . $e->getMessage());
+        }
+
+        return ['detected' => false];
+    }
+
+    protected function tryGroq(string $apiKey): array
+    {
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders(['Authorization' => "Bearer {$apiKey}"])
+                ->get('https://api.groq.com/openai/v1/models');
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $models = collect($data['data'] ?? [])
+                    ->map(fn($m) => [
+                        'id' => $m['id'],
+                        'name' => $m['id'],
+                        'description' => 'Groq ' . $m['id'],
+                    ])
+                    ->sortBy('id')
+                    ->values()
+                    ->toArray();
+
+                // Fallback custom model if the user specified one that isn't listed
+                if (!collect($models)->contains('id', 'openai/gpt-oss-120b')) {
+                    $models[] = [
+                        'id' => 'openai/gpt-oss-120b',
+                        'name' => 'openai/gpt-oss-120b',
+                        'description' => 'Custom Model (Groq)'
+                    ];
+                }
+
+                return [
+                    'detected' => true,
+                    'provider' => 'groq',
+                    'label' => 'Groq',
+                    'models' => $models,
+                    'error' => null,
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::debug('Groq detection failed: ' . $e->getMessage());
+        }
+
+        return ['detected' => false];
+    }
+
+    protected function tryNvidia(string $apiKey): array
+    {
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders(['Authorization' => "Bearer {$apiKey}"])
+                ->get('https://integrate.api.nvidia.com/v1/models');
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $models = collect($data['data'] ?? [])
+                    ->map(fn($m) => [
+                        'id' => $m['id'],
+                        'name' => $m['id'],
+                        'description' => 'NVIDIA ' . $m['id'],
+                    ])
+                    ->sortBy('id')
+                    ->values()
+                    ->toArray();
+
+                // Pastikan deepseek-v4-pro tersedia
+                if (!collect($models)->contains('id', 'deepseek-ai/deepseek-v4-pro')) {
+                    $models[] = [
+                        'id' => 'deepseek-ai/deepseek-v4-pro',
+                        'name' => 'deepseek-ai/deepseek-v4-pro',
+                        'description' => 'DeepSeek V4 Pro (NVIDIA)'
+                    ];
+                }
+
+                return [
+                    'detected' => true,
+                    'provider' => 'nvidia',
+                    'label' => 'NVIDIA NIM',
+                    'models' => $models,
+                    'error' => null,
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::debug('NVIDIA detection failed: ' . $e->getMessage());
+        }
+
+        // Kalau gagal baca endpoint model API, tapi key di-force sebagai NVIDIA
+        if (str_starts_with($apiKey, 'nvapi-')) {
+            return [
+                'detected' => true,
+                'provider' => 'nvidia',
+                'label' => 'NVIDIA NIM (Offline)',
+                'models' => [
+                    ['id' => 'deepseek-ai/deepseek-v4-pro', 'name' => 'deepseek-ai/deepseek-v4-pro', 'description' => 'DeepSeek V4 Pro'],
+                    ['id' => 'meta/llama-3.1-405b-instruct', 'name' => 'meta/llama-3.1-405b-instruct', 'description' => 'Llama 3.1 405B'],
+                ],
+                'error' => null,
+            ];
+        }
+
+        return ['detected' => false];
+    }
+
+    /**
+     * Generate response menggunakan provider yang terdeteksi.
+     */
+    public function generate(string $provider, string $apiKey, string $model, string $prompt, bool $isJson = true): string
+    {
+        return match ($provider) {
+            'google' => $this->generateGoogle($apiKey, $model, $prompt, $isJson),
+            'openai' => $this->generateOpenAI($apiKey, $model, $prompt, $isJson),
+            'anthropic' => $this->generateAnthropic($apiKey, $model, $prompt, $isJson),
+            'openrouter' => $this->generateOpenRouter($apiKey, $model, $prompt, $isJson),
+            'groq' => $this->generateGroq($apiKey, $model, $prompt, $isJson),
+            'nvidia' => $this->generateNvidia($apiKey, $model, $prompt, $isJson),
+            default => throw new \RuntimeException("Provider tidak didukung: {$provider}"),
+        };
+    }
+
+    protected function generateGoogle(string $apiKey, string $model, string $prompt, bool $isJson = true): string
+    {
+        $maxTokens = (int) env('AI_MAX_TOKENS', 2048);
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+        
+        $generationConfig = [
+            'temperature' => 0.5,
+            'maxOutputTokens' => $maxTokens,
+        ];
+        
+        if ($isJson) {
+            $generationConfig['responseMimeType'] = 'application/json';
+        }
+
+        $response = Http::timeout(120)->post($url, [
+            'contents' => [['parts' => [['text' => $prompt]]]],
+            'generationConfig' => $generationConfig,
+        ]);
+        if (!$response->successful()) throw new \RuntimeException('Google AI gagal: ' . $response->status());
+        return $response->json('candidates.0.content.parts.0.text') ?? '{}';
+    }
+
+    protected function generateOpenAI(string $apiKey, string $model, string $prompt, bool $isJson = true): string
+    {
+        $maxTokens = (int) env('AI_MAX_TOKENS', 2048);
+        $payload = [
+            'model' => $model,
+            'messages' => [['role' => 'user', 'content' => $prompt]],
+            'temperature' => 0.5,
+            'max_tokens' => $maxTokens,
+        ];
+        if ($isJson) {
+            $payload['response_format'] = ['type' => 'json_object'];
+        }
+
+        $response = Http::timeout(120)
+            ->withHeaders(['Authorization' => "Bearer {$apiKey}"])
+            ->post('https://api.openai.com/v1/chat/completions', $payload);
+        if (!$response->successful()) throw new \RuntimeException('OpenAI gagal: ' . $response->status());
+        return $response->json('choices.0.message.content') ?? '{}';
+    }
+
+    protected function generateAnthropic(string $apiKey, string $model, string $prompt, bool $isJson = true): string
+    {
+        $maxTokens = (int) env('AI_MAX_TOKENS', 2048);
+        $promptText = $isJson ? $prompt . "\n\nIMPORTANT: Return valid JSON only." : $prompt;
+        
+        $response = Http::timeout(120)
+            ->withHeaders(['x-api-key' => $apiKey, 'anthropic-version' => '2023-06-01', 'content-type' => 'application/json'])
+            ->post('https://api.anthropic.com/v1/messages', [
+                'model' => $model,
+                'max_tokens' => $maxTokens,
+                'messages' => [['role' => 'user', 'content' => $promptText]],
+            ]);
+        if (!$response->successful()) throw new \RuntimeException('Anthropic gagal: ' . $response->status());
+        return $response->json('content.0.text') ?? '{}';
+    }
+
+    protected function generateOpenRouter(string $apiKey, string $model, string $prompt, bool $isJson = true): string
+    {
+        $maxTokens = (int) env('AI_MAX_TOKENS', 2048);
+        $payload = [
+            'model' => $model,
+            'messages' => [['role' => 'user', 'content' => $prompt]],
+            'temperature' => 0.5,
+            'max_tokens' => $maxTokens,
+        ];
+
+        $response = Http::timeout(120)
+            ->withHeaders(['Authorization' => "Bearer {$apiKey}"])
+            ->post('https://openrouter.ai/api/v1/chat/completions', $payload);
+        if (!$response->successful()) throw new \RuntimeException('OpenRouter gagal: ' . $response->status());
+        return $response->json('choices.0.message.content') ?? '{}';
+    }
+
+    protected function generateGroq(string $apiKey, string $model, string $prompt, bool $isJson = true): string
+    {
+        $maxTokens = (int) env('AI_MAX_TOKENS', 2048);
+        
+        // Safety check for tokens
+        $estimatedTokens = (int) ceil(strlen($prompt) / 4);
+        
+        if ($estimatedTokens + $maxTokens > 8000) {
+            $allowedPromptTokens = 8000 - $maxTokens;
+            $allowedChars = $allowedPromptTokens * 4;
+            $prompt = mb_substr($prompt, 0, $allowedChars) . "\n\n[SYSTEM: CONTEXT TRUNCATED DUE TO TOKEN LIMIT]";
+            $estimatedTokens = $allowedPromptTokens;
+            
+            Log::warning('Groq Token Truncation', [
+                'Original_Estimated_Tokens' => ceil(strlen($prompt) / 4),
+                'New_Estimated_Tokens' => $estimatedTokens,
+                'Max_Tokens' => $maxTokens
+            ]);
+        }
+        
+        Log::info('Groq Request Debug', [
+            'Model' => $model,
+            'Max_Tokens' => $maxTokens,
+            'Prompt_Chars' => strlen($prompt),
+            'Estimated_Tokens' => $estimatedTokens,
+        ]);
+
+        $payload = [
+            'model' => $model,
+            'messages' => [['role' => 'user', 'content' => $prompt]],
+            'temperature' => 0.5,
+            'max_tokens' => $maxTokens,
+        ];
+        
+        if ($isJson) {
+            $payload['response_format'] = ['type' => 'json_object'];
+        }
+
+        $response = Http::timeout(120)
+            ->withHeaders(['Authorization' => "Bearer {$apiKey}"])
+            ->post('https://api.groq.com/openai/v1/chat/completions', $payload);
+            
+        if (!$response->successful() && $isJson) {
+            // Jika json_object tidak didukung model ini, coba tanpa response_format
+            $response = Http::timeout(120)
+                ->withHeaders(['Authorization' => "Bearer {$apiKey}"])
+                ->post('https://api.groq.com/openai/v1/chat/completions', [
+                    'model' => $model,
+                    'messages' => [['role' => 'user', 'content' => $prompt . "\n\nIMPORTANT: Return valid JSON only. Do not wrap in markdown blocks. Just raw JSON."]],
+                    'temperature' => 0.5,
+                    'max_tokens' => $maxTokens,
+                ]);
+        }
+        
+        if (!$response->successful()) throw new \RuntimeException('Groq gagal: ' . $response->body());
+        
+        $text = $response->json('choices.0.message.content') ?? '{}';
+        // Clean markdown backticks if any
+        if ($isJson) {
+            $text = preg_replace('/```json\s*(.*?)\s*```/s', '$1', $text);
+            return preg_replace('/```\s*(.*?)\s*```/s', '$1', $text);
+        }
+        return $text;
+    }
+
+    protected function generateNvidia(string $apiKey, string $model, string $prompt, bool $isJson = true): string
+    {
+        $maxTokens = (int) env('AI_MAX_TOKENS', 16384);
+        
+        $payload = [
+            'model' => $model,
+            'messages' => [['role' => 'user', 'content' => $prompt]],
+            'temperature' => 1,
+            'top_p' => 0.95,
+            'max_tokens' => $maxTokens,
+            'stream' => false,
+        ];
+        
+        // Deepseek specific kwargs as requested
+        if (str_contains($model, 'deepseek')) {
+            $payload['chat_template_kwargs'] = ['thinking' => false];
+        }
+        
+        if ($isJson) {
+            $payload['messages'][0]['content'] .= "\n\nIMPORTANT: Return valid JSON only.";
+        }
+
+        $response = Http::timeout(300)
+            ->withHeaders(['Authorization' => "Bearer {$apiKey}"])
+            ->post('https://integrate.api.nvidia.com/v1/chat/completions', $payload);
+            
+        if (!$response->successful()) throw new \RuntimeException('NVIDIA gagal: ' . $response->body());
+        
+        $text = $response->json('choices.0.message.content') ?? '{}';
+        
+        if ($isJson) {
+            $text = preg_replace('/```json\s*(.*?)\s*```/s', '$1', $text);
+            return preg_replace('/```\s*(.*?)\s*```/s', '$1', $text);
+        }
+        
+        return $text;
+    }
+}

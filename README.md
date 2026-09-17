@@ -75,7 +75,10 @@ RedSim is a comprehensive web-based platform built with Laravel that provides va
    ```bash
    php artisan serve
    npm run dev
+   php artisan queue:work
    ```
+   
+   *Catatan: Jalankan `php artisan queue:work` di terminal terpisah agar fitur AI dan proses latar belakang lainnya dapat berjalan dengan lancar dan aman.*
 
 ## 📝 License
 

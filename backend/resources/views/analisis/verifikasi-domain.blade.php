@@ -17,7 +17,7 @@
             <code class="text-sm text-[#00d4ff]">{{ $dv->nama_file }}</code>
         </div>
         <a href="{{ route('analisis.url.download-verifikasi', $dv->id) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#7c3aed] text-white text-sm font-medium hover:bg-[#6d28d9] transition-colors">
-            📥 Download File Verifikasi
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download File Verifikasi
         </a>
     </div>
 
@@ -32,7 +32,7 @@
             <code class="text-sm text-[#00d4ff] break-all">https://{{ $dv->domain }}/{{ $dv->nama_file }}</code>
         </div>
         <div class="mt-4 p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
-            <p class="text-xs text-yellow-400/80">⏳ Token berlaku sampai {{ $dv->expires_at->format('d M Y H:i') }} WIB</p>
+            <p class="text-xs text-yellow-400/80 flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Token berlaku sampai {{ $dv->expires_at->format('d M Y H:i') }} WIB</p>
         </div>
     </div>
 
@@ -46,8 +46,8 @@
         <form method="POST" action="{{ route('analisis.url.proses-verifikasi', $dv->id) }}">
             @csrf
             <input type="hidden" name="url" value="https://{{ $dv->domain }}">
-            <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] text-white font-semibold hover:shadow-lg hover:shadow-[#00d4ff]/25 transition-all duration-300">
-                ✅ Saya Sudah Upload — Verifikasi Sekarang
+            <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] text-white font-semibold hover:shadow-lg hover:shadow-[#00d4ff]/25 transition-all duration-300 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Saya Sudah Upload — Verifikasi Sekarang
             </button>
         </form>
     </div>

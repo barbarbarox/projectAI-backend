@@ -41,6 +41,8 @@ Route::get('/edukasi/leaderboard', [EdukasiController::class, 'leaderboard']);
 // Google OAuth (bisa diakses guest maupun auth)
 Route::get('/oauth/google', [AuthController::class, 'redirectToGoogle'])->name('oauth.google');
 Route::get('/oauth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+Route::get('/oauth/google/whatsapp', [AuthController::class, 'formGoogleWhatsapp'])->name('oauth.google.whatsapp');
+Route::post('/oauth/google/whatsapp', [AuthController::class, 'prosesGoogleWhatsapp'])->name('oauth.google.whatsapp.proses');
 
 // Protected
 Route::middleware('auth')->group(function () {
@@ -85,6 +87,10 @@ Route::middleware('auth')->group(function () {
     // Laporan index (tidak perlu scan.owner karena sudah filter by user)
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
 
+    // Chat AI (semua user)
+    Route::get('/chat-ai', [\App\Http\Controllers\ChatController::class, 'indexPublic'])->name('chat-ai');
+    Route::post('/chat-ai', [\App\Http\Controllers\ChatController::class, 'chat'])->name('chat-ai.send');
+
     // Edukasi
     Route::get('/edukasi', [EdukasiController::class, 'index'])->name('edukasi.index');
     Route::get('/edukasi/ensiklopedia', [EdukasiController::class, 'ensiklopedia']);
@@ -116,6 +122,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/pengguna', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users.index');
         Route::patch('/pengguna/{user}/setujui', [\App\Http\Controllers\AdminUserController::class, 'verify'])->name('admin.users.verify');
         Route::patch('/pengguna/{user}/batalkan', [\App\Http\Controllers\AdminUserController::class, 'unverify'])->name('admin.users.unverify');
+        Route::post('/pengguna/{user}/kirim-notifikasi', [\App\Http\Controllers\AdminUserController::class, 'resendNotification'])->name('admin.users.resendNotification');
         Route::delete('/pengguna/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
 
         Route::get('/chat-test', [\App\Http\Controllers\ChatController::class, 'index'])->name('admin.chat-test');

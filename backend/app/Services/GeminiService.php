@@ -50,6 +50,10 @@ class GeminiService
             return $this->aiProviderService->generate('groq', $apiKey, $model, $prompt, $isJson);
         }
 
+        if (str_starts_with($apiKey, '$NVIDIA') || str_starts_with($apiKey, 'nvapi-')) {
+            return $this->aiProviderService->generate('nvidia', $apiKey, $model, $prompt, $isJson);
+        }
+
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
         
         $generationConfig = [
@@ -103,7 +107,7 @@ class GeminiService
                 $models[] = [
                     'id' => $envModel,
                     'name' => 'System Default (' . $envModel . ')',
-                    'provider' => str_starts_with($envKey, 'gsk_') ? 'groq' : 'google',
+                    'provider' => str_starts_with($envKey, 'gsk_') ? 'groq' : (str_starts_with($envKey, '$NVIDIA') || str_starts_with($envKey, 'nvapi-') ? 'nvidia' : 'google'),
                     'source' => 'env',
                 ];
             }

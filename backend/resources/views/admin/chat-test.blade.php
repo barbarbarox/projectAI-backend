@@ -56,7 +56,7 @@
                 <div class="rounded-2xl px-5 py-4 max-w-[80%] break-words"
                      :class="msg.role === 'user' ? 'bg-[#00d4ff]/10 border border-[#00d4ff]/20 text-white rounded-tr-sm' : 'bg-[#1e2d4a]/30 border border-[#1e2d4a] text-[#e2e8f0] rounded-tl-sm'">
                     
-                    <div class="text-sm leading-relaxed whitespace-pre-wrap format-markdown" x-html="formatMessage(msg.content)"></div>
+                    <div class="text-sm leading-relaxed md-content" x-html="formatMessage(msg.content, msg.role)"></div>
                     
                     <template x-if="msg.role === 'ai' && msg.ragUsed">
                         <div class="mt-3 pt-3 border-t border-[#1e2d4a]/50 text-xs text-[#00d4ff] flex items-center gap-1">
@@ -101,148 +101,330 @@
 </div>
 
 @push('scripts')
+{{-- Pinned versions for API stability --}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
 <style>
-    /* Basic Markdown formatting */
-    .format-markdown p { margin-bottom: 0.75em; }
-    .format-markdown p:last-child { margin-bottom: 0; }
-    .format-markdown strong { font-weight: 700; color: #fff; }
-    .format-markdown code { background: #000; padding: 0.1em 0.3em; border-radius: 4px; font-family: monospace; font-size: 0.9em; color: #00d4ff; }
-    .format-markdown pre.inline-code { background: transparent; padding: 0; border-radius: 0; overflow-x: auto; margin-bottom: 0; }
-    .format-markdown ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 0.75em; }
-    .format-markdown ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 0.75em; }
-    .format-markdown h3 { font-size: 1.125rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; color: #fff; }
-    .format-markdown h2 { font-size: 1.25rem; font-weight: 700; margin-top: 1.25rem; margin-bottom: 0.5rem; color: #fff; }
+/* ===== Markdown Content Styling ===== */
+.md-content { color: #e2e8f0; word-wrap: break-word; overflow-wrap: break-word; }
+.md-content > *:first-child { margin-top: 0; }
+.md-content > *:last-child { margin-bottom: 0; }
+
+/* Paragraphs */
+.md-content p { margin-bottom: 0.875rem; line-height: 1.7; }
+.md-content p:last-child { margin-bottom: 0; }
+
+/* Bold & Italic */
+.md-content strong { font-weight: 700; color: #fff; }
+.md-content em { font-style: italic; color: #cbd5e1; }
+
+/* Headings */
+.md-content h1 { font-size: 1.5rem; font-weight: 800; margin: 1.5rem 0 0.75rem; color: #fff; line-height: 1.3; }
+.md-content h2 { font-size: 1.3rem; font-weight: 700; margin: 1.25rem 0 0.625rem; color: #fff; border-bottom: 1px solid #1e2d4a; padding-bottom: 0.4rem; }
+.md-content h3 { font-size: 1.125rem; font-weight: 700; margin: 1rem 0 0.5rem; color: #fff; }
+.md-content h4 { font-size: 1rem; font-weight: 600; margin: 0.875rem 0 0.375rem; color: #e2e8f0; }
+
+/* Lists */
+.md-content ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0 1rem; }
+.md-content ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0 1rem; }
+.md-content li { margin-bottom: 0.35rem; line-height: 1.6; }
+.md-content li > ul, .md-content li > ol { margin-top: 0.25rem; margin-bottom: 0; }
+.md-content li > p { margin-bottom: 0.25rem; }
+
+/* Links */
+.md-content a { color: #00d4ff; text-decoration: underline; text-underline-offset: 2px; }
+.md-content a:hover { color: #38bdf8; }
+
+/* Images */
+.md-content img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0; border: 1px solid #1e2d4a; }
+
+/* Blockquote */
+.md-content blockquote { border-left: 3px solid #00d4ff; margin: 1rem 0; padding: 0.625rem 1rem; background: rgba(0,212,255,0.05); border-radius: 0 0.375rem 0.375rem 0; color: #94a3b8; }
+.md-content blockquote p { margin-bottom: 0.25rem; }
+.md-content blockquote p:last-child { margin-bottom: 0; }
+
+/* Horizontal Rule */
+.md-content hr { border: none; border-top: 1px solid #334155; margin: 1.5rem 0; }
+
+/* Inline Code */
+.md-content code:not(pre code) {
+    background: #1e293b; padding: 0.15em 0.4em; border-radius: 4px;
+    font-family: 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.85em; color: #7dd3fc; border: 1px solid #334155;
+}
+
+/* Code Block: reset code inside pre */
+.md-content pre code {
+    background: none !important; border: none !important; padding: 0 !important;
+    color: inherit !important; font-size: 0.8125rem !important; line-height: 1.6;
+    font-family: 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+}
+.md-content pre {
+    background: #0d1117; margin: 0; padding: 1rem 1.25rem; overflow-x: auto;
+    border-radius: 0 0 0.625rem 0.625rem;
+}
+
+/* Code Block Wrapper */
+.md-code-block { margin: 1rem 0; border-radius: 0.625rem; overflow: hidden; border: 1px solid #30363d; background: #0d1117; }
+.md-code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #161b22; padding: 0.5rem 1rem; border-bottom: 1px solid #30363d;
+}
+.md-code-lang { font-size: 0.6875rem; color: #8b949e; font-family: monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+.md-copy-btn {
+    display: flex; align-items: center; gap: 0.375rem; font-size: 0.6875rem;
+    color: #8b949e; background: none; border: 1px solid #30363d; border-radius: 0.375rem;
+    padding: 0.25rem 0.625rem; cursor: pointer; transition: all 0.2s;
+}
+.md-copy-btn:hover { color: #e6edf3; border-color: #8b949e; background: #21262d; }
+
+/* ===== Table Styling ===== */
+.md-table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: 0.625rem; border: 1px solid #30363d; }
+.md-content table { width: 100%; border-collapse: collapse; min-width: 400px; }
+.md-content thead { background: #161b22; }
+.md-content th {
+    padding: 0.75rem 1rem; font-weight: 600; color: #e6edf3; text-align: left;
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 2px solid #30363d; white-space: nowrap;
+}
+.md-content td { padding: 0.625rem 1rem; color: #c9d1d9; border-bottom: 1px solid #21262d; font-size: 0.8125rem; }
+.md-content tbody tr:hover { background: rgba(177,186,196,0.04); }
+.md-content tbody tr:last-child td { border-bottom: none; }
+
+/* Checkbox */
+.md-content input[type="checkbox"] { margin-right: 0.5em; accent-color: #00d4ff; pointer-events: none; }
+
+/* Think block */
+.md-think { margin-bottom: 1rem; border: 1px solid #334155; border-radius: 0.625rem; overflow: hidden; }
+.md-think summary { padding: 0.5rem 1rem; background: #161b22; cursor: pointer; font-size: 0.8125rem; color: #8b949e; display: flex; align-items: center; gap: 0.5rem; }
+.md-think summary:hover { background: #1e2d4a; }
+.md-think-body { padding: 1rem; font-size: 0.8125rem; color: #8b949e; border-top: 1px solid #334155; background: rgba(13,17,23,0.5); }
 </style>
+
 <script>
-    window.copyCode = function(btn) {
-        const preRaw = btn.parentElement.querySelector('.code-raw');
-        if (!preRaw) return;
-        navigator.clipboard.writeText(preRaw.textContent).then(() => {
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="text-green-400">Tersalin!</span>`;
-            setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+(function() {
+    'use strict';
+
+    // ---- Wait for all libs to be ready ----
+    function initMarkdownRenderer() {
+        if (typeof marked === 'undefined' || typeof hljs === 'undefined' || typeof DOMPurify === 'undefined') {
+            setTimeout(initMarkdownRenderer, 50);
+            return;
+        }
+
+        // ---- Custom Renderer (marked v9 API) ----
+        const renderer = new marked.Renderer();
+
+        // Table: wrap in scrollable container
+        renderer.table = function(header, body) {
+            return '<div class="md-table-wrap"><table><thead>' + header + '</thead><tbody>' + body + '</tbody></table></div>';
+        };
+
+        renderer.tablerow = function(content) {
+            return '<tr>' + content + '</tr>';
+        };
+
+        renderer.tablecell = function(content, flags) {
+            var tag = flags.header ? 'th' : 'td';
+            var align = flags.align ? ' style="text-align:' + flags.align + '"' : '';
+            return '<' + tag + align + '>' + content + '</' + tag + '>';
+        };
+
+        // Code block: styled with copy button
+        renderer.code = function(code, infostring, escaped) {
+            var lang = (infostring || '').trim().split(/\s+/)[0] || '';
+            var label = lang || 'code';
+            var highlighted = code;
+
+            if (lang && hljs.getLanguage(lang)) {
+                try { highlighted = hljs.highlight(code, { language: lang }).value; }
+                catch (e) { highlighted = escapeHtml(code); }
+            } else {
+                try { highlighted = hljs.highlightAuto(code).value; }
+                catch (e) { highlighted = escapeHtml(code); }
+            }
+
+            var raw = escapeHtml(code);
+
+            return '<div class="md-code-block">' +
+                '<div class="md-code-header">' +
+                    '<span class="md-code-lang">' + escapeHtml(label) + '</span>' +
+                    '<button type="button" class="md-copy-btn" data-code="' + encodeURIComponent(code) + '">' +
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>' +
+                        '<span>Salin</span>' +
+                    '</button>' +
+                '</div>' +
+                '<pre><code class="hljs">' + highlighted + '</code></pre>' +
+            '</div>';
+        };
+
+        // Inline code
+        renderer.codespan = function(text) {
+            return '<code>' + text + '</code>';
+        };
+
+        // Configure marked
+        marked.setOptions({
+            renderer: renderer,
+            gfm: true,
+            breaks: true,
+            pedantic: false,
+            smartypants: false
         });
-    };
 
-    function chatApp() {
-        return {
-            messages: [],
-            input: '',
-            isLoading: false,
-            selectedModel: '',
-            
-            formatMessage(text) {
+        // ---- DOMPurify config ----
+        var purifyConfig = {
+            ADD_TAGS: ['svg', 'path', 'rect', 'details', 'summary'],
+            ADD_ATTR: ['viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'd', 'x', 'y', 'width', 'height', 'rx', 'ry', 'data-code', 'class', 'type', 'checked', 'disabled'],
+            FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
+            ALLOW_DATA_ATTR: true
+        };
+
+        // ---- Build the renderer API ----
+        window.MarkdownRenderer = {
+            parse: function(text) {
                 if (!text) return '';
-                
-                // Alur berpikir (Thought process)
-                text = text.replace(/<think>([\s\S]*?)<\/think>/g, function(match, thought) {
-                    return `<details class="mb-4 bg-[#1e2d4a]/50 rounded-lg border border-[#334155] overflow-hidden">
-                        <summary class="px-4 py-2 cursor-pointer bg-[#1e2d4a] hover:bg-[#334155] transition-colors text-sm font-medium text-[#94a3b8] flex items-center gap-2 select-none">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            Alur Berpikir AI
-                        </summary>
-                        <div class="p-4 text-sm text-[#94a3b8] italic border-t border-[#334155]">
-                            ${thought.replace(/\n/g, '<br>')}
-                        </div>
-                    </details>`;
+
+                var result = '';
+
+                // Extract <think> blocks
+                text = text.replace(/<think>([\s\S]*?)<\/think>/g, function(m, thought) {
+                    var inner = '';
+                    try { inner = DOMPurify.sanitize(marked.parse(thought.trim()), purifyConfig); }
+                    catch(e) { inner = escapeHtml(thought); }
+                    result += '<details class="md-think"><summary>' +
+                        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>' +
+                        'Alur Berpikir AI</summary>' +
+                        '<div class="md-think-body md-content">' + inner + '</div></details>';
+                    return '';
                 });
 
-                // Simple markdown parsing for the chat
-                text = text.replace(/### (.*?)\n/g, '<h3>$1</h3>\n');
-                text = text.replace(/## (.*?)\n/g, '<h2>$1</h2>\n');
-                
-                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                
-                // Code blocks with copybox
-                let codeCount = 0;
-                text = text.replace(/```([\w-]*)\n?([\s\S]*?)```/g, function(match, lang, code) {
-                    codeCount++;
-                    const escapedCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    return `<div class="relative group mt-3 mb-3">
-                        <div class="flex items-center justify-between bg-[#1e2d4a] px-3 py-1.5 rounded-t-lg border border-[#334155] border-b-0">
-                            <span class="text-xs text-gray-400 font-mono">${lang || 'code'}</span>
-                            <button onclick="window.copyCode(this)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors py-1 px-2 rounded-md hover:bg-[#334155]">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                                <span>Salin</span>
-                            </button>
-                            <pre class="hidden code-raw">${escapedCode}</pre>
-                        </div>
-                        <pre class="bg-[#0b101a] p-4 rounded-b-lg overflow-x-auto border border-[#334155] m-0" style="margin-bottom:0;"><code class="text-[#e2e8f0] text-sm font-mono whitespace-pre inline-code">${escapedCode}</code></pre>
-                    </div>`;
-                });
-                
-                text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-                
-                // Unordered Lists
-                text = text.replace(/^\s*[-*]\s+(.+)/gm, '<ul><li>$1</li></ul>');
-                text = text.replace(/<\/ul>\n<ul>/g, '\n');
-
-                // Ordered Lists
-                text = text.replace(/^\s*\d+\.\s+(.+)/gm, '<ol><li>$1</li></ol>');
-                text = text.replace(/<\/ol>\n<ol>/g, '\n');
-                
-                return text;
-            },
-
-            scrollToBottom() {
-                setTimeout(() => {
-                    const container = document.getElementById('chat-container');
-                    container.scrollTop = container.scrollHeight;
-                }, 50);
-            },
-
-            async sendMessage() {
-                if (!this.input.trim() || this.isLoading) return;
-
-                const userMsg = this.input.trim();
-                this.messages.push({ role: 'user', content: userMsg });
-                this.input = '';
-                this.isLoading = true;
-                this.scrollToBottom();
-
+                // Parse remaining markdown
                 try {
-                    const response = await fetch('{{ route('admin.chat-test') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ 
-                            message: userMsg,
-                            model_ai: this.selectedModel
-                        })
-                    });
+                    var html = marked.parse(text);
+                    html = DOMPurify.sanitize(html, purifyConfig);
+                    result += html;
+                } catch(e) {
+                    console.error('Markdown parse error:', e);
+                    result += '<p>' + escapeHtml(text) + '</p>';
+                }
 
-                    const data = await response.json();
-                    
-                    if (data.status === 'success') {
-                        this.messages.push({ 
-                            role: 'ai', 
-                            content: data.message,
-                            ragUsed: data.rag_used
-                        });
-                    } else {
-                        this.messages.push({ 
-                            role: 'ai', 
-                            content: 'Maaf, terjadi kesalahan: ' + (data.message || 'Unknown error'),
-                            ragUsed: false
-                        });
-                    }
-                } catch (error) {
+                return result;
+            }
+        };
+
+        console.log('[RedSim] Markdown renderer initialized');
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ---- Copy Code via Event Delegation ----
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.md-copy-btn');
+        if (!btn) return;
+        var encoded = btn.getAttribute('data-code');
+        if (!encoded) return;
+        var code = decodeURIComponent(encoded);
+        navigator.clipboard.writeText(code).then(function() {
+            var spanEl = btn.querySelector('span');
+            if (spanEl) {
+                spanEl.textContent = 'Tersalin!';
+                btn.style.color = '#3fb950';
+                btn.style.borderColor = '#3fb950';
+                setTimeout(function() {
+                    spanEl.textContent = 'Salin';
+                    btn.style.color = '';
+                    btn.style.borderColor = '';
+                }, 2000);
+            }
+        });
+    });
+
+    // Start init
+    initMarkdownRenderer();
+})();
+
+function chatApp() {
+    return {
+        messages: [],
+        input: '',
+        isLoading: false,
+        selectedModel: '',
+        
+        formatMessage(text, role) {
+            if (role === 'user') return this.escapeHtml(text);
+            if (window.MarkdownRenderer) return window.MarkdownRenderer.parse(text);
+            return this.escapeHtml(text);
+        },
+
+        escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+        },
+
+        scrollToBottom() {
+            setTimeout(() => {
+                const container = document.getElementById('chat-container');
+                container.scrollTop = container.scrollHeight;
+            }, 50);
+        },
+
+        async sendMessage() {
+            if (!this.input.trim() || this.isLoading) return;
+
+            const userMsg = this.input.trim();
+            this.messages.push({ role: 'user', content: userMsg });
+            this.input = '';
+            this.isLoading = true;
+            this.scrollToBottom();
+
+            try {
+                const response = await fetch('{{ route('admin.chat-test') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        message: userMsg,
+                        model_ai: this.selectedModel
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
                     this.messages.push({ 
                         role: 'ai', 
-                        content: 'Gagal terhubung ke server.',
+                        content: data.message,
+                        ragUsed: data.rag_used
+                    });
+                } else {
+                    this.messages.push({ 
+                        role: 'ai', 
+                        content: 'Maaf, terjadi kesalahan: ' + (data.message || 'Unknown error'),
                         ragUsed: false
                     });
-                } finally {
-                    this.isLoading = false;
-                    this.scrollToBottom();
                 }
+            } catch (error) {
+                this.messages.push({ 
+                    role: 'ai', 
+                    content: 'Gagal terhubung ke server.',
+                    ragUsed: false
+                });
+            } finally {
+                this.isLoading = false;
+                this.scrollToBottom();
             }
         }
     }
+}
 </script>
 @endpush
 @endsection

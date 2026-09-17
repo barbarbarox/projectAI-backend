@@ -21,7 +21,7 @@
         <div class="flex items-center justify-between cursor-pointer" @click="showAiForm = !showAiForm">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7c3aed]/20 to-[#ec4899]/20 flex items-center justify-center">
-                    <span class="text-xl">🤖</span>
+                    <svg class="w-6 h-6 text-[#ec4899]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
                 </div>
                 <div>
                     <h3 class="text-sm font-semibold text-white">Buat Soal Otomatis dengan AI</h3>
@@ -63,7 +63,8 @@
                 <span class="text-xs text-red-400" x-text="aiError"></span>
                 <button @click="generateSoal" :disabled="isLoading" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#7c3aed] to-[#ec4899] text-white text-sm font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                     <span x-show="isLoading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    <span x-text="isLoading ? 'Sedang Memproses...' : '✨ Generate Soal'"></span>
+                    <div x-show="!isLoading" class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> <span>Generate Soal</span></div>
+                    <span x-show="isLoading">Sedang Memproses...</span>
                 </button>
             </div>
         </div>

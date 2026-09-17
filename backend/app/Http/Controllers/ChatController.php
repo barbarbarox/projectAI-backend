@@ -14,6 +14,12 @@ class ChatController extends Controller
         return view('admin.chat-test', compact('availableModels'));
     }
 
+    public function indexPublic(GeminiService $geminiService)
+    {
+        $availableModels = $geminiService->getAvailableModels();
+        return view('chat-ai', compact('availableModels'));
+    }
+
     public function chat(Request $request, RAGService $ragService, GeminiService $geminiService)
     {
         $request->validate([

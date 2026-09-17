@@ -4,7 +4,55 @@
 @section('subheader', 'Kelola informasi pribadi dan pengaturan keamanan Anda')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/profile-card.css') }}">
 <div class="max-w-4xl mx-auto space-y-6">
+
+    {{-- Profile Card Component --}}
+    <div class="pc-card-wrapper mb-8" style="--pc-inner-gradient: linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%);">
+        <div class="pc-behind"></div>
+        <div class="pc-card-shell">
+            <section class="pc-card">
+                <div class="pc-inside">
+                    <div class="pc-shine"></div>
+                    <div class="pc-glare"></div>
+                    <div class="pc-content pc-avatar-content">
+                        @if($user->avatar)
+                        <img class="avatar" src="{{ $user->avatar }}" alt="Avatar">
+                        @else
+                        <div class="avatar bg-gradient-to-br from-[#00d4ff] to-[#7c3aed] flex items-center justify-center text-4xl font-bold text-white rounded-full aspect-square" style="width: 100px; margin: 0 auto; top: 20px;">
+                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                        </div>
+                        @endif
+                        <div class="pc-user-info">
+                            <div class="pc-user-details">
+                                <div class="pc-mini-avatar">
+                                    @if($user->avatar)
+                                    <img src="{{ $user->avatar }}" alt="Avatar">
+                                    @else
+                                    <div class="w-full h-full bg-gradient-to-br from-[#00d4ff] to-[#7c3aed] flex items-center justify-center text-xs font-bold text-white">
+                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                    </div>
+                                    @endif
+                                </div>
+                                <div class="pc-user-text">
+                                    <div class="pc-handle">{{ '@' . strtolower(str_replace(' ', '', $user->name)) }}</div>
+                                    <div class="pc-status">Online</div>
+                                </div>
+                            </div>
+                            <button class="pc-contact-btn" type="button">Contact Me</button>
+                        </div>
+                    </div>
+                    <div class="pc-content">
+                        <div class="pc-details">
+                            <h3>{{ $user->name }}</h3>
+                            <p>{{ ucfirst($user->tier ?? 'Pengguna Biasa') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
     <!-- Informasi Profil -->
     <div class="bg-[#0f1629] rounded-2xl border border-[#1e2d4a] p-8">
         <h3 class="text-lg font-semibold mb-4 text-white">Informasi Profil</h3>
@@ -66,4 +114,8 @@
         </form>
     </div>
 </div>
+
+@push('scripts')
+<script src="{{ asset('js/profile-card.js') }}"></script>
+@endpush
 @endsection

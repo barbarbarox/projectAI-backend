@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentasi RedSim - Keamanan Basis Data</title>
+    <!-- Reveal.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <!-- Tema Reveal.js: Night (Gelap/Hacker theme cocok untuk Security) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/night.min.css">
+    
+    <style>
+        /* Kustomisasi gaya presentasi RedSim */
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #00d4ff;
+            text-transform: none;
+        }
+        .reveal h1 { font-size: 2.5em; }
+        .reveal h2 { font-size: 1.8em; margin-bottom: 30px; border-bottom: 2px solid #00d4ff; padding-bottom: 10px;}
+        .reveal h3 { font-size: 1.3em; color: #7c3aed; }
+        .reveal p, .reveal li {
+            font-size: 0.7em;
+            line-height: 1.6;
+            text-align: left;
+        }
+        .reveal ul {
+            display: block;
+            margin-left: 2em;
+        }
+        .highlight { color: #00d4ff; font-weight: bold; }
+        .box-container {
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .box {
+            flex: 1;
+            background: rgba(30, 45, 74, 0.5);
+            border: 1px solid #1e2d4a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .image-placeholder {
+            width: 100%;
+            height: 300px;
+            background: #111;
+            border: 2px dashed #00d4ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 0.6em;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+        /* Custom logo atau footer */
+        .footer-text {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 0.4em;
+            color: #555;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- SLIDE 1: JUDUL -->
+            <section>
+                <h1>RedSim</h1>
+                <h3>Platform Simulasi & Edukasi Keamanan Cyber Terintegrasi AI</h3>
+                <br>
+                <p style="text-align: center;"><strong>Mata Kuliah:</strong> Keamanan Basis Data</p>
+                <p style="text-align: center;"><strong>Oleh:</strong> [Nama Anda] / [NIM Anda]</p>
+                <p style="text-align: center; font-size: 0.5em; margin-top: 50px;">Gunakan panah pada keyboard untuk navigasi presentasi</p>
+            </section>
+
+            <!-- SLIDE 2: LATAR BELAKANG -->
+            <section>
+                <h2>Latar Belakang Masalah</h2>
+                <div class="box-container">
+                    <div class="box">
+                        <h3 style="color:#ff4757;">Ancaman Cyber Meningkat</h3>
+                        <p>Peningkatan pesat serangan siber (seperti Phishing & Malware) yang menargetkan kerentanan sistem web dan kurangnya edukasi publik mengenai keamanan data.</p>
+                    </div>
+                    <div class="box">
+                        <h3 style="color:#ff4757;">AI Hallucination & Data Leak</h3>
+                        <p>Model AI publik rentan terhadap <em>prompt injection</em> dan sering memberikan informasi fiktif (halusinasi) atau membocorkan konteks sensitif sistem.</p>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; text-align:left;">
+                    <p><strong>Solusi RedSim:</strong> Sebuah sistem cerdas berbasis <em>Retrieval-Augmented Generation</em> (RAG) yang membatasi konteks AI hanya pada keamanan sistem dan memiliki fitur analisis URL/sistem secara aman.</p>
+                </div>
+            </section>
+
+            <!-- SLIDE 3: TUJUAN DAN MANFAAT -->
+            <section>
+                <h2>Tujuan & Manfaat</h2>
+                <ul>
+                    <li><span class="highlight">Otomatisasi Analisis Keamanan:</span> Memfasilitasi deteksi kerentanan URL dan sistem berbasis pemindai terintegrasi (VirusTotal/URLScan).</li>
+                    <li><span class="highlight">Isolasi Data AI (RAG):</span> Menyediakan asisten AI yang cerdas namun terisolasi (tidak membocorkan data luar atau prompt asli) berkat teknologi Vector Database Pinecone.</li>
+                    <li><span class="highlight">Keamanan Autentikasi:</span> Memastikan akses hanya untuk pengguna sah melalui verifikasi dua langkah (OTP WhatsApp via Fonnte) & validasi reCAPTCHA.</li>
+                    <li><span class="highlight">Edukasi Interaktif:</span> Menawarkan modul <em>Leaderboard</em> dan tantangan (CTF ringan) untuk mengedukasi pengguna tentang keamanan web.</li>
+                </ul>
+            </section>
+
+            <!-- SLIDE 4: ARSITEKTUR SISTEM -->
+            <section>
+                <h2>Arsitektur Sistem & Basis Data</h2>
+                <p>Sistem dibangun dengan arsitektur modern yang memisahkan komputasi AI, manajemen RDBMS, dan Vector Storage.</p>
+                <div class="box-container" style="margin-top: 10px;">
+                    <div class="box">
+                        <ul>
+                            <li><strong>Backend:</strong> Laravel 11 (PHP 8.2)</li>
+                            <li><strong>Basis Data Utama:</strong> PostgreSQL (Supabase)</li>
+                            <li><strong>Basis Data Vektor:</strong> Pinecone</li>
+                            <li><strong>AI Provider:</strong> Groq (LLaMA 3.3) / NVIDIA NIM</li>
+                        </ul>
+                    </div>
+                    <div class="box">
+                        <!-- Placeholder untuk arsitektur -->
+                        <div class="image-placeholder">
+                            [Masukkan Gambar Arsitektur Sistem / Diagram Alir RAG di Sini]
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 5: USER FLOW -->
+            <section>
+                <h2>Alur Kerja Pengguna (User Flow)</h2>
+                <ul>
+                    <li><strong>Registrasi Aman:</strong> Pendaftaran akun dengan validasi email/WhatsApp. Akun dari Google OAuth akan ditahan untuk verifikasi nomor WhatsApp secara manual oleh Admin.</li>
+                    <li><strong>Proses Otentikasi:</strong> OTP dikirim via WhatsApp Fonnte untuk validasi sesi.</li>
+                    <li><strong>Analisis URL:</strong> Pengguna menginput URL, diproses melalui sistem antrean (Queue) Laravel secara <em>background</em>.</li>
+                    <li><strong>Laporan Keamanan:</strong> Pengguna menerima laporan format PDF (Dompdf) atau langsung berkonsultasi dengan Asisten AI terkait hasil analisis.</li>
+                </ul>
+                <div class="image-placeholder" style="height: 200px;">
+                    [Masukkan Screenshot Flowchart User di Sini]
+                </div>
+            </section>
+
+            <!-- SLIDE 6: KEAMANAN DATABASE & SISTEM -->
+            <section>
+                <h2>Implementasi Keamanan Basis Data</h2>
+                <ul>
+                    <li><span class="highlight">Parameter Binding & ORM:</span> Menggunakan Eloquent ORM Laravel secara menyeluruh untuk memitigasi serangan <strong>SQL Injection</strong>.</li>
+                    <li><span class="highlight">Enkripsi Data:</span> Kata sandi menggunakan hashing <em>Bcrypt (12 Rounds)</em>. Data sesi (Session) dan cache diproteksi.</li>
+                    <li><span class="highlight">API Gateway Security:</span> Pembatasan jumlah request ke API pihak ketiga (Groq/NVIDIA) untuk mencegah serangan <em>Denial of Wallet (DoW)</em> / pengurasan kuota API token AI.</li>
+                    <li><span class="highlight">Keamanan Prompts AI:</span> Penggunaan System Prompt ketat yang menolak modifikasi instruksi, menjaga AI dari <em>jailbreak</em> dan kebocoran logika internal sistem.</li>
+                </ul>
+            </section>
+            
+            <!-- SLIDE 7: ERD -->
+            <section>
+                <h2>Skema Basis Data (ERD)</h2>
+                <p>Struktur tabel pada Supabase PostgreSQL mengutamakan integritas relasional data.</p>
+                <div style="display:flex; gap: 20px;">
+                    <div style="flex:1;">
+                        <ul>
+                            <li><strong>Tabel Users:</strong> Pengguna & Admin (RBAC).</li>
+                            <li><strong>Tabel Scan_Histories:</strong> Melacak aktivitas pemindaian.</li>
+                            <li><strong>Tabel Ai_Configurations:</strong> Pengaturan rotasi token API AI dinamis (menghindari hardcode).</li>
+                            <li><strong>Tabel Edukasi:</strong> Soal tantangan (CTF) dan progres pengguna.</li>
+                        </ul>
+                    </div>
+                    <div style="flex:1;">
+                        <div class="image-placeholder" style="margin-top:0; height:250px;">
+                            [Masukkan Gambar ERD RedSim di Sini]
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 8: PENGUJIAN -->
+            <section>
+                <h2>Pengujian Keamanan Sistem</h2>
+                <p>Hasil pengujian teknis pada sistem menunjukkan performa dan resiliensi yang sangat baik:</p>
+                <div class="box-container">
+                    <div class="box">
+                        <h3 style="color:#00d4ff;">Uji Autentikasi</h3>
+                        <p>Validasi nomor WA dan OTP berhasil memblokir bot/spam. Sistem pendaftaran SSO (Google) berhasil dikunci hingga divalidasi admin.</p>
+                    </div>
+                    <div class="box">
+                        <h3 style="color:#00d4ff;">Uji Keamanan AI</h3>
+                        <p>Uji injeksi prompt gagal menembus batas RAG. AI secara konsisten menjawab dalam koridor keamanan siber dan tidak memberikan jawaban di luar topik.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 9: KESIMPULAN -->
+            <section>
+                <h2>Kesimpulan</h2>
+                <ul>
+                    <li>RedSim berhasil diimplementasikan sebagai alat edukasi dan simulasi keamanan siber yang komprehensif.</li>
+                    <li>Penggunaan arsitektur RAG yang digabungkan dengan integrasi model besar (seperti LLaMA 3.3 via Groq) mempercepat respons tanpa mengorbankan privasi data lokal.</li>
+                    <li>Sistem autentikasi yang diawasi (verifikasi manual WhatsApp) menjamin keamanan platform dari penyalahgunaan.</li>
+                    <li><span class="highlight">Pengembangan ke Depan:</span> Otomatisasi notifikasi hasil scanning dan penambahan lebih banyak modul <em>Machine Learning</em> lokal.</li>
+                </ul>
+                <br><br>
+                <h3 style="text-align: center;">Terima Kasih!</h3>
+            </section>
+
+        </div>
+    </div>
+    
+    <div class="footer-text">Presentasi RedSim - Keamanan Basis Data</div>
+
+    <!-- Script Reveal.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script>
+        // Inisialisasi slide presentasi
+        Reveal.initialize({
+            hash: true,
+            transition: 'slide', // none/fade/slide/convex/concave/zoom
+            controls: true,
+            progress: true,
+            center: true
+        });
+    </script>
+</body>
+</html>

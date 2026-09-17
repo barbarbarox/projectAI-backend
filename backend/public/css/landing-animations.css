@@ -55,12 +55,17 @@
   from { opacity: 0; transform: translateY(15px); }
 }
 
-/* ===== LIGHTFALL BACKGROUND ===== */
-.lightfall-wrap {
+/* ===== LIGHT RAYS BACKGROUND ===== */
+.lightrays-wrap {
   position: fixed;
   inset: 0;
   z-index: 0;
   overflow: hidden;
+  pointer-events: none;
+}
+.lightrays-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* ===== TEXT TYPING ===== */
@@ -95,16 +100,6 @@
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.feature-card-anim {
-  opacity: 0;
-  transform: translateY(40px);
-}
-.feature-card-anim.visible {
-  animation: cardSlideUp 0.6s ease forwards;
-}
-@keyframes cardSlideUp {
-  to { opacity: 1; transform: translateY(0); }
-}
 
 /* Gradient text animation */
 @keyframes gradientShift {
@@ -128,4 +123,394 @@
 @keyframes glowPulse {
   0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.15); }
   50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.3); }
+}
+
+/* ===== BORDER GLOW CARD (full implementation — sesuai BorderGlow.css) ===== */
+.border-glow-card {
+  --edge-proximity: 0;
+  --cursor-angle: 45deg;
+  --edge-sensitivity: 30;
+  --color-sensitivity: calc(var(--edge-sensitivity) + 20);
+  --border-radius: 28px;
+  --glow-padding: 40px;
+  --cone-spread: 25;
+  --fill-opacity: 0.5;
+
+  /* glow color defaults: HSL 40 80 80 */
+  --glow-color:    hsl(40deg 80% 80% / 100%);
+  --glow-color-60: hsl(40deg 80% 80% / 60%);
+  --glow-color-50: hsl(40deg 80% 80% / 50%);
+  --glow-color-40: hsl(40deg 80% 80% / 40%);
+  --glow-color-30: hsl(40deg 80% 80% / 30%);
+  --glow-color-20: hsl(40deg 80% 80% / 20%);
+  --glow-color-10: hsl(40deg 80% 80% / 10%);
+
+  /* gradient defaults from colors=['#c084fc','#f472b6','#38bdf8'] */
+  --gradient-one:   radial-gradient(at 80% 55%, #c084fc 0px, transparent 50%);
+  --gradient-two:   radial-gradient(at 69% 34%, #f472b6 0px, transparent 50%);
+  --gradient-three: radial-gradient(at 8% 6%,  #38bdf8 0px, transparent 50%);
+  --gradient-four:  radial-gradient(at 41% 38%, #c084fc 0px, transparent 50%);
+  --gradient-five:  radial-gradient(at 86% 85%, #f472b6 0px, transparent 50%);
+  --gradient-six:   radial-gradient(at 82% 18%, #38bdf8 0px, transparent 50%);
+  --gradient-seven: radial-gradient(at 51% 4%,  #f472b6 0px, transparent 50%);
+  --gradient-base:  linear-gradient(#c084fc 0 100%);
+
+  position: relative;
+  border-radius: var(--border-radius);
+  isolation: isolate;
+  transform: translate3d(0, 0, 0.01px);
+  display: grid;
+  border: 1px solid rgb(255 255 255 / 15%);
+  background: var(--card-bg, #120F17);
+  overflow: visible;
+  box-shadow:
+    rgba(0, 0, 0, 0.1) 0px 1px 2px,
+    rgba(0, 0, 0, 0.1) 0px 2px 4px,
+    rgba(0, 0, 0, 0.1) 0px 4px 8px,
+    rgba(0, 0, 0, 0.1) 0px 8px 16px,
+    rgba(0, 0, 0, 0.1) 0px 16px 32px,
+    rgba(0, 0, 0, 0.1) 0px 32px 64px;
+}
+
+.border-glow-card::before,
+.border-glow-card::after,
+.border-glow-card > .edge-light {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transition: opacity 0.25s ease-out;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.border-glow-card:not(:hover)::before,
+.border-glow-card:not(:hover)::after,
+.border-glow-card:not(:hover) > .edge-light {
+  opacity: 0;
+  transition: opacity 0.75s ease-in-out;
+}
+
+/* colored mesh-gradient border */
+.border-glow-card::before {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--card-bg, #120F17) 0 100%) padding-box,
+    linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
+    var(--gradient-one)   border-box,
+    var(--gradient-two)   border-box,
+    var(--gradient-three) border-box,
+    var(--gradient-four)  border-box,
+    var(--gradient-five)  border-box,
+    var(--gradient-six)   border-box,
+    var(--gradient-seven) border-box,
+    var(--gradient-base)  border-box;
+
+  opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+
+  mask-image:
+    conic-gradient(
+      from var(--cursor-angle) at center,
+      black calc(var(--cone-spread) * 1%),
+      transparent calc((var(--cone-spread) + 15) * 1%),
+      transparent calc((100 - var(--cone-spread) - 15) * 1%),
+      black calc((100 - var(--cone-spread)) * 1%)
+    );
+}
+
+/* colored mesh-gradient background fill near edges */
+.border-glow-card::after {
+  border: 1px solid transparent;
+  background:
+    var(--gradient-one)   padding-box,
+    var(--gradient-two)   padding-box,
+    var(--gradient-three) padding-box,
+    var(--gradient-four)  padding-box,
+    var(--gradient-five)  padding-box,
+    var(--gradient-six)   padding-box,
+    var(--gradient-seven) padding-box,
+    var(--gradient-base)  padding-box;
+
+  mask-image:
+    linear-gradient(to bottom, black, black),
+    radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+    radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
+    conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+
+  mask-composite: subtract, add, add, add, add, add;
+  opacity: calc(var(--fill-opacity) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+  mix-blend-mode: soft-light;
+}
+
+/* outer glow layer */
+.border-glow-card > .edge-light {
+  inset: calc(var(--glow-padding) * -1);
+  z-index: 1;
+  mask-image:
+    conic-gradient(
+      from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%
+    );
+  opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+  mix-blend-mode: plus-lighter;
+}
+
+.border-glow-card > .edge-light::before {
+  content: "";
+  position: absolute;
+  inset: var(--glow-padding);
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px var(--glow-color),
+    inset 0 0 1px 0 var(--glow-color-60),
+    inset 0 0 3px 0 var(--glow-color-50),
+    inset 0 0 6px 0 var(--glow-color-40),
+    inset 0 0 15px 0 var(--glow-color-30),
+    inset 0 0 25px 2px var(--glow-color-20),
+    inset 0 0 50px 2px var(--glow-color-10),
+    0 0 1px 0 var(--glow-color-60),
+    0 0 3px 0 var(--glow-color-50),
+    0 0 6px 0 var(--glow-color-40),
+    0 0 15px 0 var(--glow-color-30),
+    0 0 25px 2px var(--glow-color-20),
+    0 0 50px 2px var(--glow-color-10);
+}
+
+/* Inner content */
+.border-glow-card > .border-glow-inner {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: auto;
+  z-index: 1;
+}
+
+/* CTA button inside the glow card */
+.border-glow-card > .border-glow-inner > a.cta-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #f1f5f9;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 1.15rem 2.5rem;
+  transition: color 0.2s ease;
+}
+.border-glow-card > .border-glow-inner > a.cta-link:hover {
+  color: #ffffff;
+}
+.cta-link-arrow {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.border-glow-card > .border-glow-inner > a.cta-link:hover .cta-link-arrow {
+  transform: translateX(4px);
+}
+
+/* ===== CARD SWAP FEATURES ===== */
+.card-swap-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3rem;
+}
+
+@media (max-width: 960px) {
+  .card-swap-section {
+    flex-direction: column;
+  }
+  .card-swap-info {
+    text-align: center;
+  }
+}
+
+.card-swap-container {
+  position: relative;
+  flex-shrink: 0;
+  perspective: 900px;
+  overflow: visible;
+}
+
+.cs-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(135deg, #0f1629 0%, #0a0f1e 100%);
+  transform-style: preserve-3d;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  padding: 2rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.4),
+    0 0 0 1px rgba(255,255,255,0.05);
+}
+
+.cs-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+}
+
+.cs-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.cs-card-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.cs-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #f1f5f9;
+}
+
+.cs-card p {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.cs-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.25rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ===== KNOWLEDGE BASE ANIMATIONS ===== */
+.kb-card {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.kb-card.kb-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.kb-card:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+}
+
+.kb-card-inner {
+  position: relative;
+  overflow: hidden;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0f1629 0%, #0a0f1e 100%);
+  border: 1px solid rgba(30, 45, 74, 0.8);
+  cursor: default;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.kb-card-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,212,255,0.05) 0%, rgba(124,58,237,0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+}
+
+.kb-card:hover .kb-card-inner {
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 0 24px rgba(0, 212, 255, 0.1), 0 4px 20px rgba(0,0,0,0.3);
+}
+.kb-card:hover .kb-card-inner::before {
+  opacity: 1;
+}
+
+.kb-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.kb-icon svg {
+  width: 18px;
+  height: 18px;
+  color: #00d4ff;
+}
+
+.kb-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #00d4ff;
+  letter-spacing: 0.05em;
+}
+
+.kb-desc {
+  font-size: 0.7rem;
+  color: #475569;
+  margin-top: 0.2rem;
+  line-height: 1.4;
+}
+
+.kb-shimmer {
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.04), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+.kb-card:hover .kb-shimmer {
+  left: 150%;
+}
+
+/* Counter number animation */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.kb-stat {
+  opacity: 0;
+  animation: countUp 0.6s ease forwards;
+}
+
+/* ===== FEATURE CARD (fallback) ===== */
+.feature-card-anim {
+  opacity: 0;
+  transform: translateY(40px);
+}
+.feature-card-anim.visible {
+  animation: cardSlideUp 0.6s ease forwards;
+}
+@keyframes cardSlideUp {
+  to { opacity: 1; transform: translateY(0); }
 }

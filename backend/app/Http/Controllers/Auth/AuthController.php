@@ -64,7 +64,8 @@ class AuthController extends Controller
         }
 
         if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $request->boolean('remember'))) {
-            if (!Auth::user()->is_verified) {
+            // Admin bebas verifikasi
+            if (!Auth::user()->is_verified && Auth::user()->tier !== 'admin') {
                 Auth::logout();
                 return back()->withErrors(['email' => 'Akun Anda sedang menunggu persetujuan Admin. Harap bersabar.'])->onlyInput('email');
             }
@@ -179,27 +180,28 @@ class AuthController extends Controller
             return back()->withErrors(['phone' => 'Nomor WhatsApp tidak terdaftar.'])->withInput();
         }
 
-        if (!$user->is_verified) {
+        // Admin bebas verifikasi
+        if (!$user->is_verified && $user->tier !== 'admin') {
             return back()->withErrors(['phone' => 'Akun Anda sedang menunggu persetujuan Admin. Harap bersabar.'])->withInput();
         }
 
-        // Generate 6 digit OTP
-        $otp = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
-
+        // Bypass OTP jika pengguna sudah diverifikasi admin
         $user->update([
-            'otp_code' => Hash::make($otp),
-            'otp_expires_at' => now()->addMinutes(5),
+            'last_login' => now(),
         ]);
 
-        // Kirim OTP via Fonnte WhatsApp
-        $sent = $fonnte->sendOtp($phone, $otp);
+        Auth::login($user, true);
 
-        if (!$sent) {
-            return back()->withErrors(['phone' => 'Gagal mengirim OTP. Pastikan nomor WhatsApp aktif.'])->withInput();
-        }
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'login_whatsapp_direct',
+            'description' => 'Pengguna login langsung via WhatsApp tanpa OTP.',
+        ]);
 
-        return redirect()->route('otp.verifikasi', ['phone' => $phone])
-            ->with('success', 'Kode OTP telah dikirim ke WhatsApp Anda.');
+        // Kirim notifikasi login
+        $this->kirimNotifikasiLogin($user, 'WhatsApp (Tanpa OTP)');
+
+        return redirect('/dashboard')->with('success', 'Berhasil masuk.');
     }
 
     public function formVerifikasiOtp(Request $request)
@@ -297,9 +299,17 @@ class AuthController extends Controller
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
                 'password' => Hash::make(Str::random(24)),
-                'is_verified' => true,
+                'is_verified' => false,
                 'last_login' => now(),
             ]);
+        }
+
+        // Jika user belum punya WhatsApp, tidak perlu memaksa (sesuai permintaan, verifikasi hanya di admin)
+        // Kita langsung periksa status verifikasinya saja
+        
+        // Jika user sudah terdaftar tapi belum diverifikasi admin (dan bukan admin)
+        if (!$user->is_verified && $user->tier !== 'admin') {
+            return redirect('/masuk')->withErrors(['email' => 'Akun Anda sedang menunggu persetujuan Admin. Harap bersabar.']);
         }
 
         $user->update(['last_login' => now()]);
@@ -315,6 +325,46 @@ class AuthController extends Controller
         $this->kirimNotifikasiLogin($user, 'Google OAuth');
 
         return redirect('/dashboard');
+    }
+
+    public function formGoogleWhatsapp()
+    {
+        if (!session()->has('google_auth_user_id')) {
+            return redirect('/masuk');
+        }
+        return view('auth.google-whatsapp');
+    }
+
+    public function prosesGoogleWhatsapp(Request $request)
+    {
+        $userId = session('google_auth_user_id');
+        if (!$userId) {
+            return redirect('/masuk');
+        }
+
+        $request->validate([
+            'phone' => 'required|string|max:20',
+        ], [
+            'phone.required' => 'Nomor WhatsApp wajib diisi.',
+        ]);
+
+        $phone = $this->normalizePhone($request->phone);
+
+        if (User::where('phone', $phone)->exists()) {
+            return back()->withErrors(['phone' => 'Nomor WhatsApp sudah terdaftar.'])->withInput();
+        }
+
+        $user = User::find($userId);
+        if ($user) {
+            $user->update([
+                'phone' => $phone,
+                // Pastikan user masih butuh verifikasi jika baru daftar
+            ]);
+        }
+
+        session()->forget('google_auth_user_id');
+
+        return redirect()->route('menunggu-verifikasi')->with('success', 'Nomor WhatsApp berhasil disimpan. Harap tunggu persetujuan Admin.');
     }
 
     // ========== LUPA PASSWORD VIA WHATSAPP ==========

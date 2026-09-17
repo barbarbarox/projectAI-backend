@@ -40,8 +40,12 @@ class ProsesAnalisisURL implements ShouldQueue
             $dataMentah = [];
             
             if ($this->modeScan === 'intens') {
-                $this->scan->update(['progress_step' => 'Pemindaian Intensif Berjalan...', 'progress_persen' => 40]);
+                $this->scan->update(['progress_step' => 'Pemindaian Intensif — Reputasi & Headers...', 'progress_persen' => 15]);
+                $this->scan->update(['progress_step' => 'Pemindaian Intensif — SSL, DNS & Port Scan...', 'progress_persen' => 25]);
+                $this->scan->update(['progress_step' => 'Pemindaian Intensif — Cookie, CORS & Methods...', 'progress_persen' => 35]);
+                $this->scan->update(['progress_step' => 'Pemindaian Intensif — File Sensitif & Subdomain...', 'progress_persen' => 45]);
                 $dataMentah = $scanIntens->scan($this->url);
+                $this->scan->update(['progress_step' => 'Pemindaian Intensif Selesai — Mengolah Data...', 'progress_persen' => 55]);
             } else {
                 $this->scan->update(['progress_step' => 'Pemindaian Biasa Berjalan...', 'progress_persen' => 40]);
                 $dataMentah = $scanBiasa->scan($this->url);

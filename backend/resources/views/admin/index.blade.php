@@ -6,24 +6,24 @@
 @section('content')
 <div class="space-y-6">
     {{-- Stats --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="p-5 rounded-2xl bg-[#0f1629] border border-[#1e2d4a]">
+    <div class="bento-section grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="magic-bento-card p-5 rounded-2xl bg-[#0f1629] border border-[#1e2d4a]">
             <p class="text-xs text-[#64748b] mb-1">Total Pengguna</p>
             <p class="text-2xl font-bold text-white">{{ $stats['total_users'] }}</p>
         </div>
-        <div class="p-5 rounded-2xl bg-[#0f1629] border border-[#1e2d4a]">
+        <div class="magic-bento-card p-5 rounded-2xl bg-[#0f1629] border border-[#1e2d4a]">
             <p class="text-xs text-[#64748b] mb-1">Total Scan</p>
             <p class="text-2xl font-bold text-white">{{ $stats['total_scans'] }}</p>
         </div>
-        <div class="p-5 rounded-2xl bg-[#0f1629] border border-[#1e2d4a]">
+        <div class="magic-bento-card p-5 rounded-2xl bg-[#0f1629] border border-[#1e2d4a]">
             <p class="text-xs text-[#64748b] mb-1">Scan Hari Ini</p>
             <p class="text-2xl font-bold text-white">{{ $stats['scans_hari_ini'] }}</p>
         </div>
     </div>
 
     {{-- Quick Links --}}
-    <div class="grid md:grid-cols-2 gap-4">
-        <a href="/admin/ai-config" class="group p-6 rounded-2xl bg-gradient-to-br from-[#7c3aed]/5 to-[#7c3aed]/10 border border-[#7c3aed]/20 hover:border-[#7c3aed]/40 transition-all duration-300 hover:-translate-y-1">
+    <div class="bento-section grid md:grid-cols-2 gap-4">
+        <a href="/admin/ai-config" class="magic-bento-card group p-6 rounded-2xl bg-gradient-to-br from-[#7c3aed]/5 to-[#7c3aed]/10 border border-[#7c3aed]/20">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 rounded-xl bg-[#7c3aed]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <svg class="w-6 h-6 text-[#7c3aed]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>

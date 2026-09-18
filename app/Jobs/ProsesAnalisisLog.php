@@ -43,7 +43,7 @@ class ProsesAnalisisLog implements ShouldQueue
                 $this->scan->update(['progress_step' => 'Mendeteksi Anomali dengan AI...', 'progress_persen' => 50]);
             }
             
-            $hasil = $service->analisis($this->logContent, $this->tipeLog, $useAi, $useRag, $this->scan->model_ai);
+            $hasil = $service->analisis($this->logContent, $this->tipeLog, $useAi, $useRag, $this->scan->model_ai, $this->scan->user_id);
             
             $this->scan->update(['progress_step' => 'Finalisasi Laporan...', 'progress_persen' => 90]);
 

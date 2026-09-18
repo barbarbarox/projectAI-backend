@@ -47,7 +47,7 @@ class ProsesAnalisisZIP implements ShouldQueue
             $this->scan->update(['progress_step' => 'Mengekstrak File & Struktur...', 'progress_persen' => 40]);
             
             $this->scan->update(['progress_step' => 'AI Sedang Menganalisis Arsitektur...', 'progress_persen' => 70]);
-            $hasil = $service->analisis($this->zipPath, $this->scan->mode_rag === 'dengan_rag', $this->scan->model_ai);
+            $hasil = $service->analisis($this->zipPath, $this->scan->mode_rag === 'dengan_rag', $this->scan->model_ai, $this->scan->user_id);
             
             $this->scan->update(['progress_step' => 'Finalisasi Laporan...', 'progress_persen' => 95]);
             $this->simpanHasil($hasil);

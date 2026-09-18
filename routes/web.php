@@ -54,6 +54,20 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profil', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profil/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
 
+    // User AI Configuration
+    Route::get('/profil/ai', [\App\Http\Controllers\UserAiConfigController::class, 'index'])->name('profile.ai');
+    Route::post('/profil/ai/detect', [\App\Http\Controllers\UserAiConfigController::class, 'detectKey'])->name('profile.ai.detect');
+    Route::post('/profil/ai', [\App\Http\Controllers\UserAiConfigController::class, 'store'])->name('profile.ai.store');
+    Route::patch('/profil/ai/model', [\App\Http\Controllers\UserAiConfigController::class, 'updateModel'])->name('profile.ai.update-model');
+    Route::delete('/profil/ai', [\App\Http\Controllers\UserAiConfigController::class, 'destroy'])->name('profile.ai.destroy');
+    Route::get('/profil/ai/oauth/google', [\App\Http\Controllers\UserAiConfigController::class, 'redirectGoogleAI'])->name('profile.ai.oauth.google');
+    Route::get('/profil/ai/oauth/google/callback', [\App\Http\Controllers\UserAiConfigController::class, 'handleGoogleAICallback']);
+    Route::get('/profil/ai/oauth/openai', [\App\Http\Controllers\UserAiConfigController::class, 'redirectOpenAI'])->name('profile.ai.oauth.openai');
+    Route::get('/profil/ai/oauth/openai/callback', [\App\Http\Controllers\UserAiConfigController::class, 'handleOpenAICallback']);
+    Route::post('/profil/ai/test-models', [\App\Http\Controllers\UserAiConfigController::class, 'testModels'])->name('profile.ai.test-models');
+    Route::post('/profil/ai/remove-models', [\App\Http\Controllers\UserAiConfigController::class, 'removeModels'])->name('profile.ai.remove-models');
+    Route::post('/profil/ai/refresh-models', [\App\Http\Controllers\UserAiConfigController::class, 'refreshModels'])->name('profile.ai.refresh-models');
+
     // Analisis dengan rate limit
     Route::middleware('cek.ratelimit')->group(function () {
         Route::get('/analisis/kode', [KodeController::class, 'form'])->name('analisis.kode');

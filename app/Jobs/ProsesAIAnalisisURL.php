@@ -65,7 +65,7 @@ Data lengkap scan:
 Berikan penilaian keamanan lengkap termasuk risiko spesifik berdasarkan data di atas.
 TUGAS;
 
-            $hasil = $ragService->analisis($queryRAG, $tugas);
+            $hasil = $ragService->analisis($queryRAG, $tugas, $this->scan->mode_rag === 'dengan_rag', $this->scan->model_ai, $this->scan->user_id);
 
             $this->scan->update([
                 'verdict' => $hasil['verdict'] ?? null,

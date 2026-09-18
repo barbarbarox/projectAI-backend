@@ -14,11 +14,11 @@ class AnalisisZIPService
         $this->ragService = $ragService;
     }
 
-    public function analisis(string $zipPath, bool $useRag = true, ?string $modelOverride = null): array
+    public function analisis(string $zipPath, bool $useRag = true, ?string $modelOverride = null, ?int $userId = null): array
     {
         $kodeGabungan = $this->ekstrakDanBaca($zipPath);
         $tugas = "Analisis keamanan kode dari file ZIP berikut:\n\n{$kodeGabungan}\n\nIdentifikasi semua kerentanan, berikan skor keamanan, dan simulasi serangan yang mungkin.";
-        $hasil = $this->ragService->analisis($kodeGabungan, $tugas, $useRag, $modelOverride);
+        $hasil = $this->ragService->analisis($kodeGabungan, $tugas, $useRag, $modelOverride, $userId);
 
         // Hapus file ZIP setelah analisis
         if (file_exists($zipPath)) {

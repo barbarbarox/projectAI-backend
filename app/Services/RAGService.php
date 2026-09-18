@@ -66,7 +66,7 @@ class RAGService
         ];
     }
 
-    public function analisis(string $query, string $tugas, bool $useRag = true, ?string $modelOverride = null): array
+    public function analisis(string $query, string $tugas, bool $useRag = true, ?string $modelOverride = null, ?int $userId = null): array
     {
         $konteks = '';
         $peringatan = "Knowledge base tidak digunakan (Analisis berdasarkan AI dasar).";
@@ -79,7 +79,7 @@ class RAGService
 
         $prompt = $this->buildPrompt($konteks, $tugas, $peringatan);
         try {
-            $responseRaw = $this->geminiService->generate($prompt, $modelOverride);
+            $responseRaw = $this->geminiService->generate($prompt, $modelOverride, true, $userId);
             $hasil = json_decode($responseRaw, true);
             
             if (!is_array($hasil)) {

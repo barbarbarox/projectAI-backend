@@ -17,7 +17,7 @@ class AnalisisLogService
         $this->ragService = $ragService;
     }
 
-    public function analisis(string $content, string $tipeLog = 'auto', bool $useAi = true, bool $useRag = true, ?string $modelOverride = null): array
+    public function analisis(string $content, string $tipeLog = 'auto', bool $useAi = true, bool $useRag = true, ?string $modelOverride = null, ?int $userId = null): array
     {
         // Step 1: Detect format
         $format = ($tipeLog === 'auto' || $tipeLog === 'Deteksi Otomatis')
@@ -52,7 +52,7 @@ class AnalisisLogService
                 $prompt = $this->buildFullPrompt($ragData['konteks'], $tugas, $ragData['peringatan'] ?? null);
 
                 $gemini = app(GeminiService::class);
-                $responseRaw = $gemini->generate($prompt, $modelOverride);
+                $responseRaw = $gemini->generate($prompt, $modelOverride, true, $userId);
                 $hasil = json_decode($responseRaw, true);
 
                 if (!is_array($hasil)) {

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -62,5 +63,10 @@ class User extends Authenticatable
     public function getTotalPoinAttribute(): int
     {
         return $this->poinUser()->where('is_benar', true)->sum('poin_diperoleh');
+    }
+
+    public function aiConfig(): HasOne
+    {
+        return $this->hasOne(UserAiConfig::class)->where('is_active', true);
     }
 }

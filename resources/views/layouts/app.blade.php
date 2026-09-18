@@ -66,9 +66,9 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                     <span>Riwayat Scan</span>
                 </a>
-                <a href="{{ route('chat-ai') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('chat-ai') ? 'bg-[#00d4ff]/10 text-[#00d4ff] border border-[#00d4ff]/20' : 'text-[#94a3b8] hover:bg-[#1e2d4a]/50 hover:text-[#e2e8f0]' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-                    <span>Chat dengan AI RedSim</span>
+                <a href="{{ route('profile.ai') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('profile.ai') ? 'bg-[#00d4ff]/10 text-[#00d4ff] border border-[#00d4ff]/20' : 'text-[#94a3b8] hover:bg-[#1e2d4a]/50 hover:text-[#e2e8f0]' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span>Model AI</span>
                 </a>
                 @if(Auth::check() && Auth::user()->tier === 'admin')
                 <div class="pt-4 mt-4 border-t border-[#1e2d4a]">
@@ -204,9 +204,46 @@
         </main>
     </div>
 
+    @include('chat-widget')
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="{{ asset('js/magic-bento.js') }}"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    
+    <style>
+    /* ===== Markdown Content Styling for Widget ===== */
+    .chat-md-content { color: #e2e8f0; word-wrap: break-word; overflow-wrap: break-word; }
+    .chat-md-content > *:first-child { margin-top: 0; }
+    .chat-md-content > *:last-child { margin-bottom: 0; }
+    .chat-md-content p { margin-bottom: 0.5rem; line-height: 1.5; }
+    .chat-md-content strong { font-weight: 700; color: #fff; }
+    .chat-md-content em { font-style: italic; color: #cbd5e1; }
+    .chat-md-content h1, .chat-md-content h2, .chat-md-content h3, .chat-md-content h4 { font-weight: 700; margin: 0.75rem 0 0.5rem; color: #fff; }
+    .chat-md-content ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
+    .chat-md-content ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0; }
+    .chat-md-content a { color: #00d4ff; text-decoration: underline; }
+    .chat-md-content img { max-width: 100%; border-radius: 0.5rem; margin: 0.5rem 0; }
+    .chat-md-content blockquote { border-left: 2px solid #00d4ff; margin: 0.5rem 0; padding: 0.5rem 0.75rem; background: rgba(0,212,255,0.05); }
+    .chat-md-content code:not(pre code) { background: #1e293b; padding: 0.15em 0.3em; border-radius: 3px; font-family: monospace; font-size: 0.9em; color: #7dd3fc; }
+    .chat-md-content pre { background: #0d1117; margin: 0.5rem 0; padding: 0.75rem; overflow-x: auto; border-radius: 0.5rem; }
+    .md-code-block { margin: 0.5rem 0; border-radius: 0.5rem; overflow: hidden; border: 1px solid #30363d; background: #0d1117; }
+    .md-code-header { display: flex; align-items: center; justify-content: space-between; background: #161b22; padding: 0.25rem 0.5rem; border-bottom: 1px solid #30363d; }
+    .md-code-lang { font-size: 0.6rem; color: #8b949e; text-transform: uppercase; }
+    .md-copy-btn { display: flex; align-items: center; gap: 0.25rem; font-size: 0.6rem; color: #8b949e; background: none; border: 1px solid #30363d; border-radius: 0.25rem; padding: 0.15rem 0.4rem; cursor: pointer; }
+    .md-table-wrap { overflow-x: auto; margin: 0.5rem 0; }
+    .chat-md-content table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .chat-md-content th { padding: 0.4rem 0.5rem; background: #161b22; color: #e6edf3; text-align: left; border-bottom: 1px solid #30363d; }
+    .chat-md-content td { padding: 0.4rem 0.5rem; color: #c9d1d9; border-bottom: 1px solid #21262d; }
+    </style>
+    
+    <script src="{{ asset('js/markdown-renderer.js') }}"></script>
+    <script src="{{ asset('js/chat-widget.js') }}"></script>
+
     @stack('scripts')
 </body>
 </html>

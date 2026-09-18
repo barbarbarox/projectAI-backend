@@ -16,7 +16,12 @@ class AiHealthController extends Controller
     public function check(): JsonResponse
     {
         try {
-            $config = AiConfiguration::getActiveWithModel();
+            $userId = \Illuminate\Support\Facades\Auth::id();
+            $userConfig = $userId ? \App\Models\UserAiConfig::getActiveForUser($userId) : null;
+            $config = $userConfig ?? AiConfiguration::getActiveWithModel();
+            
+            $geminiService = app(\App\Services\GeminiService::class);
+            $availableModels = $geminiService->getAvailableModels($userId);
 
             if (!$config) {
                 // Fallback: cek .env
@@ -27,18 +32,20 @@ class AiHealthController extends Controller
                         'message' => 'Tidak ada API Key AI yang dikonfigurasi.',
                         'provider' => null,
                         'model' => null,
+                        'available_models' => $availableModels,
                     ]);
                 }
 
                 // Test env key
-                return $this->testEnvKey($envKey);
+                return $this->testEnvKey($envKey, $availableModels);
             }
 
-            $provider = $config->detected_provider ?? $config->provider;
-            $model = $config->selected_model;
+            $provider = $config->provider;
+            if ($config instanceof \App\Models\AiConfiguration) {
+                $provider = $config->detected_provider ?? $config->provider;
+            }
             
-            $geminiService = app(\App\Services\GeminiService::class);
-            $availableModels = $geminiService->getAvailableModels();
+            $model = $config->selected_model;
 
             return response()->json([
                 'status' => 'available',
@@ -58,12 +65,9 @@ class AiHealthController extends Controller
         }
     }
 
-    protected function testEnvKey(string $key): JsonResponse
+    protected function testEnvKey(string $key, array $availableModels): JsonResponse
     {
         $model = env('GEMINI_MODEL', 'gemini-1.5-pro');
-
-        $geminiService = app(\App\Services\GeminiService::class);
-        $availableModels = $geminiService->getAvailableModels();
 
         if (str_starts_with($key, 'gsk_')) {
             return response()->json([

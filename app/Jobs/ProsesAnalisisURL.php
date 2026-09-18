@@ -72,7 +72,7 @@ class ProsesAnalisisURL implements ShouldQueue
             $this->scan->update(['progress_step' => 'AI Sedang Menganalisis Hasil...', 'progress_persen' => 70]);
             
             $tugas = "Analisis keamanan URL: {$this->url}\n\nData mentah dari scanner:\n" . json_encode($dataMentah) . "\n\nBerikan penilaian keamanan lengkap termasuk kerentanan, risiko, dan rekomendasi.";
-            $hasilAi = $ragService->analisis($this->url, $tugas, $useRag, $this->scan->model_ai);
+            $hasilAi = $ragService->analisis($this->url, $tugas, $useRag, $this->scan->model_ai, $this->scan->user_id);
 
             $this->scan->update(['progress_step' => 'Finalisasi Laporan...', 'progress_persen' => 95]);
 

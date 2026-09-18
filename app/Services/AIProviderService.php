@@ -55,14 +55,44 @@ class AIProviderService
             if ($response->successful()) {
                 $data = $response->json();
                 $models = collect($data['models'] ?? [])
-                    ->filter(fn($m) => str_contains($m['name'] ?? '', 'gemini'))
-                    ->map(fn($m) => [
-                        'id' => str_replace('models/', '', $m['name']),
-                        'name' => $m['displayName'] ?? $m['name'],
-                        'description' => $m['description'] ?? '',
-                        'input_token_limit' => $m['inputTokenLimit'] ?? null,
-                        'output_token_limit' => $m['outputTokenLimit'] ?? null,
-                    ])
+                    ->filter(function($m) {
+                        $name = strtolower($m['name'] ?? '');
+                        if (!str_contains($name, 'gemini')) return false;
+                        if (!in_array('generateContent', $m['supportedGenerationMethods'] ?? [])) return false;
+                        
+                        // Buang model non-teks, eksperimental, dan yang diketahui tidak bekerja
+                        $exclude = [
+                            'nano', 'banana', 'vision', 'image', 'audio', 'video',
+                            'tts', 'embedding', 'aqa', 'omni', 'computer', 'learnlm',
+                            'native-audio', 'preview-tts',
+                        ];
+                        foreach ($exclude as $kw) {
+                            if (str_contains($name, $kw)) return false;
+                        }
+                        
+                        // Buang versi 3.7 dan 3.8 yang diketahui tidak bekerja
+                        if (preg_match('/gemini-3\.(7|8)/', $name)) return false;
+                        
+                        return true;
+                    })
+                    ->map(function($m) {
+                        $id = str_replace('models/', '', $m['name']);
+                        $displayName = $m['displayName'] ?? $m['name'];
+                        
+                        if (str_contains(strtolower($id), 'pro')) {
+                            $displayName .= ' (Pro / Limit Ketat)';
+                        } elseif (str_contains(strtolower($id), 'flash')) {
+                            $displayName .= ' (Free Tier / Stabil)';
+                        }
+                        
+                        return [
+                            'id' => $id,
+                            'name' => $displayName,
+                            'description' => $m['description'] ?? '',
+                            'input_token_limit' => $m['inputTokenLimit'] ?? null,
+                            'output_token_limit' => $m['outputTokenLimit'] ?? null,
+                        ];
+                    })
                     ->values()
                     ->toArray();
 
@@ -91,12 +121,53 @@ class AIProviderService
             if ($response->successful()) {
                 $data = $response->json();
                 $models = collect($data['data'] ?? [])
-                    ->filter(fn($m) => str_contains($m['id'], 'gpt'))
-                    ->map(fn($m) => [
-                        'id' => $m['id'],
-                        'name' => $m['id'],
-                        'description' => 'OpenAI ' . $m['id'],
-                    ])
+                    ->filter(function($m) {
+                        $id = strtolower($m['id'] ?? '');
+                        
+                        // Hanya terima model chat/reasoning yang berguna
+                        $allowedPrefixes = ['gpt-4', 'gpt-3.5', 'chatgpt', 'o1', 'o3', 'o4'];
+                        $isAllowed = false;
+                        foreach ($allowedPrefixes as $prefix) {
+                            if (str_starts_with($id, $prefix)) {
+                                $isAllowed = true;
+                                break;
+                            }
+                        }
+                        if (!$isAllowed) return false;
+                        
+                        // Buang model non-teks / khusus
+                        $exclude = [
+                            'audio', 'realtime', 'transcribe', 'tts',
+                            'dall-e', 'whisper', 'embedding', 'search',
+                            'moderation', 'instruct',
+                        ];
+                        foreach ($exclude as $kw) {
+                            if (str_contains($id, $kw)) return false;
+                        }
+                        
+                        return true;
+                    })
+                    ->map(function($m) {
+                        $id = $m['id'];
+                        $displayName = $id;
+                        
+                        // Beri label tier
+                        if (str_contains($id, 'gpt-4o-mini') || str_contains($id, 'gpt-3.5')) {
+                            $displayName .= ' (Murah / Hemat)';
+                        } elseif (str_contains($id, 'gpt-4o') || str_contains($id, 'gpt-4.1-mini') || str_contains($id, 'gpt-4.1-nano')) {
+                            $displayName .= ' (Standar)';
+                        } elseif (str_starts_with($id, 'o1') || str_starts_with($id, 'o3') || str_starts_with($id, 'o4')) {
+                            $displayName .= ' (Reasoning / Pro)';
+                        } elseif (str_contains($id, 'gpt-4.1')) {
+                            $displayName .= ' (Pro)';
+                        }
+                        
+                        return [
+                            'id' => $id,
+                            'name' => $displayName,
+                            'description' => 'OpenAI ' . $id,
+                        ];
+                    })
                     ->sortBy('id')
                     ->values()
                     ->toArray();
@@ -305,7 +376,15 @@ class AIProviderService
     protected function generateGoogle(string $apiKey, string $model, string $prompt, bool $isJson = true): string
     {
         $maxTokens = (int) env('AI_MAX_TOKENS', 2048);
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
+        
+        $headers = [];
+        // Jika token panjang atau dimulai dengan ya29., ini adalah OAuth Token
+        if (str_starts_with($apiKey, 'ya29.') || strlen($apiKey) > 100) {
+            $headers['Authorization'] = "Bearer {$apiKey}";
+        } else {
+            $url .= "?key={$apiKey}";
+        }
         
         $generationConfig = [
             'temperature' => 0.5,
@@ -316,11 +395,18 @@ class AIProviderService
             $generationConfig['responseMimeType'] = 'application/json';
         }
 
-        $response = Http::timeout(120)->post($url, [
+        $response = Http::timeout(120)
+            ->withHeaders($headers)
+            ->post($url, [
             'contents' => [['parts' => [['text' => $prompt]]]],
             'generationConfig' => $generationConfig,
         ]);
-        if (!$response->successful()) throw new \RuntimeException('Google AI gagal: ' . $response->status());
+        
+        if (!$response->successful()) {
+            \Illuminate\Support\Facades\Log::error('Google AI Error: ' . $response->body());
+            throw new \RuntimeException('Google AI gagal: ' . $response->status());
+        }
+        
         return $response->json('candidates.0.content.parts.0.text') ?? '{}';
     }
 

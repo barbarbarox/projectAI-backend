@@ -62,7 +62,7 @@ class ProsesAnalisisKode implements ShouldQueue
             
             // Pass mode_rag to the service if needed (currently RAGService checks if it should use DB)
             $this->scan->update(['progress_step' => 'AI Sedang Mengevaluasi...', 'progress_persen' => 70]);
-            $hasil = $service->analisis($this->kode, $this->bahasa, $this->scan->mode_rag === 'dengan_rag', $this->scan->model_ai);
+            $hasil = $service->analisis($this->kode, $this->bahasa, $this->scan->mode_rag === 'dengan_rag', $this->scan->model_ai, $this->scan->user_id);
             
             $this->scan->update(['progress_step' => 'Finalisasi Laporan...', 'progress_persen' => 95]);
             $this->simpanHasil($hasil);

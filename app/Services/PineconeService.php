@@ -32,7 +32,8 @@ class PineconeService
         }
 
         try {
-            $response = Http::timeout(10)
+            $response = Http::timeout(15)
+                ->retry(3, 1000)
                 ->withHeaders(['Api-Key' => $this->apiKey])
                 ->get("https://api.pinecone.io/indexes/{$this->indexName}");
 
@@ -137,7 +138,8 @@ class PineconeService
         }
 
         try {
-            $response = Http::timeout(15)
+            $response = Http::timeout(20)
+                ->retry(3, 1000)
                 ->withHeaders([
                     'Api-Key' => $this->apiKey,
                     'Content-Type' => 'application/json',
@@ -228,7 +230,8 @@ class PineconeService
         }
 
         try {
-            $response = Http::timeout(15)
+            $response = Http::timeout(20)
+                ->retry(3, 1000)
                 ->withHeaders([
                     'Api-Key' => $this->apiKey,
                     'Content-Type' => 'application/json',

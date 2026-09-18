@@ -13,12 +13,6 @@
             <span class="text-sm font-medium text-green-400">Sistem AI Siap</span>
         </div>
         <div class="flex items-center gap-4">
-            <select x-model="selectedModel" class="px-3 py-1.5 rounded-lg bg-[#0a0e1a] border border-[#1e2d4a] text-xs text-white focus:border-[#00d4ff] focus:outline-none transition-colors max-w-[200px]">
-                <option value="">Gunakan Model Default</option>
-                @foreach($availableModels as $m)
-                    <option value="{{ $m['id'] }}">{{ $m['name'] }} ({{ $m['provider'] }})</option>
-                @endforeach
-            </select>
 
             <div class="text-xs text-[#94a3b8] flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -94,7 +88,13 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
             </button>
         </form>
-        <div class="mt-2 text-center">
+        <div class="mt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <select x-model="selectedModel" class="px-3 py-1.5 rounded-lg bg-[#0f1629] border border-[#1e2d4a] text-xs text-[#94a3b8] hover:text-white focus:text-white focus:border-[#00d4ff] focus:outline-none transition-colors max-w-full sm:max-w-[300px] w-full sm:w-auto">
+                <option value="">{{ $defaultModelName ?? 'Gunakan Model Default' }}</option>
+                @foreach($availableModels as $m)
+                    <option value="{{ $m['id'] }}">{{ $m['name'] }} ({{ $m['provider'] }})</option>
+                @endforeach
+            </select>
             <span class="text-[10px] text-[#64748b]">AI mungkin memberikan jawaban yang tidak akurat. Verifikasi info penting.</span>
         </div>
     </div>

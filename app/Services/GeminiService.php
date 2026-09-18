@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AiConfiguration;
+use App\Models\UserAiConfig;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -16,12 +17,50 @@ class GeminiService
     }
 
     /**
-     * Generate response menggunakan AI provider aktif.
-     * Mendukung multi-provider: Google, OpenAI, Anthropic, OpenRouter.
+     * Generate response menggunakan AI provider.
+     * Prioritas: User config → Admin config (DB) → .env fallback.
      */
-    public function generate(string $prompt, ?string $modelOverride = null, bool $isJson = true): string
+    public function generate(string $prompt, ?string $modelOverride = null, bool $isJson = true, ?int $userId = null): string
     {
-        // Cek apakah ada konfigurasi AI aktif di database
+        // 1. PRIORITAS PERTAMA: Config AI milik user sendiri
+        if ($userId) {
+            $userConfig = UserAiConfig::getActiveForUser($userId);
+
+            if ($userConfig) {
+                try {
+                    // Refresh OAuth token kalau expired
+                    if ($userConfig->method === 'oauth_google' && $userConfig->isTokenExpired()) {
+                        $userConfig = $this->refreshGoogleToken($userConfig);
+                    } elseif ($userConfig->method === 'oauth_openai' && $userConfig->isTokenExpired()) {
+                        $userConfig = $this->refreshOpenAIToken($userConfig);
+                    }
+
+                    $apiKey = $userConfig->getActiveKey();
+                    $provider = $userConfig->provider;
+                    $model = $modelOverride ?? $userConfig->selected_model;
+
+                    if ($apiKey) {
+                        // Track usage
+                        $userConfig->increment('total_requests');
+                        $userConfig->update(['last_used_at' => now()]);
+
+                        Log::info('AI Request via User Config', [
+                            'user_id' => $userId,
+                            'provider' => $provider,
+                            'model' => $model,
+                            'method' => $userConfig->method,
+                        ]);
+
+                        return $this->aiProviderService->generate($provider, $apiKey, $model, $prompt, $isJson);
+                    }
+                } catch (\Exception $e) {
+                    Log::error("User AI config gagal (user_id: {$userId}): " . $e->getMessage());
+                    throw $e;
+                }
+            }
+        }
+
+        // 2. PRIORITAS KEDUA: Config dari admin (database)
         $config = AiConfiguration::getActiveWithModel();
 
         if ($config) {
@@ -33,11 +72,11 @@ class GeminiService
                 return $this->aiProviderService->generate($provider, $apiKey, $model, $prompt, $isJson);
             } catch (\Exception $e) {
                 Log::error("AI provider {$provider} gagal: " . $e->getMessage());
-                // Fallback ke env default
+                throw $e;
             }
         }
 
-        // Fallback: gunakan Gemini dari .env
+        // 3. FALLBACK TERAKHIR: gunakan key dari .env
         return $this->generateFromEnv($prompt, $modelOverride, $isJson);
     }
 
@@ -79,13 +118,94 @@ class GeminiService
     }
 
     /**
-     * Ambil daftar model yang tersedia untuk dipilih user.
+     * Refresh Google OAuth token yang expired.
      */
-    public function getAvailableModels(): array
+    public function refreshGoogleToken(UserAiConfig $config): UserAiConfig
+    {
+        if (!$config->oauth_refresh_token) {
+            throw new \RuntimeException('Tidak ada refresh token untuk Google OAuth.');
+        }
+
+        $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+            'client_id' => env('GOOGLE_CLIENT_ID'),
+            'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+            'refresh_token' => $config->oauth_refresh_token,
+            'grant_type' => 'refresh_token',
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('Google OAuth refresh gagal: ' . $response->body());
+            throw new \RuntimeException('Gagal refresh Google OAuth token.');
+        }
+
+        $data = $response->json();
+
+        $config->update([
+            'oauth_access_token' => $data['access_token'],
+            'oauth_expires_at' => now()->addSeconds($data['expires_in'] ?? 3600),
+            'last_verified_at' => now(),
+        ]);
+
+        return $config->fresh();
+    }
+
+    /**
+     * Refresh OpenAI OAuth token yang expired.
+     */
+    protected function refreshOpenAIToken(UserAiConfig $config): UserAiConfig
+    {
+        if (!$config->oauth_refresh_token) {
+            throw new \RuntimeException('Tidak ada refresh token untuk OpenAI OAuth.');
+        }
+
+        $response = Http::asForm()->post('https://auth.openai.com/oauth/token', [
+            'client_id' => env('OPENAI_OAUTH_CLIENT_ID'),
+            'client_secret' => env('OPENAI_OAUTH_CLIENT_SECRET'),
+            'refresh_token' => $config->oauth_refresh_token,
+            'grant_type' => 'refresh_token',
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('OpenAI OAuth refresh gagal: ' . $response->body());
+            throw new \RuntimeException('Gagal refresh OpenAI OAuth token.');
+        }
+
+        $data = $response->json();
+
+        $config->update([
+            'oauth_access_token' => $data['access_token'],
+            'oauth_refresh_token' => $data['refresh_token'] ?? $config->oauth_refresh_token,
+            'oauth_expires_at' => now()->addSeconds($data['expires_in'] ?? 3600),
+            'last_verified_at' => now(),
+        ]);
+
+        return $config->fresh();
+    }
+
+    /**
+     * Ambil daftar model yang tersedia.
+     * Termasuk model dari user config jika $userId diberikan.
+     */
+    public function getAvailableModels(?int $userId = null): array
     {
         $models = [];
 
-        // Dari database configurations (Model yang di-inputkan admin)
+        // Model dari user config sendiri (prioritas tampil pertama)
+        if ($userId) {
+            $userConfig = UserAiConfig::getActiveForUser($userId);
+            if ($userConfig && !empty($userConfig->available_models)) {
+                foreach ($userConfig->available_models as $m) {
+                    $models[] = [
+                        'id' => $m['id'],
+                        'name' => ($userConfig->provider_label ?? ucfirst($userConfig->provider)) . ' — ' . ($m['name'] ?? $m['id']),
+                        'provider' => $userConfig->provider,
+                        'source' => 'user',
+                    ];
+                }
+            }
+        }
+
+        // Model dari database admin configurations
         $configs = AiConfiguration::where('is_active', true)->orderByDesc('is_default')->get();
         foreach ($configs as $config) {
             $models[] = [
@@ -97,11 +217,10 @@ class GeminiService
             ];
         }
 
-        // Dari .env (selalu tersedia)
+        // Model dari .env (selalu tersedia)
         $envKey = env('GEMINI_API_KEY');
         if ($envKey) {
             $envModel = env('GEMINI_MODEL', 'gemini-1.5-pro');
-            // Hindari duplikasi jika admin sudah menambahkan model yang sama
             $exists = collect($models)->contains('id', $envModel);
             if (!$exists) {
                 $models[] = [

@@ -10,14 +10,44 @@ class ChatController extends Controller
 {
     public function index(GeminiService $geminiService)
     {
-        $availableModels = $geminiService->getAvailableModels();
-        return view('admin.chat-test', compact('availableModels'));
+        $userId = \Illuminate\Support\Facades\Auth::id();
+        $availableModels = $geminiService->getAvailableModels($userId);
+        
+        $userConfig = \App\Models\UserAiConfig::getActiveForUser($userId);
+        $adminConfig = \App\Models\AiConfiguration::getActiveWithModel();
+        
+        $defaultModelId = $userConfig ? $userConfig->selected_model : ($adminConfig->selected_model ?? '');
+        $defaultModelName = 'Gunakan Model Default';
+        
+        foreach ($availableModels as $m) {
+            if ($m['id'] === $defaultModelId) {
+                $defaultModelName = 'Default: ' . $m['name'];
+                break;
+            }
+        }
+        
+        return view('admin.chat-test', compact('availableModels', 'defaultModelName'));
     }
 
     public function indexPublic(GeminiService $geminiService)
     {
-        $availableModels = $geminiService->getAvailableModels();
-        return view('chat-ai', compact('availableModels'));
+        $userId = \Illuminate\Support\Facades\Auth::id();
+        $availableModels = $geminiService->getAvailableModels($userId);
+        
+        $userConfig = \App\Models\UserAiConfig::getActiveForUser($userId);
+        $adminConfig = \App\Models\AiConfiguration::getActiveWithModel();
+        
+        $defaultModelId = $userConfig ? $userConfig->selected_model : ($adminConfig->selected_model ?? '');
+        $defaultModelName = 'Gunakan Model Default';
+        
+        foreach ($availableModels as $m) {
+            if ($m['id'] === $defaultModelId) {
+                $defaultModelName = 'Default: ' . $m['name'];
+                break;
+            }
+        }
+        
+        return view('chat-ai', compact('availableModels', 'defaultModelName'));
     }
 
     public function chat(Request $request, RAGService $ragService, GeminiService $geminiService)
@@ -52,7 +82,7 @@ QUESTION:
 PROMPT;
         
         try {
-            $response = $geminiService->generate($prompt, $modelOverride, false);
+            $response = $geminiService->generate($prompt, $modelOverride, false, \Illuminate\Support\Facades\Auth::id());
             return response()->json([
                 'status' => 'success',
                 'message' => $response,

@@ -680,11 +680,166 @@
         <p class="text-xs text-yellow-400/80">Data reputasi bersumber dari VirusTotal dan URLScan.io. @if($isIntens)Subdomain dari crt.sh Certificate Transparency. DNS reconnaissance menggunakan resolver lokal. Port scan hanya memeriksa port umum dengan timeout 2 detik. @endif @if($hasAI)Analisis AI berbasis knowledge base keamanan publik (NVD, MITRE ATT&CK, OWASP, CWE, CISA KEV). @endif Tidak menggantikan penetration testing profesional.</p>
     </div>
 
-    {{-- PDF Download --}}
-    <div class="flex gap-3">
-    <div class="flex gap-3">
-        <a href="{{ route('laporan.detail', $scan) }}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1e2d4a] text-xs text-[#94a3b8] hover:bg-[#2a3a5c] transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg> Lihat Laporan Lengkap</a>
-        <a href="{{ route('laporan.pdf', $scan) }}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1e2d4a] text-xs text-[#94a3b8] hover:bg-[#2a3a5c] transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Unduh PDF</a>
+    {{-- Action Buttons --}}
+    <div class="glitch-container mt-4 mb-2">
+        <button @click="$dispatch('open-ai-chat')" class="glitch-radio-wrapper active bg-transparent border-0 p-0 text-left cursor-pointer" style="outline: none;">
+            <div class="glitch-btn">
+                Tanya AI<span aria-hidden="">_</span>
+                <span class="glitch-btn__glitch" aria-hidden="">_Tanya_AI_</span>
+                <label class="glitch-number">ai</label>
+            </div>
+        </button>
+        <a href="{{ route('laporan.pdf', $scan) }}" class="glitch-radio-wrapper">
+            <div class="glitch-btn">
+                Unduh PDF<span aria-hidden=""></span>
+                <span class="glitch-btn__glitch" aria-hidden="">_PDF_⬇️</span>
+                <label class="glitch-number">r2</label>
+            </div>
+        </a>
     </div>
 </div>
+
+<style>
+.glitch-container {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+}
+
+.glitch-radio-wrapper {
+  position: relative;
+  height: 38px;
+  min-width: 140px;
+  margin: 3px;
+  display: block;
+  text-decoration: none;
+}
+
+.glitch-btn {
+  --primary: #ff184c;
+  --shadow-primary: #fded00;
+  --color: white;
+  --font-size: 9px;
+  --shadow-primary-hue: 180;
+  --shadow-secondary-hue: 60;
+  --shadow-secondary: hsl(var(--shadow-secondary-hue), 90%, 60%);
+  --clip: polygon(11% 0, 95% 0, 100% 25%, 90% 90%, 95% 90%, 85% 90%, 85% 100%, 7% 100%, 0 80%);
+  --border: 5px;
+  --shimmy-distance: 5;
+  --clip-one: polygon(0 2%, 100% 2%, 100% 95%, 95% 95%, 95% 90%, 85% 90%, 85% 95%, 8% 95%, 0 70%);
+  --clip-two: polygon(0 78%, 100% 78%, 100% 100%, 95% 100%, 95% 90%, 85% 90%, 85% 100%, 8% 100%, 0 78%);
+  --clip-three: polygon(0 44%, 100% 44%, 100% 54%, 95% 54%, 95% 54%, 85% 54%, 85% 54%, 8% 54%, 0 54%);
+  --clip-four: polygon(0 0, 100% 0, 100% 0, 95% 0, 95% 0, 85% 0, 85% 0, 8% 0, 0 0);
+  --clip-five: polygon(0 0, 100% 0, 100% 0, 95% 0, 95% 0, 85% 0, 85% 0, 8% 0, 0 0);
+  --clip-six: polygon(0 40%, 100% 40%, 100% 85%, 95% 85%, 95% 85%, 85% 85%, 85% 85%, 8% 85%, 0 70%);
+  --clip-seven: polygon(0 63%, 100% 63%, 100% 80%, 95% 80%, 95% 80%, 85% 80%, 85% 80%, 8% 80%, 0 70%);
+  color: var(--color);
+  text-transform: uppercase;
+  font-size: var(--font-size);
+  letter-spacing: 3px;
+  position: relative;
+  font-weight: 900;
+  width: 100%;
+  height: 100%;
+  line-height: 38px;
+  text-align: center;
+  transition: background 0.2s, 0.3s;
+}
+
+.glitch-radio-wrapper.active .glitch-btn {
+  --primary: #8B00FF;
+  --shadow-primary: #00e572;
+}
+
+.glitch-radio-wrapper:hover .glitch-btn {
+  --primary: #cc133c;
+  --font-size: 11px;
+}
+
+.glitch-btn:after, .glitch-btn:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  clip-path: var(--clip);
+  z-index: -1;
+}
+
+.glitch-btn:before {
+  background: var(--shadow-primary);
+  transform: translate(var(--border), 0);
+}
+
+.glitch-btn:after {
+  background: var(--primary);
+}
+
+.glitch-btn__glitch {
+  position: absolute;
+  top: calc(var(--border) * -1);
+  left: calc(var(--border) * -1);
+  right: calc(var(--border) * -1);
+  bottom: calc(var(--border) * -1);
+  background: var(--shadow-primary);
+  text-shadow: 2px 2px var(--shadow-primary), -2px -2px var(--shadow-secondary);
+  clip-path: var(--clip);
+  animation: glitch-anim 2s infinite;
+  display: none;
+}
+
+.glitch-radio-wrapper:hover .glitch-btn__glitch {
+  display: block;
+}
+
+.glitch-radio-wrapper.active .glitch-btn__glitch {
+  display: block;
+  animation: glitch-anim 5s infinite;
+}
+
+.glitch-btn__glitch:before {
+  content: '';
+  position: absolute;
+  top: calc(var(--border) * 1);
+  right: calc(var(--border) * 1);
+  bottom: calc(var(--border) * 1);
+  left: calc(var(--border) * 1);
+  clip-path: var(--clip);
+  background: var(--primary);
+  z-index: -1;
+}
+
+@keyframes glitch-anim {
+  0% { clip-path: var(--clip-one); }
+  2%, 8% { clip-path: var(--clip-two); transform: translate(calc(var(--shimmy-distance) * -1%), 0); }
+  6% { clip-path: var(--clip-two); transform: translate(calc(var(--shimmy-distance) * 1%), 0); }
+  9% { clip-path: var(--clip-two); transform: translate(0, 0); }
+  10% { clip-path: var(--clip-three); transform: translate(calc(var(--shimmy-distance) * 1%), 0); }
+  13% { clip-path: var(--clip-three); transform: translate(0, 0); }
+  14%, 21% { clip-path: var(--clip-four); transform: translate(calc(var(--shimmy-distance) * 1%), 0); }
+  25% { clip-path: var(--clip-five); transform: translate(calc(var(--shimmy-distance) * 1%), 0); }
+  30% { clip-path: var(--clip-five); transform: translate(calc(var(--shimmy-distance) * -1%), 0); }
+  35%, 45% { clip-path: var(--clip-six); transform: translate(calc(var(--shimmy-distance) * -1%)); }
+  40% { clip-path: var(--clip-six); transform: translate(calc(var(--shimmy-distance) * 1%)); }
+  50% { clip-path: var(--clip-six); transform: translate(0, 0); }
+  55% { clip-path: var(--clip-seven); transform: translate(calc(var(--shimmy-distance) * 1%), 0); }
+  60% { clip-path: var(--clip-seven); transform: translate(0, 0); }
+  31%, 61%, 100% { clip-path: var(--clip-four); }
+}
+
+.glitch-number {
+  background: var(--shadow-primary);
+  color: #323232;
+  font-size: 5.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  position: absolute;
+  width: 15px;
+  height: 6px;
+  top: 0;
+  right: 5%;
+  line-height: 6.2px;
+}
+</style>
 @endsection

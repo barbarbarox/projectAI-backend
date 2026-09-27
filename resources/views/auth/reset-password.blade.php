@@ -17,9 +17,7 @@
     <div class="relative w-full max-w-md">
         <div class="text-center mb-8">
             <a href="{{ route('beranda') }}" class="inline-flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00d4ff] to-[#7c3aed] flex items-center justify-center shadow-lg shadow-[#00d4ff]/20">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                </div>
+                <img src="{{ asset('logo-redsim1:1.svg') }}" alt="RedSim Logo" class="w-12 h-12 rounded-xl shadow-lg shadow-[#00d4ff]/20 object-contain">
             </a>
             <h2 class="mt-4 text-2xl font-bold text-white">Atur Ulang Kata Sandi</h2>
             <p class="mt-2 text-sm text-[#94a3b8]">Silakan buat kata sandi baru untuk akun Anda.</p>
@@ -39,7 +37,31 @@
                 
                 {{-- Alpine.js block untuk evaluasi kekuatan password --}}
                 <div x-data="passwordStrength()">
-                    <label for="password" class="block text-sm font-medium text-[#94a3b8] mb-2">Kata Sandi Baru</label>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="password" class="block text-sm font-medium text-[#94a3b8]">Kata Sandi Baru</label>
+                        <button type="button" @click="generatePassword()" class="text-xs text-[#00d4ff] hover:text-[#00b0d4] flex items-center gap-1 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                            Generate Password
+                        </button>
+                    </div>
+                    
+                    {{-- Modal/Section Generator --}}
+                    <div x-show="showGenerator" class="mb-4 p-4 bg-[#1e2d4a]/50 border border-[#00d4ff]/30 rounded-xl space-y-3" style="display: none;">
+                        <p class="text-sm text-[#94a3b8]">Password Acak:</p>
+                        <div class="flex items-center gap-2">
+                            <input type="text" readonly x-model="generatedPassword" class="w-full bg-[#0a0e1a] border border-[#1e2d4a] rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none">
+                            <button type="button" @click="copyPassword()" class="px-3 py-2 bg-[#5227ff] rounded-lg text-white text-sm hover:bg-[#431ce3] transition-colors whitespace-nowrap">Copy</button>
+                        </div>
+                        <label class="flex items-center gap-2 text-sm text-[#94a3b8] mt-2 cursor-pointer">
+                            <input type="checkbox" x-model="copied" class="rounded bg-[#0a0e1a] border-[#1e2d4a] text-[#5227ff] focus:ring-[#5227ff]">
+                            Saya sudah copy passwordnya
+                        </label>
+                        <button type="button" @click="usePassword()" :disabled="!copied"
+                                class="w-full mt-2 py-2 rounded-lg text-white text-sm transition-colors font-medium disabled:opacity-50"
+                                :class="copied ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-600 cursor-not-allowed'">
+                            Gunakan password ini
+                        </button>
+                    </div>
                     <input type="password" id="password" name="password" required x-model="password" @input="checkStrength" autofocus
                            class="w-full px-4 py-3 rounded-xl bg-[#0a0e1a] border border-[#1e2d4a] text-white placeholder-[#475569] focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff]/50 focus:outline-none transition-colors"
                            placeholder="Minimal 8 karakter, kombinasi kompleks">
@@ -98,6 +120,41 @@
                 hasMixedCase: false,
                 hasNumber: false,
                 hasSymbol: false,
+                showGenerator: false,
+                generatedPassword: '',
+                copied: false,
+                
+                generatePassword() {
+                    const length = 12;
+                    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
+                    let retVal = "";
+                    do {
+                        retVal = "";
+                        for (let i = 0, n = charset.length; i < length; ++i) {
+                            retVal += charset.charAt(Math.floor(Math.random() * n));
+                        }
+                    } while (!(
+                        retVal.length >= 8 &&
+                        /[a-z]/.test(retVal) &&
+                        /[A-Z]/.test(retVal) &&
+                        /[0-9]/.test(retVal) &&
+                        /[^A-Za-z0-9]/.test(retVal)
+                    ));
+                    this.generatedPassword = retVal;
+                    this.showGenerator = true;
+                    this.copied = false;
+                },
+                
+                copyPassword() {
+                    navigator.clipboard.writeText(this.generatedPassword);
+                },
+                
+                usePassword() {
+                    this.password = this.generatedPassword;
+                    document.getElementById('password_confirmation').value = this.generatedPassword;
+                    this.checkStrength();
+                    this.showGenerator = false;
+                },
                 
                 checkStrength() {
                     let pw = this.password;

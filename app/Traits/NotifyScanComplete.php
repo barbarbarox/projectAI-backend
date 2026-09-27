@@ -3,7 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Scan;
-use App\Services\FonnteService;
+use App\Services\WhatsappService;
 use Illuminate\Support\Facades\Log;
 
 trait NotifyScanComplete
@@ -17,8 +17,8 @@ trait NotifyScanComplete
             $user = $scan->user;
             if (!$user || empty($user->phone)) return;
 
-            $fonnte = app(FonnteService::class);
-            $fonnte->sendScanComplete(
+            $wa = app(WhatsappService::class);
+            $wa->sendScanComplete(
                 $user->phone,
                 $user->name,
                 $scan->target ?? 'Unknown',

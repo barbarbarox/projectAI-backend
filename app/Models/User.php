@@ -26,6 +26,8 @@ class User extends Authenticatable
         'last_scan_reset',
         'tier',
         'is_verified',
+        'verification_token',
+        'verification_expires_at',
         'last_login',
         'otp_code',
         'otp_expires_at',
@@ -35,6 +37,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'otp_code',
+        'verification_token',
     ];
 
     protected function casts(): array
@@ -46,6 +49,7 @@ class User extends Authenticatable
             'last_login' => 'datetime',
             'last_seen_at' => 'datetime',
             'otp_expires_at' => 'datetime',
+            'verification_expires_at' => 'datetime',
             'is_verified' => 'boolean',
         ];
     }

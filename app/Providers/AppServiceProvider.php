@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
             $geminiService = app(\App\Services\GeminiService::class);
             $availableModels = $geminiService->getAvailableModels($userId);
             
-            $userConfig = \App\Models\UserAiConfig::getActiveForUser($userId);
+            $userConfig = $userId ? \App\Models\UserAiConfig::getActiveForUser($userId) : null;
             $adminConfig = \App\Models\AiConfiguration::getActiveWithModel();
             
             $defaultModelId = $userConfig ? $userConfig->selected_model : ($adminConfig->selected_model ?? '');

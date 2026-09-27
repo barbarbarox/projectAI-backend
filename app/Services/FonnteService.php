@@ -122,5 +122,22 @@ class FonnteService
 
         return $this->sendMessage($phone, $message);
     }
+
+    /**
+     * Kirim link verifikasi akun via WhatsApp.
+     */
+    public function sendVerificationLink(string $phone, string $userName, string $verificationUrl): bool
+    {
+        $message = "✅ *Verifikasi Akun RedSim*\n\n"
+            . "Halo *{$userName}*,\n\n"
+            . "Terima kasih telah mendaftar di RedSim!\n"
+            . "Klik link berikut untuk mengaktifkan akun Anda:\n\n"
+            . "{$verificationUrl}\n\n"
+            . "⏰ Link ini berlaku selama *30 menit*.\n"
+            . "Jika Anda tidak merasa mendaftar, abaikan pesan ini.\n\n"
+            . "— Tim RedSim";
+
+        return $this->sendMessage($phone, $message);
+    }
 }
 

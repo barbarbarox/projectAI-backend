@@ -5,7 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Analisis\KodeController;
 use App\Http\Controllers\Analisis\UrlController;
-use App\Http\Controllers\Analisis\ZipController;
+
 use App\Http\Controllers\Analisis\LogController;
 use App\Http\Controllers\EdukasiController;
 use App\Http\Controllers\LaporanController;
@@ -34,6 +34,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/reset-password/{token}', [AuthController::class, 'formResetPassword'])->name('reset-password');
     Route::post('/reset-password/{token}', [AuthController::class, 'prosesResetPassword'])->name('reset-password.proses');
 });
+
+// Verifikasi Akun via Link WA (harus bisa diakses tanpa login)
+Route::get('/verifikasi-akun/{token}', [AuthController::class, 'verifikasiAkun'])->name('verifikasi-akun');
+Route::post('/verifikasi/kirim-ulang', [AuthController::class, 'kirimUlangVerifikasi'])->name('verifikasi.kirim-ulang');
 
 // Public Edukasi
 Route::get('/edukasi/leaderboard', [EdukasiController::class, 'leaderboard']);
@@ -77,8 +81,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/analisis/url', [UrlController::class, 'proses']);
         Route::get('/analisis/url/generate-verifikasi', [UrlController::class, 'generateVerifikasi'])->name('analisis.url.generate-verifikasi');
 
-        Route::get('/analisis/zip', [ZipController::class, 'form'])->name('analisis.zip');
-        Route::post('/analisis/zip', [ZipController::class, 'proses']);
+
 
         Route::get('/analisis/log', [LogController::class, 'form'])->name('analisis.log');
         Route::post('/analisis/log', [LogController::class, 'proses']);
@@ -108,8 +111,9 @@ Route::middleware('auth')->group(function () {
     // Edukasi
     Route::get('/edukasi', [EdukasiController::class, 'index'])->name('edukasi.index');
     Route::get('/edukasi/ensiklopedia', [EdukasiController::class, 'ensiklopedia']);
-    Route::get('/edukasi/tantangan', [EdukasiController::class, 'tantangan']);
-    Route::post('/edukasi/tantangan/{tantangan}/jawab', [EdukasiController::class, 'jawab']);
+    Route::get('/edukasi/tantangan', [EdukasiController::class, 'tantangan'])->name('edukasi.tantangan');
+    Route::get('/edukasi/tantangan/{tantangan}', [EdukasiController::class, 'detailTantangan'])->name('edukasi.tantangan.detail');
+    Route::post('/edukasi/tantangan/{tantangan}/jawab', [EdukasiController::class, 'jawab'])->name('edukasi.tantangan.jawab');
 
     // Admin
     Route::middleware('cek.admin')->prefix('admin')->group(function () {
@@ -131,6 +135,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/tantangan/{tantangan}', [\App\Http\Controllers\AdminTantanganController::class, 'update'])->name('admin.tantangan.update');
         Route::delete('/tantangan/{tantangan}', [\App\Http\Controllers\AdminTantanganController::class, 'destroy'])->name('admin.tantangan.destroy');
         Route::post('/tantangan/generate-ai', [\App\Http\Controllers\AdminTantanganController::class, 'generateAi'])->name('admin.tantangan.generate-ai');
+        Route::get('/tantangan/random-topik', [\App\Http\Controllers\AdminTantanganController::class, 'randomTopik'])->name('admin.tantangan.random-topik');
 
         // Manajemen Pengguna (Approval)
         Route::get('/pengguna', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users.index');
@@ -139,9 +144,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/pengguna/{user}/kirim-notifikasi', [\App\Http\Controllers\AdminUserController::class, 'resendNotification'])->name('admin.users.resendNotification');
         Route::delete('/pengguna/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
 
-        Route::get('/chat-test', [\App\Http\Controllers\ChatController::class, 'index'])->name('admin.chat-test');
-        Route::post('/chat-test', [\App\Http\Controllers\ChatController::class, 'chat']);
-        Route::get('/rag-debug', [\App\Http\Controllers\ChatController::class, 'ragDebug'])->name('admin.rag-debug');
+        // Konfigurasi WhatsApp (OpenWA)
+        Route::get('/wa-settings', [\App\Http\Controllers\AdminUserController::class, 'waSettings'])->name('admin.wa-settings');
+        Route::post('/wa-settings', [\App\Http\Controllers\AdminUserController::class, 'updateWaSettings'])->name('admin.wa-settings.update');
+        Route::post('/wa-settings/test', [\App\Http\Controllers\AdminUserController::class, 'testWaMessage'])->name('admin.wa-settings.test');
+        Route::get('/wa-settings/status', [\App\Http\Controllers\AdminUserController::class, 'checkWaStatus'])->name('admin.wa-settings.status');
+
     });
 
     Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');

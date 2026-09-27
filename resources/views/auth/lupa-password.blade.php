@@ -16,9 +16,7 @@
     <div class="relative w-full max-w-md">
         <div class="text-center mb-8">
             <a href="{{ route('beranda') }}" class="inline-flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00d4ff] to-[#7c3aed] flex items-center justify-center shadow-lg shadow-[#00d4ff]/20">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                </div>
+                <img src="{{ asset('logo-redsim1:1.svg') }}" alt="RedSim Logo" class="w-12 h-12 rounded-xl shadow-lg shadow-[#00d4ff]/20 object-contain">
             </a>
             <h2 class="mt-4 text-2xl font-bold text-white">Lupa Kata Sandi</h2>
             <p class="mt-2 text-sm text-[#94a3b8]">Masukkan nomor WhatsApp Anda. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi.</p>

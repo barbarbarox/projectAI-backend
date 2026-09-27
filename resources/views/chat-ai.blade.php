@@ -1,22 +1,24 @@
 @extends('layouts.app')
-@section('title', 'Chat dengan AI RedSim')
-@section('header', 'Chat dengan AI RedSim')
-@section('subheader', 'Berkomunikasi dengan AI yang terhubung dengan basis pengetahuan RedSim')
+@section('title', 'AI Chat — RedSim')
+@section('header', 'AI Security Assistant')
+@section('subheader', 'Berkomunikasi dengan AI yang terhubung dengan basis pengetahuan keamanan RedSim')
 
 @section('content')
-<div class="flex flex-col h-[calc(100vh-12rem)] bg-[#0f1629] border border-[#1e2d4a] rounded-2xl overflow-hidden" x-data="chatApp()">
+<div class="flex flex-col h-[calc(100vh-12rem)] rounded-xl overflow-hidden" style="background:#0f172a;border:1px solid #1e293b;" x-data="chatApp()">
     
     {{-- Status Banner --}}
-    <div class="bg-[#1e2d4a]/50 border-b border-[#1e2d4a] px-6 py-3 flex items-center justify-between">
+    <div class="px-5 py-3 flex items-center justify-between" style="background:rgba(6,182,212,0.05);border-bottom:1px solid #1e293b;">
         <div class="flex items-center gap-3">
-            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span class="text-sm font-medium text-green-400">Sistem AI Siap</span>
+            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+            <span class="text-sm font-semibold" style="color:#22d3ee;">AI Security Assistant</span>
+            <span class="badge-ai">RAG Aktif</span>
         </div>
-        <div class="flex items-center gap-4">
-
-            <div class="text-xs text-[#94a3b8] flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Mode RAG Aktif
+        <div class="flex items-center gap-3">
+            <div class="text-xs flex items-center gap-1.5" style="color:#64748b;">
+                <svg class="w-3.5 h-3.5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                Terhubung ke basis pengetahuan keamanan
             </div>
         </div>
     </div>
@@ -25,12 +27,18 @@
     <div class="flex-1 overflow-y-auto p-6 space-y-6" id="chat-container">
         {{-- Welcome Message --}}
         <div class="flex gap-4">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#00d4ff] to-[#7c3aed] flex items-center justify-center shrink-0">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#06b6d4,#3b82f6);">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
             </div>
-            <div class="bg-[#1e2d4a]/30 border border-[#1e2d4a] rounded-2xl rounded-tl-sm px-5 py-4 max-w-[80%]">
-                <p class="text-sm leading-relaxed text-[#e2e8f0]">
-                    Halo! Saya adalah AI Assistant RedSim. Saya terhubung dengan basis pengetahuan keamanan sistem. Silakan tanyakan apapun terkait keamanan, kerentanan, atau status sistem.
+            <div class="rounded-2xl rounded-tl-sm px-5 py-4 max-w-[82%]" style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.15);">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-xs font-semibold" style="color:#22d3ee;">RedSim AI</span>
+                    <span class="badge-ai">AI</span>
+                </div>
+                <p class="text-sm leading-relaxed" style="color:#e2e8f0;">
+                    Halo! Saya adalah AI Assistant RedSim. Saya terhubung dengan basis pengetahuan keamanan sistem. Silakan tanyakan apapun terkait keamanan, kerentanan, atau hasil pemindaian.
                 </p>
             </div>
         </div>
@@ -39,7 +47,7 @@
         <template x-for="(msg, index) in messages" :key="index">
             <div class="flex gap-4" :class="msg.role === 'user' ? 'flex-row-reverse' : ''">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                     :class="msg.role === 'user' ? 'bg-[#1e2d4a]' : 'bg-gradient-to-br from-[#00d4ff] to-[#7c3aed]'">
+                     :style="msg.role === 'user' ? 'background:#0f172a;border:1px solid #1e293b;' : 'background:linear-gradient(135deg,#06b6d4,#3b82f6);'">
                     <template x-if="msg.role === 'user'">
                         <span class="text-sm font-bold">{{ substr(Auth::user()->name, 0, 1) }}</span>
                     </template>
@@ -48,14 +56,16 @@
                     </template>
                 </div>
                 <div class="rounded-2xl px-5 py-4 max-w-[80%] break-words"
-                     :class="msg.role === 'user' ? 'bg-[#00d4ff]/10 border border-[#00d4ff]/20 text-white rounded-tr-sm' : 'bg-[#1e2d4a]/30 border border-[#1e2d4a] text-[#e2e8f0] rounded-tl-sm'">
+                     :style="msg.role === 'user' ? 'background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.2);color:#f1f5f9;border-radius:1rem 0.25rem 1rem 1rem;' : 'background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.15);color:#e2e8f0;border-radius:0.25rem 1rem 1rem 1rem;'">
                     
                     <div class="text-sm leading-relaxed md-content" x-html="formatMessage(msg.content, msg.role)"></div>
                     
                     <template x-if="msg.role === 'ai' && msg.ragUsed">
-                        <div class="mt-3 pt-3 border-t border-[#1e2d4a]/50 text-xs text-[#00d4ff] flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Referensi RAG Digunakan
+                        <div class="mt-3 pt-2 flex items-center gap-1.5" style="border-top:1px solid rgba(6,182,212,0.15);">
+                            <svg class="w-3 h-3" style="color:#22d3ee;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span class="text-[10px] font-semibold" style="color:#22d3ee;">Referensi RAG Digunakan</span>
                         </div>
                     </template>
                 </div>
@@ -64,38 +74,57 @@
 
         {{-- Loading indicator --}}
         <div class="flex gap-4" x-show="isLoading" style="display: none;">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#00d4ff] to-[#7c3aed] flex items-center justify-center shrink-0">
-                <svg class="w-6 h-6 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#06b6d4,#3b82f6);">
+                <svg class="w-5 h-5 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
             </div>
-            <div class="bg-[#1e2d4a]/30 border border-[#1e2d4a] rounded-2xl rounded-tl-sm px-5 py-4">
+            <div class="rounded-2xl rounded-tl-sm px-5 py-4" style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.15);">
                 <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 rounded-full bg-[#00d4ff] animate-bounce" style="animation-delay: 0s"></div>
-                    <div class="w-2 h-2 rounded-full bg-[#00d4ff] animate-bounce" style="animation-delay: 0.2s"></div>
-                    <div class="w-2 h-2 rounded-full bg-[#00d4ff] animate-bounce" style="animation-delay: 0.4s"></div>
+                    <div class="w-2 h-2 rounded-full animate-bounce" style="background:#06b6d4;animation-delay:0s"></div>
+                    <div class="w-2 h-2 rounded-full animate-bounce" style="background:#06b6d4;animation-delay:0.18s"></div>
+                    <div class="w-2 h-2 rounded-full animate-bounce" style="background:#06b6d4;animation-delay:0.36s"></div>
                 </div>
             </div>
         </div>
     </div>
 
     {{-- Input Area --}}
-    <div class="p-4 bg-[#0a0e1a] border-t border-[#1e2d4a]">
+    <div class="p-4" style="background:#020609;border-top:1px solid #1e293b;">
         <form @submit.prevent="sendMessage" class="relative">
-            <input type="text" x-model="input" placeholder="Tanyakan sesuatu..." :disabled="isLoading"
-                   class="w-full bg-[#0f1629] border border-[#1e2d4a] rounded-xl pl-4 pr-12 py-3.5 text-sm text-white focus:outline-none focus:border-[#00d4ff]/50 focus:ring-1 focus:ring-[#00d4ff]/50 transition-all disabled:opacity-50">
-            
+            <input type="text" x-model="input"
+                   placeholder="Tanyakan tentang keamanan, kerentanan, atau hasil scan..."
+                   :disabled="isLoading"
+                   class="w-full pl-4 pr-12 py-3.5 text-sm text-white placeholder-slate-600 rounded-xl transition-all duration-200 disabled:opacity-50"
+                   style="background:#000;border:1px solid #1e293b;font-family:'JetBrains Mono',monospace;outline:none;"
+                   onfocus="this.style.borderColor='rgba(6,182,212,0.5)';this.style.boxShadow='0 0 0 3px rgba(6,182,212,0.1)'"
+                   onblur="this.style.borderColor='#1e293b';this.style.boxShadow='none'">
             <button type="submit" :disabled="!input.trim() || isLoading"
-                    class="absolute right-2 top-2 p-1.5 rounded-lg bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] text-white hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                    class="absolute right-2 top-2 p-2 rounded-lg text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style="background:linear-gradient(135deg,#06b6d4,#3b82f6);"
+                    :style="(input.trim() && !isLoading) ? 'box-shadow:0 0 10px rgba(6,182,212,0.35);' : ''">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
             </button>
         </form>
         <div class="mt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <select x-model="selectedModel" class="px-3 py-1.5 rounded-lg bg-[#0f1629] border border-[#1e2d4a] text-xs text-[#94a3b8] hover:text-white focus:text-white focus:border-[#00d4ff] focus:outline-none transition-colors max-w-full sm:max-w-[300px] w-full sm:w-auto">
+            <select x-model="selectedModel"
+                    class="px-3 py-1.5 rounded-lg text-xs transition-colors max-w-full sm:max-w-[320px] w-full sm:w-auto"
+                    style="background:#0f172a;border:1px solid #1e293b;color:#64748b;outline:none;"
+                    onfocus="this.style.borderColor='rgba(6,182,212,0.4)'"
+                    onblur="this.style.borderColor='#1e293b'">
                 <option value="">{{ $defaultModelName ?? 'Gunakan Model Default' }}</option>
                 @foreach($availableModels as $m)
                     <option value="{{ $m['id'] }}">{{ $m['name'] }} ({{ $m['provider'] }})</option>
                 @endforeach
             </select>
-            <span class="text-[10px] text-[#64748b]">AI mungkin memberikan jawaban yang tidak akurat. Verifikasi info penting.</span>
+            <span class="text-[10px] flex items-center gap-1" style="color:#475569;">
+                <svg class="w-3 h-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                AI mungkin memberikan jawaban yang tidak akurat. Verifikasi info penting.
+            </span>
         </div>
     </div>
 </div>
@@ -125,16 +154,16 @@
 .md-content li { margin-bottom: 0.35rem; line-height: 1.6; }
 .md-content li > ul, .md-content li > ol { margin-top: 0.25rem; margin-bottom: 0; }
 .md-content li > p { margin-bottom: 0.25rem; }
-.md-content a { color: #00d4ff; text-decoration: underline; text-underline-offset: 2px; }
+.md-content a { color: #22d3ee; text-decoration: underline; text-underline-offset: 2px; }
 .md-content a:hover { color: #38bdf8; }
 .md-content img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0; border: 1px solid #1e2d4a; }
-.md-content blockquote { border-left: 3px solid #00d4ff; margin: 1rem 0; padding: 0.625rem 1rem; background: rgba(0,212,255,0.05); border-radius: 0 0.375rem 0.375rem 0; color: #94a3b8; }
+.md-content blockquote { border-left: 3px solid #06b6d4; margin: 1rem 0; padding: 0.625rem 1rem; background: rgba(6,182,212,0.05); border-radius: 0 0.375rem 0.375rem 0; color: #94a3b8; }
 .md-content blockquote p { margin-bottom: 0.25rem; }
 .md-content blockquote p:last-child { margin-bottom: 0; }
 .md-content hr { border: none; border-top: 1px solid #334155; margin: 1.5rem 0; }
-.md-content code:not(pre code) { background: #1e293b; padding: 0.15em 0.4em; border-radius: 4px; font-family: 'Fira Code', ui-monospace, SFMono-Regular, monospace; font-size: 0.85em; color: #7dd3fc; border: 1px solid #334155; }
-.md-content pre code { background: none !important; border: none !important; padding: 0 !important; color: inherit !important; font-size: 0.8125rem !important; line-height: 1.6; font-family: 'Fira Code', ui-monospace, SFMono-Regular, monospace; }
-.md-content pre { background: #0d1117; margin: 0; padding: 1rem 1.25rem; overflow-x: auto; border-radius: 0 0 0.625rem 0.625rem; }
+.md-content code:not(pre code) { background: #000; padding: 0.15em 0.4em; border-radius: 4px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.85em; color: #4ade80; border: 1px solid #1a1a1a; }
+.md-content pre code { background: none !important; border: none !important; padding: 0 !important; color: inherit !important; font-size: 0.8125rem !important; line-height: 1.6; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.md-content pre { background: #000; margin: 0; padding: 1rem 1.25rem; overflow-x: auto; border-radius: 0 0 0.625rem 0.625rem; }
 .md-code-block { margin: 1rem 0; border-radius: 0.625rem; overflow: hidden; border: 1px solid #30363d; background: #0d1117; }
 .md-code-header { display: flex; align-items: center; justify-content: space-between; background: #161b22; padding: 0.5rem 1rem; border-bottom: 1px solid #30363d; }
 .md-code-lang { font-size: 0.6875rem; color: #8b949e; font-family: monospace; text-transform: uppercase; letter-spacing: 0.05em; }

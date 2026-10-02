@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 
 // Halaman publik
 Route::get('/', fn() => view('landing'))->name('beranda');
+Route::get('/privacy-policy', fn() => view('legal.privacy-policy'))->name('privacy-policy');
+Route::get('/terms', fn() => view('legal.terms'))->name('terms');
+
 
 // Auth
 Route::middleware('guest')->group(function () {

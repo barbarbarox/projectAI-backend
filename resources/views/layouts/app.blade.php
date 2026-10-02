@@ -10,11 +10,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/magic-bento.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="min-h-screen antialiased" style="background-color:#020609;color:#f1f5f9;" x-data="{ sidebarOpen: true }">
+<body class="min-h-screen antialiased" style="background-color:#020609;color:#f1f5f9;"
+    x-data="{
+        sidebarOpen: window.innerWidth >= 1024,
+        isMobile: window.innerWidth < 1024
+    }"
+    @resize.window="isMobile = window.innerWidth < 1024; if (!isMobile) sidebarOpen = true">
     <div class="flex min-h-screen">
 
         {{-- ══════════════ SIDEBAR ══════════════ --}}
+        {{-- Mobile Overlay Backdrop --}}
+        <div x-show="sidebarOpen && isMobile"
+             x-transition:enter="transition-opacity ease-in-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in-out duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="sidebarOpen = false"
+             class="fixed inset-0 z-40 lg:hidden"
+             style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);"
+             x-cloak></div>
+
         <aside class="fixed left-0 top-0 h-full w-64 flex flex-col z-50 transition-transform duration-300"
                style="background-color:#080c18;border-right:1px solid #1e293b;"
                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
@@ -300,7 +319,7 @@
         </aside>
 
         {{-- ══════════════ MAIN CONTENT ══════════════ --}}
-        <main class="flex-1 ml-64 min-h-screen">
+        <main class="flex-1 min-h-screen transition-all duration-300" :class="sidebarOpen && !isMobile ? 'lg:ml-64' : 'ml-0'">
 
             {{-- Top Bar --}}
             <header class="sticky top-0 z-40 px-6 py-3.5" style="background:rgba(2,6,9,0.85);backdrop-filter:blur(20px);border-bottom:1px solid #1e293b;">

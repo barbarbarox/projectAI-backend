@@ -119,6 +119,17 @@ Route::middleware('auth')->group(function () {
         // Fase D: Threat Hunt by CVE
         Route::get('/threat-hunt', [\App\Http\Controllers\Analisis\ThreatHuntController::class, 'index'])->name('threat-hunt.index');
         Route::post('/threat-hunt/execute', [\App\Http\Controllers\Analisis\ThreatHuntController::class, 'execute'])->name('threat-hunt.execute');
+
+        // Fase B.2: Asset Groups & Multi-Target ASM
+        Route::get('/asset-groups', [\App\Http\Controllers\AssetGroupController::class, 'index'])->name('asset-groups.index');
+        Route::get('/asset-groups/tambah', [\App\Http\Controllers\AssetGroupController::class, 'create'])->name('asset-groups.create');
+        Route::post('/asset-groups', [\App\Http\Controllers\AssetGroupController::class, 'store'])->name('asset-groups.store');
+        Route::get('/asset-groups/{assetGroup}', [\App\Http\Controllers\AssetGroupController::class, 'show'])->name('asset-groups.show');
+        Route::put('/asset-groups/{assetGroup}', [\App\Http\Controllers\AssetGroupController::class, 'update'])->name('asset-groups.update');
+        Route::delete('/asset-groups/{assetGroup}', [\App\Http\Controllers\AssetGroupController::class, 'destroy'])->name('asset-groups.destroy');
+        Route::post('/asset-groups/{assetGroup}/targets', [\App\Http\Controllers\AssetGroupController::class, 'addTarget'])->name('asset-groups.add-target');
+        Route::delete('/asset-groups/targets/{target}', [\App\Http\Controllers\AssetGroupController::class, 'removeTarget'])->name('asset-groups.remove-target');
+        Route::post('/asset-groups/{assetGroup}/batch-scan', [\App\Http\Controllers\AssetGroupController::class, 'batchScan'])->name('asset-groups.batch-scan');
     });
 
     // Domain verification routes (no rate limit needed)

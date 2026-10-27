@@ -220,6 +220,9 @@ class ScanBiasaService
         if (empty($screenshotUrl) && !empty($techStackStructured['screenshot'])) {
             $screenshotUrl = $techStackStructured['screenshot'];
         }
+        if (empty($screenshotUrl)) {
+            $screenshotUrl = app(\App\Services\VisualEvidenceService::class)->getScreenshotUrl($url);
+        }
 
         return [
             'skor_reputasi' => $skorReputasi,

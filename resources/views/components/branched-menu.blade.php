@@ -50,6 +50,15 @@
                     'badge_class' => 'bg-red-500/20 text-red-400 border border-red-500/30 font-bold',
                 ],
                 [
+                    'value' => 'asset-groups.index',
+                    'label' => 'Grup Aset (ASM)',
+                    'url' => route('asset-groups.index'),
+                    'active' => request()->routeIs('asset-groups.*'),
+                    'icon' => 'server-group',
+                    'badge' => 'ASM',
+                    'badge_class' => 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold',
+                ],
+                [
                     'value' => 'analisis.kode',
                     'label' => 'Analisis Kode',
                     'url' => route('analisis.kode'),
@@ -315,6 +324,8 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
                                     @elseif($kid['icon'] === 'radar')
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm0 4a6 6 0 106 6 6 6 0 00-6-6zm0 4a2 2 0 102 2 2 2 0 00-2-2zm0-8v2m0 16v2m-10-10h2m16 0h2"/></svg>
+                                    @elseif($kid['icon'] === 'server-group')
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                                     @elseif($kid['icon'] === 'history')
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                     @elseif($kid['icon'] === 'findings')

@@ -1310,11 +1310,9 @@ class ScanIntensService
             cookieData:   $cookieData
         );
 
-        // Screenshot: prioritaskan URLScan, fallback ke thum.io
-        $screenshotUrl = $techStackStructured['screenshot'] ?? null;
-        if (!$screenshotUrl) {
-            $screenshotUrl = 'https://image.thum.io/get/width/1280/crop/720/noanimate/url/' . urlencode($url);
-        }
+        // Screenshot: VisualEvidenceService (URLScan / ScreenshotOne / thum.io)
+        $urlscanUuid = !empty($urlscanData['task']['uuid']) ? $urlscanData['task']['uuid'] : null;
+        $screenshotUrl = app(\App\Services\VisualEvidenceService::class)->getScreenshotUrl($url, $urlscanUuid);
         // Hapus screenshot dari techStack (simpan terpisah)
         unset($techStackStructured['screenshot']);
 

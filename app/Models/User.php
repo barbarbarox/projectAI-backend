@@ -64,6 +64,11 @@ class User extends Authenticatable
         return $this->hasMany(Insiden::class);
     }
 
+    public function assetGroups(): HasMany
+    {
+        return $this->hasMany(AssetGroup::class);
+    }
+
     public function poinUser(): HasMany
     {
         return $this->hasMany(PoinUser::class);

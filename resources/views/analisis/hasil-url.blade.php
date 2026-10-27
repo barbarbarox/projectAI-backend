@@ -483,7 +483,7 @@
         if (empty($techStackData) && !empty($data['tech_stack_structured'])) {
             $techStackData = $data['tech_stack_structured'];
         }
-        $screenshotEvidence = $data['screenshot_url'] ?? null;
+        $screenshotEvidence = $data['screenshot_url'] ?? ($scan->screenshot_path ?? null);
     @endphp
     @include('components.tech-stack-badges', [
         'techStack'  => $techStackData,

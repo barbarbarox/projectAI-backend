@@ -99,6 +99,7 @@ class ProsesAnalisisURL implements ShouldQueue
                     'selesai_at' => now(),
                 ]);
                 $this->persistSubdomainsAndTakeoverRisks($dataMentah);
+                $this->syncAssetGroupTarget($dataMentah['skor_reputasi'] ?? 50, $dataMentah['verdict'] ?? 'INFORMASI');
                 $this->notifyScanCompleteViaWa($this->scan);
                 return;
             }
@@ -261,6 +262,7 @@ TUGAS;
                 'selesai_at' => now(),
             ]);
 
+            $this->syncAssetGroupTarget($hasilAi['skor_keamanan'] ?? ($dataMentah['skor_reputasi'] ?? 50), $hasilAi['verdict'] ?? null);
             $this->notifyScanCompleteViaWa($this->scan);
 
             // === AUDIT LOG: Scan selesai ===
@@ -540,6 +542,28 @@ TUGAS;
             }
         } catch (\Throwable $e) {
             Log::warning("Gagal menyimpan asset_subdomains: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Selaraskan skor keamanan dan verdict pindaian ke entri AssetGroupTarget jika terdaftar.
+     */
+    protected function syncAssetGroupTarget(int|float $skor, ?string $verdict): void
+    {
+        try {
+            $normalizedUrl = rtrim($this->url, '/');
+            \App\Models\AssetGroupTarget::where('last_scan_id', $this->scan->id)
+                ->orWhere('target_url', $this->url)
+                ->orWhere('target_url', $normalizedUrl)
+                ->orWhere('target_url', $normalizedUrl . '/')
+                ->update([
+                    'last_scan_id'       => $this->scan->id,
+                    'last_scanned_at'    => now(),
+                    'last_skor_keamanan' => (int) round($skor),
+                    'last_verdict'       => $verdict,
+                ]);
+        } catch (\Throwable $e) {
+            Log::warning("Gagal menyelaraskan asset group target untuk {$this->url}: " . $e->getMessage());
         }
     }
 }

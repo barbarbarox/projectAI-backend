@@ -336,7 +336,6 @@ TUGAS;
      */
     public function failed(?\Throwable $exception): void
     {
-        Log::error("Job ProsesAnalisisURL failed(): " . ($exception ? $exception->getMessage() : 'No exception'));
         try {
             \DB::table('scans')->where('id', $this->scan->id)->update([
                 'status' => 'gagal',
@@ -345,7 +344,13 @@ TUGAS;
                 'updated_at' => now(),
             ]);
         } catch (\Throwable $t) {
-            Log::error("Gagal update status scan di failed callback: " . $t->getMessage());
+            // Abaikan jika DB gagal agar tidak menyamarkan error utama
+        }
+
+        try {
+            Log::error("Job ProsesAnalisisURL failed(): " . ($exception ? $exception->getMessage() : 'No exception'));
+        } catch (\Throwable $t) {
+            // Abaikan jika log file tidak bisa dibuka (permission denied)
         }
     }
 

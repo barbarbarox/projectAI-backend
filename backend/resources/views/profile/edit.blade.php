@@ -53,6 +53,8 @@
         </div>
     </div>
 
+
+
     <!-- Informasi Profil -->
     <div class="bg-[#0f1629] rounded-2xl border border-[#1e2d4a] p-8">
         <h3 class="text-lg font-semibold mb-4 text-white">Informasi Profil</h3>

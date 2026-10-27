@@ -11,7 +11,7 @@ class VirusTotalService
 
     public function __construct()
     {
-        $this->apiKey = env('VIRUSTOTAL_API_KEY', '');
+        $this->apiKey = config('services.virustotal.api_key') ?: env('VIRUSTOTAL_API_KEY', '');
     }
 
     /**

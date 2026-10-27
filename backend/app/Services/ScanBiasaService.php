@@ -56,6 +56,11 @@ class ScanBiasaService
             ])->get($url);
 
             $headers = $response->headers();
+            $allHeaders = [];
+            foreach ($headers as $name => $values) {
+                $allHeaders[strtolower($name)] = is_array($values) ? ($values[0] ?? '') : (string) $values;
+            }
+
             $requiredHeaders = [
                 'Content-Security-Policy' => 20,
                 'Strict-Transport-Security' => 20,
@@ -79,13 +84,31 @@ class ScanBiasaService
                 if ($exists) $skor += $poin;
             }
 
+            $sensitiveHeaders = [
+                'server'            => 'Mengekspos software dan versi web server',
+                'x-powered-by'     => 'Mengekspos framework/bahasa backend',
+                'x-aspnet-version' => 'Mengekspos versi ASP.NET',
+                'x-generator'      => 'Mengekspos CMS/generator yang digunakan',
+            ];
+            $exposedHeaders = [];
+            foreach ($sensitiveHeaders as $sh => $desc) {
+                if (isset($allHeaders[$sh])) {
+                    $exposedHeaders[$sh] = [
+                        'nilai'     => $allHeaders[$sh],
+                        'deskripsi' => $desc,
+                    ];
+                }
+            }
+
             return [
                 'skor' => $skor,
                 'headers' => $headerResults,
+                'headers_sensitif' => $exposedHeaders,
+                'semua_headers' => $allHeaders,
             ];
         } catch (\Exception $e) {
             Log::warning('Header analysis gagal: ' . $e->getMessage());
-            return ['skor' => 0, 'headers' => []];
+            return ['skor' => 0, 'headers' => [], 'headers_sensitif' => [], 'semua_headers' => []];
         }
     }
 

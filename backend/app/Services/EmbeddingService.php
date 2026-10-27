@@ -14,8 +14,8 @@ class EmbeddingService
 
     public function __construct()
     {
-        $this->apiToken = env('HUGGINGFACE_API_TOKEN', '');
-        $this->model = env('HUGGINGFACE_MODEL', 'intfloat/multilingual-e5-base');
+        $this->apiToken = config('services.huggingface.api_token') ?: env('HUGGINGFACE_API_TOKEN', '');
+        $this->model = config('services.huggingface.model') ?: env('HUGGINGFACE_MODEL', 'intfloat/multilingual-e5-base');
         $this->baseUrl = "https://api-inference.huggingface.co/pipeline/feature-extraction/{$this->model}";
     }
 

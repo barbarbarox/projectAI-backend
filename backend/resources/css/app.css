@@ -7,29 +7,308 @@
 
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    --color-bg-utama: #0a0e1a;
-    --color-bg-kartu: #0f1629;
-    --color-bg-sidebar: #080c18;
-    --color-border-dim: #1e2d4a;
-    --color-cyan-aksen: #00d4ff;
-    --color-ungu-aksen: #7c3aed;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+
+    /* ── RedSim Brand Palette ── */
+    --color-bg-utama:      #020609;      /* slate-950 near-black */
+    --color-bg-kartu:      #0f172a;      /* slate-900 */
+    --color-bg-sidebar:    #080c18;      /* deeper than bg-utama */
+    --color-border-dim:    #1e293b;      /* slate-800 */
+
+    /* Security accent — Red */
+    --color-red-aksen:     #dc2626;      /* red-600 */
+    --color-red-hover:     #ef4444;      /* red-500 */
+    --color-red-glow:      rgba(220,38,38,.30);
+
+    /* AI accent — Cyan/Blue */
+    --color-cyan-aksen:    #06b6d4;      /* cyan-500 */
+    --color-cyan-hover:    #22d3ee;      /* cyan-400 */
+    --color-blue-aksen:    #3b82f6;      /* blue-500 */
+    --color-ai-glow:       rgba(6,182,212,.28);
+
+    /* Neutral text */
+    --color-text-primary:  #f1f5f9;      /* slate-100 */
+    --color-text-muted:    #64748b;      /* slate-500 */
+    --color-text-dim:      #334155;      /* slate-700 */
 }
 
+/* ═══════════════════════════════════════════
+   BASE LAYER
+═══════════════════════════════════════════ */
 @layer base {
+    html { color-scheme: dark; }
+
     body {
         background-color: var(--color-bg-utama);
-        color: #e2e8f0;
+        color: var(--color-text-primary);
         font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 
-    ::-webkit-scrollbar {
-        width: 6px;
+    /* ── Monospace code areas ── */
+    pre, code, .code-area, .terminal-output, .log-output {
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        line-height: 1.6;
     }
-    ::-webkit-scrollbar-track {
-        background: var(--color-bg-utama);
-    }
+
+    /* ── Custom Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--color-bg-utama); }
     ::-webkit-scrollbar-thumb {
         background: var(--color-border-dim);
-        border-radius: 3px;
+        border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+    /* ── Focus rings ── */
+    *:focus-visible {
+        outline: 2px solid var(--color-cyan-aksen);
+        outline-offset: 2px;
+    }
+}
+
+/* ═══════════════════════════════════════════
+   COMPONENTS LAYER
+═══════════════════════════════════════════ */
+@layer components {
+
+    /* ── Cards ── */
+    .rs-card {
+        background-color: var(--color-bg-kartu);
+        border: 1px solid color-mix(in srgb, var(--color-border-dim) 50%, transparent);
+        border-radius: 0.75rem;
+        transition: all 300ms ease;
+    }
+    .rs-card:hover {
+        border-color: color-mix(in srgb, var(--color-border-dim) 80%, transparent);
+    }
+
+    /* ── Security (Red) Card hover glow ── */
+    .rs-card-security:hover {
+        box-shadow: 0 0 20px var(--color-red-glow);
+        border-color: color-mix(in srgb, var(--color-red-aksen) 40%, transparent);
+    }
+
+    /* ── AI (Cyan) Card hover glow ── */
+    .rs-card-ai:hover {
+        box-shadow: 0 0 20px var(--color-ai-glow);
+        border-color: color-mix(in srgb, var(--color-cyan-aksen) 40%, transparent);
+    }
+
+    /* ── Primary Security Button (Red) ── */
+    .btn-security {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.5rem;
+        border-radius: 0.5rem;
+        background: linear-gradient(135deg, var(--color-red-aksen), #b91c1c);
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.875rem;
+        border: 1px solid color-mix(in srgb, var(--color-red-aksen) 50%, transparent);
+        transition: all 300ms ease;
+        cursor: pointer;
+    }
+    .btn-security:hover {
+        background: linear-gradient(135deg, var(--color-red-hover), var(--color-red-aksen));
+        box-shadow: 0 0 18px var(--color-red-glow);
+        transform: translateY(-1px);
+    }
+    .btn-security:active { transform: translateY(0); }
+
+    /* ── Primary AI Button (Cyan) ── */
+    .btn-ai {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.5rem;
+        border-radius: 0.5rem;
+        background: linear-gradient(135deg, var(--color-cyan-aksen), var(--color-blue-aksen));
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.875rem;
+        border: 1px solid color-mix(in srgb, var(--color-cyan-aksen) 40%, transparent);
+        transition: all 300ms ease;
+        cursor: pointer;
+    }
+    .btn-ai:hover {
+        background: linear-gradient(135deg, var(--color-cyan-hover), var(--color-cyan-aksen));
+        box-shadow: 0 0 18px var(--color-ai-glow);
+        transform: translateY(-1px);
+    }
+
+    /* ── AI Badge ── */
+    .badge-ai {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.625rem;
+        border-radius: 9999px;
+        background: color-mix(in srgb, var(--color-cyan-aksen) 12%, transparent);
+        color: var(--color-cyan-hover);
+        font-size: 0.7rem;
+        font-weight: 600;
+        border: 1px solid color-mix(in srgb, var(--color-cyan-aksen) 25%, transparent);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    /* ── Security Alert Badge ── */
+    .badge-security {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.625rem;
+        border-radius: 9999px;
+        background: color-mix(in srgb, var(--color-red-aksen) 12%, transparent);
+        color: var(--color-red-hover);
+        font-size: 0.7rem;
+        font-weight: 600;
+        border: 1px solid color-mix(in srgb, var(--color-red-aksen) 25%, transparent);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    /* ── Terminal / Code Output ── */
+    .terminal-block {
+        background: #000;
+        border: 1px solid #1a1a1a;
+        border-radius: 0.5rem;
+        padding: 1rem 1.25rem;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        color: #4ade80;           /* green terminal text */
+        line-height: 1.65;
+        overflow-x: auto;
+    }
+    .terminal-block .text-muted  { color: #6b7280; }
+    .terminal-block .text-warn   { color: #fbbf24; }
+    .terminal-block .text-error  { color: #f87171; }
+    .terminal-block .text-info   { color: #67e8f9; }
+
+    /* ── Log Output ── */
+    .log-block {
+        background: #000;
+        border: 1px solid #1a1a1a;
+        border-radius: 0.5rem;
+        padding: 1rem 1.25rem;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        color: #94a3b8;           /* grey log text */
+        line-height: 1.65;
+        overflow-x: auto;
+    }
+
+    /* ── Modern Table (no vertical lines, hover rows) ── */
+    .rs-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+    .rs-table thead th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        color: var(--color-text-muted);
+        font-weight: 500;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-bottom: 1px solid var(--color-border-dim);
+        background: transparent;
+    }
+    .rs-table tbody tr {
+        border-bottom: 1px solid color-mix(in srgb, var(--color-border-dim) 40%, transparent);
+        transition: background 200ms ease;
+    }
+    .rs-table tbody tr:last-child { border-bottom: none; }
+    .rs-table tbody tr:hover {
+        background: color-mix(in srgb, var(--color-border-dim) 20%, transparent);
+    }
+    .rs-table tbody td {
+        padding: 0.875rem 1rem;
+        color: var(--color-text-primary);
+        vertical-align: middle;
+    }
+
+    /* ── Nav item active state ── */
+    .nav-active-security {
+        background: color-mix(in srgb, var(--color-red-aksen) 10%, transparent);
+        color: var(--color-red-hover);
+        border: 1px solid color-mix(in srgb, var(--color-red-aksen) 25%, transparent);
+    }
+    .nav-active-default {
+        background: color-mix(in srgb, var(--color-cyan-aksen) 10%, transparent);
+        color: var(--color-cyan-aksen);
+        border: 1px solid color-mix(in srgb, var(--color-cyan-aksen) 20%, transparent);
+    }
+
+    /* ── Scan module card glow on hover ── */
+    .scan-module-card {
+        transition: all 300ms ease;
+    }
+    .scan-module-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 18px var(--color-red-glow);
+    }
+    .scan-module-card.ai-module:hover {
+        box-shadow: 0 0 18px var(--color-ai-glow);
+    }
+
+    /* ── AI Indicator pulse ── */
+    .ai-pulse {
+        position: relative;
+    }
+    .ai-pulse::before {
+        content: '';
+        position: absolute;
+        inset: -3px;
+        border-radius: inherit;
+        background: var(--color-cyan-aksen);
+        opacity: 0;
+        animation: ai-pulse-anim 2s ease-in-out infinite;
+        pointer-events: none;
+    }
+    @keyframes ai-pulse-anim {
+        0%, 100% { opacity: 0; transform: scale(1); }
+        50%       { opacity: 0.15; transform: scale(1.05); }
+    }
+}
+
+/* ═══════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════ */
+@layer utilities {
+    /* Glow helpers */
+    .glow-red  { box-shadow: 0 0 15px rgba(220,38,38,.30); }
+    .glow-cyan { box-shadow: 0 0 15px rgba(6,182,212,.28); }
+
+    /* Text gradients */
+    .text-gradient-red {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .text-gradient-ai {
+        background: linear-gradient(135deg, #22d3ee, #3b82f6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Animated scan line */
+    .scan-line {
+        position: absolute;
+        left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--color-red-aksen), transparent);
+        animation: scan-move 2.5s linear infinite;
+    }
+    @keyframes scan-move {
+        from { top: 0; }
+        to   { top: 100%; }
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Scan;
 use App\Models\Temuan;
 use App\Models\SimulasiSerangan;
 use App\Services\AnalisisKodeService;
+use App\Services\MLPredictionService;
 use App\Traits\NotifyScanComplete;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -27,7 +28,7 @@ class ProsesAnalisisKode implements ShouldQueue
         protected string $bahasa = 'php'
     ) {}
 
-    public function handle(AnalisisKodeService $service): void
+    public function handle(AnalisisKodeService $service, MLPredictionService $mlService): void
     {
         try {
             $this->scan->update(['progress_step' => 'Mengekstrak Kode...', 'progress_persen' => 20]);
@@ -62,17 +63,39 @@ class ProsesAnalisisKode implements ShouldQueue
             
             // Pass mode_rag to the service if needed (currently RAGService checks if it should use DB)
             $this->scan->update(['progress_step' => 'AI Sedang Mengevaluasi...', 'progress_persen' => 70]);
-            $hasil = $service->analisis($this->kode, $this->bahasa, $this->scan->mode_rag === 'dengan_rag', $this->scan->model_ai);
+            $hasil = $service->analisis($this->kode, $this->bahasa, $this->scan->mode_rag === 'dengan_rag', $this->scan->model_ai, $this->scan->user_id);
             
             $this->scan->update(['progress_step' => 'Finalisasi Laporan...', 'progress_persen' => 95]);
-            $this->simpanHasil($hasil);
-        } catch (\Exception $e) {
+            $this->simpanHasil($hasil, $mlService);
+        } catch (\Throwable $e) {
             Log::error("Analisis kode gagal: " . $e->getMessage());
-            $this->scan->update(['status' => 'gagal', 'error_message' => $e->getMessage()]);
+            try {
+                \DB::table('scans')->where('id', $this->scan->id)->update([
+                    'status' => 'gagal',
+                    'progress_step' => 'Gagal',
+                    'error_message' => substr($e->getMessage(), 0, 1000),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Throwable $t) {
+                Log::error("Gagal update scan status ke gagal: " . $t->getMessage());
+            }
         }
     }
 
-    protected function simpanHasil(array $hasil): void
+    public function failed(?\Throwable $exception): void
+    {
+        Log::error("Job ProsesAnalisisKode failed(): " . ($exception ? $exception->getMessage() : 'No exception'));
+        try {
+            \DB::table('scans')->where('id', $this->scan->id)->update([
+                'status' => 'gagal',
+                'progress_step' => 'Gagal',
+                'error_message' => $exception ? substr($exception->getMessage(), 0, 1000) : 'Job gagal dieksekusi oleh worker.',
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $t) {}
+    }
+
+    protected function simpanHasil(array $hasil, MLPredictionService $mlService): void
     {
         $this->scan->update([
             'status' => 'selesai',
@@ -90,11 +113,23 @@ class ProsesAnalisisKode implements ShouldQueue
         $this->notifyScanCompleteViaWa($this->scan);
 
         foreach ($hasil['temuan'] ?? [] as $t) {
-            Temuan::create(array_merge(['scan_id' => $this->scan->id], array_intersect_key($t, array_flip([
-                'tipe','tingkat_keparahan','judul','deskripsi','lokasi','nomor_baris',
-                'kode_rentan','kode_aman','cve_id','cwe_id','teknik_attck',
-                'remediasi','estimasi_usaha','tingkat_kepercayaan',
-            ]))));
+            // Pilar 1: Prediksi ML via Random Forest
+            $mlResult = $mlService->predict($t);
+
+            Temuan::create(array_merge(
+                ['scan_id' => $this->scan->id],
+                array_intersect_key($t, array_flip([
+                    'tipe','tingkat_keparahan','judul','deskripsi','lokasi','nomor_baris',
+                    'kode_rentan','kode_aman','cve_id','cwe_id','teknik_attck',
+                    'remediasi','estimasi_usaha','tingkat_kepercayaan',
+                ])),
+                [
+                    'ml_predicted_severity'   => $mlResult['ml_predicted_severity'] ?? null,
+                    'ml_confidence'           => $mlResult['ml_confidence'] ?? null,
+                    'konsensus_severity'      => $mlResult['konsensus'] ?? null,
+                    'ml_class_probabilities'  => $mlResult['class_probabilities'] ?? null,
+                ]
+            ));
         }
 
         foreach ($hasil['simulasi_serangan'] ?? [] as $s) {

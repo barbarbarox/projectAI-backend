@@ -25,7 +25,8 @@ class AiConfiguration extends Model
 
     public static function getDefault(): ?self
     {
-        return static::where('is_default', true)->where('is_active', true)->first();
+        return static::where('is_default', true)->where('is_active', true)->first()
+            ?? static::where('is_active', true)->first();
     }
 
     public static function getActiveWithModel(): ?self

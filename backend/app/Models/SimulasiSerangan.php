@@ -36,6 +36,13 @@ class SimulasiSerangan extends Model
         ];
     }
 
+    public function setProfilPenyerangAttribute($value): void
+    {
+        $allowed = ['script_kiddie', 'penyerang_oportunistik', 'penyerang_tertarget', 'ancaman_internal'];
+        $val = strtolower(trim((string)$value));
+        $this->attributes['profil_penyerang'] = in_array($val, $allowed) ? $val : 'penyerang_oportunistik';
+    }
+
     protected static function boot()
     {
         parent::boot();

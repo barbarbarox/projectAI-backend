@@ -16,7 +16,7 @@
     <div class="relative w-full max-w-md">
         <div class="text-center mb-8">
             <h2 class="mt-4 text-2xl font-bold text-white">Satu Langkah Lagi</h2>
-            <p class="mt-2 text-sm text-[#94a3b8]">Masukkan nomor WhatsApp Anda untuk keperluan verifikasi Admin</p>
+            <p class="mt-2 text-sm text-[#94a3b8]">Masukkan nomor WhatsApp Anda. Kami akan mengirim link verifikasi untuk mengaktifkan akun Anda.</p>
         </div>
 
         <div class="bg-[#0f1629] rounded-2xl border border-[#1e2d4a] p-8 shadow-2xl">

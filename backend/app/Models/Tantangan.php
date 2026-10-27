@@ -13,9 +13,12 @@ class Tantangan extends Model
         'judul',
         'deskripsi',
         'tipe',
+        'format_soal',
         'kategori',
         'bahasa_pemrograman',
         'kode_soal',
+        'konten_tambahan',
+        'bahasa_kode',
         'jawaban_benar',
         'pilihan_jawaban',
         'penjelasan',
@@ -29,8 +32,9 @@ class Tantangan extends Model
     protected function casts(): array
     {
         return [
-            'pilihan_jawaban' => 'array',
-            'is_aktif' => 'boolean',
+            'pilihan_jawaban'  => 'array',
+            'konten_tambahan'  => 'array',
+            'is_aktif'         => 'boolean',
         ];
     }
 

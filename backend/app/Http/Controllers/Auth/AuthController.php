@@ -6,11 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\PasswordResetWa;
 use App\Models\User;
-use App\Services\FonnteService;
+use App\Services\WhatsappService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Socialite\Facades\Socialite;
@@ -64,14 +65,28 @@ class AuthController extends Controller
         }
 
         if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $request->boolean('remember'))) {
-            // Admin bebas verifikasi
-            if (!Auth::user()->is_verified && Auth::user()->tier !== 'admin') {
+            $user = Auth::user();
+
+            // Admin hanya bisa login via Google OAuth
+            if ($user->tier === 'admin') {
                 Auth::logout();
-                return back()->withErrors(['email' => 'Akun Anda sedang menunggu persetujuan Admin. Harap bersabar.'])->onlyInput('email');
+                return back()->withErrors(['email' => 'Akun admin hanya bisa login menggunakan Google. Gunakan tombol "Masuk dengan Google".'])->onlyInput('email');
+            }
+
+            // Cek verifikasi — user yang belum diverifikasi TIDAK BOLEH login
+            if (!$user->is_verified && $user->tier !== 'admin') {
+                Auth::logout();
+                return back()->withErrors(['email' => 'Akun Anda belum diverifikasi. Silakan cek WhatsApp Anda untuk link verifikasi.'])->onlyInput('email');
+            }
+
+            // Cek apakah user punya nomor WA — jika belum, tidak boleh login
+            if (empty($user->phone) && $user->tier !== 'admin') {
+                Auth::logout();
+                return back()->withErrors(['email' => 'Akun Anda belum memiliki nomor WhatsApp. Silakan daftar ulang.'])->onlyInput('email');
             }
 
             $request->session()->regenerate();
-            Auth::user()->update(['last_login' => now()]);
+            $user->update(['last_login' => now()]);
 
             AuditLog::create([
                 'user_id' => Auth::id(),
@@ -80,7 +95,7 @@ class AuthController extends Controller
             ]);
 
             // Kirim notifikasi login via WhatsApp (async, tidak block response)
-            $this->kirimNotifikasiLogin(Auth::user(), 'Email & Password');
+            $this->kirimNotifikasiLogin($user, 'Email & Password');
 
             return redirect()->intended('/dashboard');
         }
@@ -134,6 +149,9 @@ class AuthController extends Controller
             return back()->withErrors(['phone' => 'Nomor WhatsApp sudah terdaftar.'])->withInput();
         }
 
+        // Generate verification token
+        $verificationToken = Str::random(64);
+
         $user = User::create([
             'name' => $request->name,
             'nama_lengkap' => $request->nama_lengkap,
@@ -141,15 +159,107 @@ class AuthController extends Controller
             'phone' => $phone,
             'password' => Hash::make($request->password),
             'last_login' => now(),
-            'is_verified' => false, // Set false default
+            'is_verified' => false,
+            'verification_token' => $verificationToken,
+            'verification_expires_at' => now()->addMinutes(30),
         ]);
 
-        return redirect()->route('menunggu-verifikasi');
+        // Kirim link verifikasi via WhatsApp
+        $verificationUrl = route('verifikasi-akun', ['token' => $verificationToken]);
+        $wa = app(WhatsappService::class);
+        $wa->sendVerificationLink($phone, $user->name, $verificationUrl);
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'daftar_akun',
+            'description' => 'Pengguna mendaftar dan link verifikasi dikirim ke WA.',
+        ]);
+
+        return redirect()->route('menunggu-verifikasi')->with('phone', $phone);
     }
 
     public function menungguVerifikasi()
     {
         return view('auth.menunggu-verifikasi');
+    }
+
+    // ========== VERIFIKASI AKUN VIA LINK WA ==========
+
+    public function verifikasiAkun(string $token)
+    {
+        $user = User::where('verification_token', $token)->first();
+
+        if (!$user) {
+            return view('auth.verifikasi-akun-gagal', [
+                'pesan' => 'Link verifikasi tidak valid atau sudah digunakan.',
+            ]);
+        }
+
+        if ($user->is_verified) {
+            return redirect()->route('masuk')->with('success', 'Akun Anda sudah terverifikasi. Silakan login.');
+        }
+
+        if (now()->gt($user->verification_expires_at)) {
+            return view('auth.verifikasi-akun-gagal', [
+                'pesan' => 'Link verifikasi sudah kedaluwarsa. Silakan minta kirim ulang.',
+                'dapat_kirim_ulang' => true,
+                'user_id' => $user->id,
+            ]);
+        }
+
+        // Verifikasi berhasil!
+        $user->update([
+            'is_verified' => true,
+            'verification_token' => null,
+            'verification_expires_at' => null,
+        ]);
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'verifikasi_akun',
+            'description' => 'Pengguna berhasil memverifikasi akun via link WhatsApp.',
+        ]);
+
+        return redirect()->route('masuk')->with('success', 'Akun berhasil diverifikasi! Silakan login.');
+    }
+
+    /**
+     * Kirim ulang link verifikasi.
+     */
+    public function kirimUlangVerifikasi(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|string|max:20',
+        ]);
+
+        $phone = $this->normalizePhone($request->phone);
+        $user = User::where('phone', $phone)->first();
+
+        if (!$user) {
+            return back()->withErrors(['phone' => 'Nomor WhatsApp tidak terdaftar.'])->withInput();
+        }
+
+        if ($user->is_verified) {
+            return redirect()->route('masuk')->with('success', 'Akun Anda sudah terverifikasi. Silakan login.');
+        }
+
+        // Generate token baru
+        $verificationToken = Str::random(64);
+        $user->update([
+            'verification_token' => $verificationToken,
+            'verification_expires_at' => now()->addMinutes(30),
+        ]);
+
+        // Kirim link baru via WhatsApp
+        $verificationUrl = route('verifikasi-akun', ['token' => $verificationToken]);
+        $wa = app(WhatsappService::class);
+        $sent = $wa->sendVerificationLink($phone, $user->name, $verificationUrl);
+
+        if (!$sent) {
+            return back()->withErrors(['phone' => 'Gagal mengirim link verifikasi. Pastikan nomor WhatsApp aktif.'])->withInput();
+        }
+
+        return back()->with('success', 'Link verifikasi baru telah dikirim ke WhatsApp Anda. Berlaku 30 menit.');
     }
 
     // ========== OTP LOGIN VIA WHATSAPP ==========
@@ -159,7 +269,7 @@ class AuthController extends Controller
         return view('auth.otp');
     }
 
-    public function kirimOtp(Request $request, FonnteService $fonnte)
+    public function kirimOtp(Request $request, WhatsappService $wa)
     {
         $request->validate([
             'phone' => 'required|string|max:20',
@@ -180,12 +290,12 @@ class AuthController extends Controller
             return back()->withErrors(['phone' => 'Nomor WhatsApp tidak terdaftar.'])->withInput();
         }
 
-        // Admin bebas verifikasi
+        // Cek verifikasi — WAJIB diverifikasi sebelum bisa login
         if (!$user->is_verified && $user->tier !== 'admin') {
-            return back()->withErrors(['phone' => 'Akun Anda sedang menunggu persetujuan Admin. Harap bersabar.'])->withInput();
+            return back()->withErrors(['phone' => 'Akun Anda belum diverifikasi. Silakan cek WhatsApp Anda untuk link verifikasi.'])->withInput();
         }
 
-        // Bypass OTP jika pengguna sudah diverifikasi admin
+        // User sudah diverifikasi — langsung login
         $user->update([
             'last_login' => now(),
         ]);
@@ -229,8 +339,9 @@ class AuthController extends Controller
             return back()->withErrors(['otp' => 'Nomor WhatsApp tidak ditemukan.']);
         }
 
-        if (!$user->is_verified) {
-            return back()->withErrors(['otp' => 'Akun Anda sedang menunggu persetujuan Admin. Harap bersabar.']);
+        // Cek verifikasi akun
+        if (!$user->is_verified && $user->tier !== 'admin') {
+            return back()->withErrors(['otp' => 'Akun Anda belum diverifikasi. Silakan cek WhatsApp Anda untuk link verifikasi.']);
         }
 
         if (!$user->otp_expires_at || now()->gt($user->otp_expires_at)) {
@@ -277,12 +388,60 @@ class AuthController extends Controller
             return redirect('/masuk')->with('error', 'Gagal masuk dengan Google. Silakan coba lagi.');
         }
 
+        $adminEmail = 'maulanaakbar1387@gmail.com';
+        $isAdminEmail = strtolower($googleUser->getEmail()) === strtolower($adminEmail);
+
         // Cari user berdasarkan google_id atau email
         $user = User::where('google_id', $googleUser->getId())
             ->orWhere('email', $googleUser->getEmail())
             ->first();
 
+        // ══════════════════════════════════════════════
+        // ADMIN: Login langsung tanpa verifikasi WA
+        // ══════════════════════════════════════════════
+        if ($isAdminEmail) {
+            if ($user) {
+                $user->update([
+                    'google_id' => $googleUser->getId(),
+                    'avatar' => $googleUser->getAvatar(),
+                    'tier' => 'admin',
+                    'is_verified' => true,
+                    'last_login' => now(),
+                ]);
+            } else {
+                $user = User::create([
+                    'name' => $googleUser->getName() ?? 'Admin',
+                    'nama_lengkap' => $googleUser->getName(),
+                    'email' => $googleUser->getEmail(),
+                    'google_id' => $googleUser->getId(),
+                    'avatar' => $googleUser->getAvatar(),
+                    'password' => Hash::make(Str::random(32)),
+                    'tier' => 'admin',
+                    'is_verified' => true,
+                    'last_login' => now(),
+                ]);
+            }
+
+            Auth::login($user, true);
+
+            AuditLog::create([
+                'user_id' => $user->id,
+                'action' => 'login_admin_google',
+                'description' => 'Admin login menggunakan akun Google OAuth.',
+            ]);
+
+            return redirect('/admin')->with('success', 'Selamat datang, Admin!');
+        }
+
+        // ══════════════════════════════════════════════
+        // USER BIASA: Alur normal (verifikasi WA)
+        // ══════════════════════════════════════════════
         if ($user) {
+            // Pastikan user biasa tidak bisa jadi admin
+            if ($user->tier === 'admin') {
+                $user->update(['tier' => 'user']);
+            }
+
             // Update google_id jika belum ada
             if (!$user->google_id) {
                 $user->update([
@@ -290,41 +449,46 @@ class AuthController extends Controller
                     'avatar' => $googleUser->getAvatar(),
                 ]);
             }
-        } else {
-            // Buat user baru
-            $user = User::create([
-                'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'User',
-                'nama_lengkap' => $googleUser->getName(),
-                'email' => $googleUser->getEmail(),
-                'google_id' => $googleUser->getId(),
-                'avatar' => $googleUser->getAvatar(),
-                'password' => Hash::make(Str::random(24)),
-                'is_verified' => false,
-                'last_login' => now(),
-            ]);
+
+            // Jika user sudah punya WA dan sudah diverifikasi → langsung login
+            if ($user->is_verified && !empty($user->phone)) {
+                $user->update(['last_login' => now()]);
+                Auth::login($user, true);
+
+                AuditLog::create([
+                    'user_id' => $user->id,
+                    'action' => 'login_google',
+                    'description' => 'Pengguna login menggunakan akun Google.',
+                ]);
+
+                $this->kirimNotifikasiLogin($user, 'Google OAuth');
+                return redirect('/dashboard');
+            }
+
+            // Jika user sudah punya WA tapi belum diverifikasi
+            if (!empty($user->phone) && !$user->is_verified) {
+                return redirect('/masuk')->withErrors(['email' => 'Akun Anda belum diverifikasi. Silakan cek WhatsApp Anda untuk link verifikasi.']);
+            }
+
+            // Jika belum punya WA → redirect ke form isi WA
+            session(['google_auth_user_id' => $user->id]);
+            return redirect()->route('oauth.google.whatsapp');
         }
 
-        // Jika user belum punya WhatsApp, tidak perlu memaksa (sesuai permintaan, verifikasi hanya di admin)
-        // Kita langsung periksa status verifikasinya saja
-        
-        // Jika user sudah terdaftar tapi belum diverifikasi admin (dan bukan admin)
-        if (!$user->is_verified && $user->tier !== 'admin') {
-            return redirect('/masuk')->withErrors(['email' => 'Akun Anda sedang menunggu persetujuan Admin. Harap bersabar.']);
-        }
-
-        $user->update(['last_login' => now()]);
-        Auth::login($user, true);
-
-        AuditLog::create([
-            'user_id' => $user->id,
-            'action' => 'login_google',
-            'description' => 'Pengguna login menggunakan akun Google.',
+        // User baru — buat akun baru tanpa WA, redirect ke form WA
+        $user = User::create([
+            'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'User',
+            'nama_lengkap' => $googleUser->getName(),
+            'email' => $googleUser->getEmail(),
+            'google_id' => $googleUser->getId(),
+            'avatar' => $googleUser->getAvatar(),
+            'password' => Hash::make(Str::random(24)),
+            'is_verified' => false,
+            'last_login' => now(),
         ]);
 
-        // Kirim notifikasi login via WhatsApp
-        $this->kirimNotifikasiLogin($user, 'Google OAuth');
-
-        return redirect('/dashboard');
+        session(['google_auth_user_id' => $user->id]);
+        return redirect()->route('oauth.google.whatsapp');
     }
 
     public function formGoogleWhatsapp()
@@ -350,21 +514,43 @@ class AuthController extends Controller
 
         $phone = $this->normalizePhone($request->phone);
 
-        if (User::where('phone', $phone)->exists()) {
-            return back()->withErrors(['phone' => 'Nomor WhatsApp sudah terdaftar.'])->withInput();
+        if (User::where('phone', $phone)->where('id', '!=', $userId)->exists()) {
+            return back()->withErrors(['phone' => 'Nomor WhatsApp sudah terdaftar oleh akun lain.'])->withInput();
         }
 
         $user = User::find($userId);
-        if ($user) {
-            $user->update([
-                'phone' => $phone,
-                // Pastikan user masih butuh verifikasi jika baru daftar
-            ]);
+        if (!$user) {
+            session()->forget('google_auth_user_id');
+            return redirect('/masuk')->with('error', 'Akun tidak ditemukan.');
         }
+
+        // Generate verification token
+        $verificationToken = Str::random(64);
+
+        $user->update([
+            'phone' => $phone,
+            'is_verified' => false,
+            'verification_token' => $verificationToken,
+            'verification_expires_at' => now()->addMinutes(30),
+        ]);
+
+        // Kirim link verifikasi via WhatsApp
+        $verificationUrl = route('verifikasi-akun', ['token' => $verificationToken]);
+        $wa = app(WhatsappService::class);
+        $wa->sendVerificationLink($phone, $user->name, $verificationUrl);
 
         session()->forget('google_auth_user_id');
 
-        return redirect()->route('menunggu-verifikasi')->with('success', 'Nomor WhatsApp berhasil disimpan. Harap tunggu persetujuan Admin.');
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'google_wa_verifikasi',
+            'description' => 'Pengguna Google OAuth melengkapi WA, link verifikasi dikirim.',
+        ]);
+
+        return redirect()->route('menunggu-verifikasi')->with([
+            'success' => 'Link verifikasi telah dikirim ke WhatsApp Anda. Berlaku 30 menit.',
+            'phone' => $phone,
+        ]);
     }
 
     // ========== LUPA PASSWORD VIA WHATSAPP ==========
@@ -374,7 +560,7 @@ class AuthController extends Controller
         return view('auth.lupa-password');
     }
 
-    public function prosesLupaPassword(Request $request, FonnteService $fonnte)
+    public function prosesLupaPassword(Request $request, WhatsappService $wa)
     {
         $request->validate([
             'phone' => 'required|string|max:20',
@@ -405,7 +591,7 @@ class AuthController extends Controller
         $resetUrl = route('reset-password', ['token' => $token]);
 
         // Kirim link via WhatsApp
-        $sent = $fonnte->sendPasswordResetLink($phone, $resetUrl);
+        $sent = $wa->sendPasswordResetLink($phone, $resetUrl);
 
         if (!$sent) {
             return back()->withErrors(['phone' => 'Gagal mengirim link reset. Pastikan nomor WhatsApp aktif.'])->withInput();
@@ -524,10 +710,10 @@ class AuthController extends Controller
         if (empty($user->phone)) return;
 
         try {
-            $fonnte = app(FonnteService::class);
-            $fonnte->sendLoginNotification($user->phone, $user->name, $method);
+            $wa = app(WhatsappService::class);
+            $wa->sendLoginNotification($user->phone, $user->name, $method);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning("Gagal kirim notifikasi login WA: " . $e->getMessage());
+            Log::warning("Gagal kirim notifikasi login WA: " . $e->getMessage());
         }
     }
 }

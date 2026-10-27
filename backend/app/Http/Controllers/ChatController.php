@@ -10,14 +10,44 @@ class ChatController extends Controller
 {
     public function index(GeminiService $geminiService)
     {
-        $availableModels = $geminiService->getAvailableModels();
-        return view('admin.chat-test', compact('availableModels'));
+        $userId = \Illuminate\Support\Facades\Auth::id();
+        $availableModels = $geminiService->getAvailableModels($userId);
+        
+        $userConfig = \App\Models\UserAiConfig::getActiveForUser($userId);
+        $adminConfig = \App\Models\AiConfiguration::getActiveWithModel();
+        
+        $defaultModelId = $userConfig ? $userConfig->selected_model : ($adminConfig->selected_model ?? '');
+        $defaultModelName = 'Gunakan Model Default';
+        
+        foreach ($availableModels as $m) {
+            if ($m['id'] === $defaultModelId) {
+                $defaultModelName = 'Default: ' . $m['name'];
+                break;
+            }
+        }
+        
+        return view('admin.chat-test', compact('availableModels', 'defaultModelName'));
     }
 
     public function indexPublic(GeminiService $geminiService)
     {
-        $availableModels = $geminiService->getAvailableModels();
-        return view('chat-ai', compact('availableModels'));
+        $userId = \Illuminate\Support\Facades\Auth::id();
+        $availableModels = $geminiService->getAvailableModels($userId);
+        
+        $userConfig = \App\Models\UserAiConfig::getActiveForUser($userId);
+        $adminConfig = \App\Models\AiConfiguration::getActiveWithModel();
+        
+        $defaultModelId = $userConfig ? $userConfig->selected_model : ($adminConfig->selected_model ?? '');
+        $defaultModelName = 'Gunakan Model Default';
+        
+        foreach ($availableModels as $m) {
+            if ($m['id'] === $defaultModelId) {
+                $defaultModelName = 'Default: ' . $m['name'];
+                break;
+            }
+        }
+        
+        return view('chat-ai', compact('availableModels', 'defaultModelName'));
     }
 
     public function chat(Request $request, RAGService $ragService, GeminiService $geminiService)
@@ -29,7 +59,7 @@ class ChatController extends Controller
         
         $query = $request->message;
         $modelOverride = $request->model_ai;
-        $ragData = $ragService->getKonteks($query, 5);
+        $ragData = $ragService->getKonteks($query, 5, includeNvd: true);
         $konteks = $ragData['konteks'];
         
         $prompt = <<<PROMPT
@@ -52,11 +82,23 @@ QUESTION:
 PROMPT;
         
         try {
-            $response = $geminiService->generate($prompt, $modelOverride, false);
+            $response = $geminiService->generate($prompt, $modelOverride, false, \Illuminate\Support\Facades\Auth::id());
+            
+            $generalCount = count($ragData['general_chunks'] ?? []);
+            $nvdCount = count($ragData['nvd_chunks'] ?? []);
+            $nvdList = array_map(fn($c) => $c['title'] ?? ($c['source_id'] ?? 'CVE'), $ragData['nvd_chunks'] ?? []);
+            $generalList = array_map(fn($c) => $c['title'] ?? ($c['source_id'] ?? 'Doc'), $ragData['general_chunks'] ?? []);
+
             return response()->json([
                 'status' => 'success',
                 'message' => $response,
-                'rag_used' => !empty($konteks)
+                'rag_used' => !empty($konteks),
+                'rag_details' => [
+                    'general_count' => $generalCount,
+                    'nvd_count' => $nvdCount,
+                    'general_sources' => array_values(array_unique(array_filter($generalList))),
+                    'nvd_cves' => array_values(array_unique(array_filter($nvdList))),
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

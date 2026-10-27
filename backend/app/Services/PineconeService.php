@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -14,8 +15,8 @@ class PineconeService
 
     public function __construct()
     {
-        $this->apiKey = env('PINECONE_API_KEY', '');
-        $this->indexName = env('PINECONE_INDEX', 'redsim-rag');
+        $this->apiKey = config('services.pinecone.api_key') ?: env('PINECONE_API_KEY', '');
+        $this->indexName = config('services.pinecone.index') ?: env('PINECONE_INDEX', 'redsim-rag');
 
         // Pinecone Serverless URL format
         // Akan di-resolve saat pertama kali digunakan
@@ -27,12 +28,21 @@ class PineconeService
      */
     protected function getBaseUrl(): string
     {
+        $cacheKey = "pinecone_rag_host_{$this->indexName}";
+
         if (!empty($this->baseUrl)) {
             return $this->baseUrl;
         }
 
+        $cached = Cache::get($cacheKey);
+        if ($cached) {
+            $this->baseUrl = $cached;
+            return $this->baseUrl;
+        }
+
         try {
-            $response = Http::timeout(10)
+            $response = Http::timeout(8) // kurangi dari 15s
+                ->retry(1, 0)           // 1 percobaan — gagal langsung skip
                 ->withHeaders(['Api-Key' => $this->apiKey])
                 ->get("https://api.pinecone.io/indexes/{$this->indexName}");
 
@@ -40,7 +50,8 @@ class PineconeService
                 $host = $response->json('host');
                 if ($host) {
                     $this->baseUrl = "https://{$host}";
-                    Log::info("Pinecone host resolved: {$this->baseUrl}");
+                    Cache::put($cacheKey, $this->baseUrl, now()->addHours(24));
+                    Log::info("Pinecone host resolved & cached: {$this->baseUrl}");
                     return $this->baseUrl;
                 }
             }
@@ -52,7 +63,7 @@ class PineconeService
 
         throw new RuntimeException(
             "Tidak dapat terhubung ke Pinecone. Pastikan PINECONE_API_KEY dan PINECONE_INDEX valid di .env. " .
-            "Buat index '{$this->indexName}' dengan dimensi 768 di dashboard Pinecone."
+            "Pastikan index '{$this->indexName}' aktif dan siap digunakan di dashboard Pinecone."
         );
     }
 
@@ -137,7 +148,8 @@ class PineconeService
         }
 
         try {
-            $response = Http::timeout(15)
+            $response = Http::timeout(20)
+                ->retry(1, 0)
                 ->withHeaders([
                     'Api-Key' => $this->apiKey,
                     'Content-Type' => 'application/json',
@@ -220,7 +232,7 @@ class PineconeService
                 'inputs' => ['text' => $queryText],
                 'top_k' => $topK,
             ],
-            'fields' => ['text'],
+            'fields' => ['*'],
         ];
 
         if (!empty($filter)) {
@@ -228,7 +240,8 @@ class PineconeService
         }
 
         try {
-            $response = Http::timeout(15)
+            $response = Http::timeout(20)
+                ->retry(1, 0)
                 ->withHeaders([
                     'Api-Key' => $this->apiKey,
                     'Content-Type' => 'application/json',
@@ -368,12 +381,25 @@ class PineconeService
         $baseUrl = $this->getBaseUrl();
 
         try {
+            // Pinecone Serverless: GET /describe_index_stats
             $response = Http::timeout(10)
                 ->withHeaders([
-                    'Api-Key' => $this->apiKey,
+                    'Api-Key'      => $this->apiKey,
                     'Content-Type' => 'application/json',
                 ])
-                ->post("{$baseUrl}/describe_index_stats", []);
+                ->get("{$baseUrl}/describe_index_stats");
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            // Fallback ke POST
+            $response = Http::timeout(10)
+                ->withHeaders([
+                    'Api-Key'      => $this->apiKey,
+                    'Content-Type' => 'application/json',
+                ])
+                ->post("{$baseUrl}/describe_index_stats", new \stdClass());
 
             if ($response->successful()) {
                 return $response->json();

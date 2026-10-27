@@ -55,14 +55,44 @@ class AIProviderService
             if ($response->successful()) {
                 $data = $response->json();
                 $models = collect($data['models'] ?? [])
-                    ->filter(fn($m) => str_contains($m['name'] ?? '', 'gemini'))
-                    ->map(fn($m) => [
-                        'id' => str_replace('models/', '', $m['name']),
-                        'name' => $m['displayName'] ?? $m['name'],
-                        'description' => $m['description'] ?? '',
-                        'input_token_limit' => $m['inputTokenLimit'] ?? null,
-                        'output_token_limit' => $m['outputTokenLimit'] ?? null,
-                    ])
+                    ->filter(function($m) {
+                        $name = strtolower($m['name'] ?? '');
+                        if (!str_contains($name, 'gemini')) return false;
+                        if (!in_array('generateContent', $m['supportedGenerationMethods'] ?? [])) return false;
+                        
+                        // Buang model non-teks, eksperimental, dan yang diketahui tidak bekerja
+                        $exclude = [
+                            'nano', 'banana', 'vision', 'image', 'audio', 'video',
+                            'tts', 'embedding', 'aqa', 'omni', 'computer', 'learnlm',
+                            'native-audio', 'preview-tts',
+                        ];
+                        foreach ($exclude as $kw) {
+                            if (str_contains($name, $kw)) return false;
+                        }
+                        
+                        // Buang versi 3.7 dan 3.8 yang diketahui tidak bekerja
+                        if (preg_match('/gemini-3\.(7|8)/', $name)) return false;
+                        
+                        return true;
+                    })
+                    ->map(function($m) {
+                        $id = str_replace('models/', '', $m['name']);
+                        $displayName = $m['displayName'] ?? $m['name'];
+                        
+                        if (str_contains(strtolower($id), 'pro')) {
+                            $displayName .= ' (Pro / Limit Ketat)';
+                        } elseif (str_contains(strtolower($id), 'flash')) {
+                            $displayName .= ' (Free Tier / Stabil)';
+                        }
+                        
+                        return [
+                            'id' => $id,
+                            'name' => $displayName,
+                            'description' => $m['description'] ?? '',
+                            'input_token_limit' => $m['inputTokenLimit'] ?? null,
+                            'output_token_limit' => $m['outputTokenLimit'] ?? null,
+                        ];
+                    })
                     ->values()
                     ->toArray();
 
@@ -91,12 +121,53 @@ class AIProviderService
             if ($response->successful()) {
                 $data = $response->json();
                 $models = collect($data['data'] ?? [])
-                    ->filter(fn($m) => str_contains($m['id'], 'gpt'))
-                    ->map(fn($m) => [
-                        'id' => $m['id'],
-                        'name' => $m['id'],
-                        'description' => 'OpenAI ' . $m['id'],
-                    ])
+                    ->filter(function($m) {
+                        $id = strtolower($m['id'] ?? '');
+                        
+                        // Hanya terima model chat/reasoning yang berguna
+                        $allowedPrefixes = ['gpt-4', 'gpt-3.5', 'chatgpt', 'o1', 'o3', 'o4'];
+                        $isAllowed = false;
+                        foreach ($allowedPrefixes as $prefix) {
+                            if (str_starts_with($id, $prefix)) {
+                                $isAllowed = true;
+                                break;
+                            }
+                        }
+                        if (!$isAllowed) return false;
+                        
+                        // Buang model non-teks / khusus
+                        $exclude = [
+                            'audio', 'realtime', 'transcribe', 'tts',
+                            'dall-e', 'whisper', 'embedding', 'search',
+                            'moderation', 'instruct',
+                        ];
+                        foreach ($exclude as $kw) {
+                            if (str_contains($id, $kw)) return false;
+                        }
+                        
+                        return true;
+                    })
+                    ->map(function($m) {
+                        $id = $m['id'];
+                        $displayName = $id;
+                        
+                        // Beri label tier
+                        if (str_contains($id, 'gpt-4o-mini') || str_contains($id, 'gpt-3.5')) {
+                            $displayName .= ' (Murah / Hemat)';
+                        } elseif (str_contains($id, 'gpt-4o') || str_contains($id, 'gpt-4.1-mini') || str_contains($id, 'gpt-4.1-nano')) {
+                            $displayName .= ' (Standar)';
+                        } elseif (str_starts_with($id, 'o1') || str_starts_with($id, 'o3') || str_starts_with($id, 'o4')) {
+                            $displayName .= ' (Reasoning / Pro)';
+                        } elseif (str_contains($id, 'gpt-4.1')) {
+                            $displayName .= ' (Pro)';
+                        }
+                        
+                        return [
+                            'id' => $id,
+                            'name' => $displayName,
+                            'description' => 'OpenAI ' . $id,
+                        ];
+                    })
                     ->sortBy('id')
                     ->values()
                     ->toArray();
@@ -304,24 +375,106 @@ class AIProviderService
 
     protected function generateGoogle(string $apiKey, string $model, string $prompt, bool $isJson = true): string
     {
-        $maxTokens = (int) env('AI_MAX_TOKENS', 2048);
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
-        
+        $maxTokens = max((int) env('AI_MAX_TOKENS', 4096), 4096);
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
+
+        $headers = ['Content-Type' => 'application/json'];
+
+        // Deteksi apakah ini OAuth Bearer Token (ya29.xxx atau panjang > 200 karakter)
+        $isOAuth = str_starts_with($apiKey, 'ya29.') || strlen($apiKey) > 200;
+
+        if ($isOAuth) {
+            // Karena scope OAuth sekarang hanya untuk identitas (agar tidak ada warning unverified app),
+            // kita gunakan Admin API Key (dari env) untuk melakukan generate aktual ke Gemini API.
+            $adminApiKey = $this->getGoogleAdminApiKey();
+            if ($adminApiKey) {
+                $url .= "?key={$adminApiKey}";
+            } else {
+                Log::error('Google OAuth AI: tidak ada Admin API Key (GOOGLE_GEMINI_API_KEY) yang ditemukan.');
+                throw new \RuntimeException('Sistem tidak memiliki Admin API Key untuk Google AI.');
+            }
+        } else {
+            // API key biasa: tambahkan sebagai query param
+            $url .= "?key={$apiKey}";
+        }
+
         $generationConfig = [
             'temperature' => 0.5,
             'maxOutputTokens' => $maxTokens,
         ];
-        
+
         if ($isJson) {
             $generationConfig['responseMimeType'] = 'application/json';
         }
 
-        $response = Http::timeout(120)->post($url, [
-            'contents' => [['parts' => [['text' => $prompt]]]],
-            'generationConfig' => $generationConfig,
-        ]);
-        if (!$response->successful()) throw new \RuntimeException('Google AI gagal: ' . $response->status());
+        // Retry otomatis jika terkena 503 (Overloaded) atau 429 (Rate Limit)
+        $response = Http::timeout(120)
+            ->retry(3, 2000, function ($exception, $request) {
+                if ($exception instanceof \Illuminate\Http\Client\RequestException && $exception->response) {
+                    return in_array($exception->response->status(), [429, 500, 502, 503, 504]);
+                }
+                return true;
+            }, throw: false)
+            ->withHeaders($headers)
+            ->post($url, [
+                'contents' => [['parts' => [['text' => $prompt]]]],
+                'generationConfig' => $generationConfig,
+            ]);
+
+        // Jika model spesifik overload (503) dan bukan gemini-1.5-flash, coba fallback ke gemini-1.5-flash yang kapasitasnya paling besar
+        if (!$response->successful() && $response->status() === 503 && !str_contains($model, 'gemini-1.5-flash')) {
+            Log::warning("[Google AI] Model {$model} overloaded (503). Mencoba fallback otomatis ke gemini-1.5-flash...");
+            $fallbackUrl = preg_replace('/models\/[^:]+:/', 'models/gemini-1.5-flash:', $url);
+            $response = Http::timeout(120)
+                ->withHeaders($headers)
+                ->post($fallbackUrl, [
+                    'contents' => [['parts' => [['text' => $prompt]]]],
+                    'generationConfig' => $generationConfig,
+                ]);
+        }
+
+        if (!$response->successful()) {
+            Log::error('Google AI Error (isOAuth=' . ($isOAuth ? 'true' : 'false') . '): ' . $response->body());
+            throw new \RuntimeException('Google AI gagal: ' . $response->status());
+        }
+
         return $response->json('candidates.0.content.parts.0.text') ?? '{}';
+    }
+
+    /**
+     * Ambil Google API key dari env atau admin config (database).
+     * Digunakan untuk scope peruserquota yang memerlukan developer key + OAuth user token.
+     */
+    protected function getGoogleAdminApiKey(): ?string
+    {
+        // Prioritas 1: env khusus GOOGLE_GEMINI_API_KEY (Google AI Studio key)
+        $envKey = env('GOOGLE_GEMINI_API_KEY', '');
+        if ($envKey && (str_starts_with($envKey, 'AIza') || str_starts_with($envKey, 'AQ.'))) {
+            return $envKey;
+        }
+
+        // Prioritas 2: cari dari admin config di database
+        try {
+            $configs = \App\Models\AiConfiguration::where('is_active', true)
+                ->where(function($q) {
+                    $q->where('provider', 'google')
+                      ->orWhere('detected_provider', 'google');
+                })
+                ->orderByDesc('is_default')
+                ->get();
+
+            foreach ($configs as $config) {
+                $key = $config->api_key;
+                // Google AI Studio key selalu dimulai dengan 'AIza' atau 'AQ.'
+                if ($key && (str_starts_with($key, 'AIza') || str_starts_with($key, 'AQ.'))) {
+                    return $key;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Gagal ambil Google admin API key dari DB: ' . $e->getMessage());
+        }
+
+        return null;
     }
 
     protected function generateOpenAI(string $apiKey, string $model, string $prompt, bool $isJson = true): string

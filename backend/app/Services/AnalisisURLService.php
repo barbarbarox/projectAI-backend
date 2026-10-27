@@ -15,11 +15,11 @@ class AnalisisURLService
         $this->virusTotalService = $virusTotalService;
     }
 
-    public function analisis(string $url): array
+    public function analisis(string $url, bool $useRag = true, ?string $modelOverride = null, ?int $userId = null): array
     {
         $externalData = $this->gatherExternalData($url);
         $tugas = "Analisis keamanan URL: {$url}\n\nData dari scanner eksternal:\n" . json_encode($externalData, JSON_PRETTY_PRINT) . "\n\nBerikan penilaian keamanan lengkap termasuk risiko phishing, malware, dan miskonfigurasi.";
-        return $this->ragService->analisis($url, $tugas);
+        return $this->ragService->analisis($url, $tugas, $useRag, $modelOverride, $userId);
     }
 
     protected function gatherExternalData(string $url): array

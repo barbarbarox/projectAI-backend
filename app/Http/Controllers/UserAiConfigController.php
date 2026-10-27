@@ -87,10 +87,16 @@ class UserAiConfigController extends Controller
      */
     public function redirectGoogleAI(Request $request)
     {
+        $clientId = config('services.google.client_id') ?: env('GOOGLE_CLIENT_ID');
+
+        if (empty($clientId)) {
+            return redirect()->route('profile.ai')->with('error', 'GOOGLE_CLIENT_ID belum dikonfigurasi di server.');
+        }
+
         $request->session()->put('google_ai_csrf', $state = \Illuminate\Support\Str::random(40));
 
         $params = http_build_query([
-            'client_id' => env('GOOGLE_CLIENT_ID'),
+            'client_id' => $clientId,
             'redirect_uri' => url('/profil/ai/oauth/google/callback'),
             'response_type' => 'code',
             'scope' => 'openid email profile',
@@ -117,10 +123,13 @@ class UserAiConfigController extends Controller
         }
 
         try {
+            $clientId = config('services.google.client_id') ?: env('GOOGLE_CLIENT_ID');
+            $clientSecret = config('services.google.client_secret') ?: env('GOOGLE_CLIENT_SECRET');
+
             // Exchange code for tokens
             $tokenResponse = Http::asForm()->post('https://oauth2.googleapis.com/token', [
-                'client_id' => env('GOOGLE_CLIENT_ID'),
-                'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
                 'code' => $request->code,
                 'redirect_uri' => url('/profil/ai/oauth/google/callback'),
                 'grant_type' => 'authorization_code',

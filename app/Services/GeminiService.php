@@ -126,9 +126,12 @@ class GeminiService
             throw new \RuntimeException('Tidak ada refresh token untuk Google OAuth.');
         }
 
+        $clientId = config('services.google.client_id') ?: env('GOOGLE_CLIENT_ID');
+        $clientSecret = config('services.google.client_secret') ?: env('GOOGLE_CLIENT_SECRET');
+
         $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
-            'client_id' => env('GOOGLE_CLIENT_ID'),
-            'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret,
             'refresh_token' => $config->oauth_refresh_token,
             'grant_type' => 'refresh_token',
         ]);

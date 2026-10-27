@@ -508,6 +508,16 @@
     </div>
     @endif
 
+    {{-- Defacement & SEO-Spam Detection (Dettack Benchmark Enhancement) --}}
+    @if(isset($data['defacement_data']))
+    @include('components.defacement-alert', ['defacementData' => $data['defacement_data'], 'scan' => $scan])
+    @endif
+
+    {{-- Audit Portal Login & Admin Interfaces (Dettack Benchmark Enhancement) --}}
+    @if($isIntens && !empty($data['login_audit']))
+    @include('components.login-portal-audit', ['loginAudit' => $data['login_audit'], 'scan' => $scan])
+    @endif
+
     {{-- Subdomain Discovery & Takeover (Fase B.1 & B.3) --}}
     @if($isIntens && !empty($data['subdomains']['subdomains']))
     @include('components.subdomain-discovery', ['subdomainData' => $data['subdomains'] ?? [], 'scan' => $scan])

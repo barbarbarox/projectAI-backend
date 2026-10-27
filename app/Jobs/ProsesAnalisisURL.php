@@ -99,6 +99,7 @@ class ProsesAnalisisURL implements ShouldQueue
                     'selesai_at' => now(),
                 ]);
                 $this->persistSubdomainsAndTakeoverRisks($dataMentah);
+                $this->persistDefacementAndLoginFindings($dataMentah);
                 $this->syncAssetGroupTarget($dataMentah['skor_reputasi'] ?? 50, $dataMentah['verdict'] ?? 'INFORMASI');
                 $this->notifyScanCompleteViaWa($this->scan);
                 return;
@@ -305,6 +306,7 @@ TUGAS;
             }
 
             $this->persistSubdomainsAndTakeoverRisks($dataMentah);
+            $this->persistDefacementAndLoginFindings($dataMentah);
 
         } catch (\Throwable $e) {
             Log::error("Analisis URL gagal: " . $e->getMessage());
@@ -564,6 +566,73 @@ TUGAS;
                 ]);
         } catch (\Throwable $e) {
             Log::warning("Gagal menyelaraskan asset group target untuk {$this->url}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Simpan temuan keamanan otomatis untuk Defacement/Judol dan Eksposur Portal Administratif.
+     */
+    protected function persistDefacementAndLoginFindings(array $dataMentah): void
+    {
+        try {
+            $defacement = $dataMentah['defacement_data'] ?? [];
+            if (!empty($defacement['is_defaced'])) {
+                $type = $defacement['type'] ?? 'classic_defacement';
+                $isClassic = $type === 'classic_defacement';
+                $judul = $isClassic 
+                    ? "Indikasi Web Defacement & Modifikasi Konten Ilegal pada {$this->url}" 
+                    : "Injeksi Konten Perjudian Ilegal / SEO-Spam (Slot Gacor) pada {$this->url}";
+                
+                $severity = $isClassic ? 'kritis' : 'tinggi';
+                $summary = $defacement['summary'] ?? '';
+                $snippets = implode("\n", $defacement['evidence_snippets'] ?? []);
+
+                Temuan::firstOrCreate(
+                    [
+                        'scan_id' => $this->scan->id,
+                        'judul'   => $judul,
+                    ],
+                    [
+                        'tipe'                => 'defacement_or_seo_spam',
+                        'tingkat_keparahan'   => $severity,
+                        'deskripsi'           => "{$summary}\n\nBukti Potongan Kode Terdeteksi:\n{$snippets}",
+                        'lokasi'              => $this->url,
+                        'cwe_id'              => 'CWE-73',
+                        'teknik_attck'        => 'T1491.001 - Defacement: Internal Defacement',
+                        'remediasi'           => "1. Lakukan audit integritas file (file integrity monitoring) dan periksa access log web server pada saat modifikasi terjadi.\n2. Bersihkan file tema, plugin, atau script database yang disusupi kata kunci judi atau defacement.\n3. Perbarui seluruh CMS, plugin, serta ganti seluruh password akun administrator dan database.",
+                        'prioritas_perbaikan' => 1,
+                        'estimasi_usaha'      => 'sedang',
+                        'tingkat_kepercayaan' => $defacement['confidence'] ?? 'tinggi',
+                    ]
+                );
+            }
+
+            $loginAudit = $dataMentah['login_audit'] ?? [];
+            foreach ($loginAudit['portals'] ?? [] as $portal) {
+                if (($portal['risiko'] ?? '') === 'kritis' && ($portal['terbuka'] ?? false)) {
+                    $path = $portal['path'] ?? '/admin';
+                    Temuan::firstOrCreate(
+                        [
+                            'scan_id' => $this->scan->id,
+                            'judul'   => "Eksposur Terbuka Antarmuka Manajemen Kritis ({$path})",
+                        ],
+                        [
+                            'tipe'                => 'exposed_admin_interface',
+                            'tingkat_keparahan'   => 'kritis',
+                            'deskripsi'           => "Antarmuka manajemen administratif {$portal['deskripsi']} di {$portal['url']} dapat diakses langsung oleh publik tanpa proteksi IP Whitelist atau autentikasi tingkat jaringan (HTTP {$portal['status_http']}).",
+                            'lokasi'              => $portal['url'],
+                            'cwe_id'              => 'CWE-284',
+                            'teknik_attck'        => 'T1190 - Exploit Public-Facing Application',
+                            'remediasi'           => "1. Batasi akses path {$path} hanya untuk IP address internal/VPN tim IT melalui konfigurasi Web Server (Nginx/Apache) atau WAF.\n2. Nonaktifkan atau hapus antarmuka manajemen jika tidak diperlukan di lingkungan production.",
+                            'prioritas_perbaikan' => 1,
+                            'estimasi_usaha'      => 'mudah',
+                            'tingkat_kepercayaan' => 'tinggi',
+                        ]
+                    );
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning("Gagal menyimpan temuan defacement/login: " . $e->getMessage());
         }
     }
 }

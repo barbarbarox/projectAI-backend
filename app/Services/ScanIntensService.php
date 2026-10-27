@@ -44,13 +44,26 @@ class ScanIntensService
         $httpMethods = $this->enumerateHTTPMethods($url);
         $redirectData = $this->analyzeRedirects($url);
 
+        // Modul Defacement & Injeksi SEO-Spam (Judol/Slot)
+        $defacementData = app(\App\Services\DefacementDetectionService::class)->detect(
+            $headerData['html_body'] ?? '',
+            $url
+        );
+
+        // Modul Audit Portal Login & Administrative Interface
+        $loginAudit = app(\App\Services\DefaultLoginDetectionService::class)->auditPortals(
+            $commonFiles,
+            $url,
+            $dnsData['cdn_waf'] ?? []
+        );
+
         if ($onProgress) $onProgress('Enumerasi Subdomain & Finalisasi Recon...', 55);
         $subdomains = $this->enumerateSubdomains($host);
 
         return $this->buildReport(
             $url, $vtData, $urlscanData, $headerData, $sslData,
             $commonFiles, $dnsData, $portData, $cookieData, $corsData,
-            $httpMethods, $redirectData, $subdomains
+            $httpMethods, $redirectData, $subdomains, $defacementData, $loginAudit
         );
     }
 
@@ -177,10 +190,11 @@ class ScanIntensService
                 'headers_keamanan' => $headerEvaluation,
                 'headers_sensitif' => $exposedHeaders,
                 'semua_headers'    => $allHeaders,
+                'html_body'        => $response->body(),
             ];
         } catch (\Exception $e) {
             Log::warning('Header analysis intens gagal: ' . $e->getMessage());
-            return ['skor' => 0, 'skor_mentah' => 0, 'total_poin' => 100, 'headers_keamanan' => [], 'headers_sensitif' => [], 'semua_headers' => []];
+            return ['skor' => 0, 'skor_mentah' => 0, 'total_poin' => 100, 'headers_keamanan' => [], 'headers_sensitif' => [], 'semua_headers' => [], 'html_body' => ''];
         }
     }
 
@@ -1165,7 +1179,8 @@ class ScanIntensService
         string $url, array $vtData, array $urlscanData, array $headerData,
         array $sslData, array $commonFiles, array $dnsData, array $portData,
         array $cookieData, array $corsData, array $httpMethods,
-        array $redirectData, array $subdomains
+        array $redirectData, array $subdomains,
+        ?array $defacementData = null, ?array $loginAudit = null
     ): array {
         // === SKOR REPUTASI (Granular) ===
 
@@ -1235,6 +1250,20 @@ class ScanIntensService
         );
         $skorReputasi = min(100, max(0, $skorReputasi));
 
+        // Penalti Defacement & Injeksi SEO-Spam (Judol/Slot)
+        if (!empty($defacementData['is_defaced'])) {
+            if (($defacementData['type'] ?? '') === 'classic_defacement') {
+                $skorReputasi = min($skorReputasi, 15);
+            } else {
+                $skorReputasi = max(0, $skorReputasi - 35);
+            }
+        }
+
+        // Penalti Eksposur Portal Login Kritis
+        if (!empty($loginAudit['critical_count']) && $loginAudit['critical_count'] > 0) {
+            $skorReputasi = max(0, $skorReputasi - 15);
+        }
+
         // === STATUS ===
         // robots.txt/sitemap yang terekspos adalah hal normal, tidak memicu 'mencurigakan'
         $exposedSensitiveForStatus = array_filter($commonFiles, fn($f) =>
@@ -1243,9 +1272,11 @@ class ScanIntensService
             ($f['kategori'] ?? '') !== 'web_standard'
         );
 
-        if ($malicious > 3 || count($exposedSensitiveForStatus) >= 3 || ($corsData['vulnerable'] ?? false && count($criticalPorts) > 2)) {
+        if (!empty($defacementData['is_defaced']) && ($defacementData['type'] ?? '') === 'classic_defacement') {
             $status = 'berbahaya';
-        } elseif ($malicious > 0 || $suspicious > 1 || count($exposedSensitiveForStatus) >= 1 || ($corsData['vulnerable'] ?? false) || count($criticalPorts) > 0) {
+        } elseif ($malicious > 3 || count($exposedSensitiveForStatus) >= 3 || ($corsData['vulnerable'] ?? false && count($criticalPorts) > 2)) {
+            $status = 'berbahaya';
+        } elseif (!empty($defacementData['is_defaced']) || (!empty($loginAudit['critical_count']) && $loginAudit['critical_count'] > 0) || $malicious > 0 || $suspicious > 1 || count($exposedSensitiveForStatus) >= 1 || ($corsData['vulnerable'] ?? false) || count($criticalPorts) > 0) {
             $status = 'mencurigakan';
         } else {
             $status = 'aman';
@@ -1358,6 +1389,8 @@ class ScanIntensService
             'redirect_chain'      => $redirectData,
             'subdomains'          => $subdomains,
             'screenshot_url'      => $screenshotUrl,
+            'defacement_data'     => $defacementData ?? [],
+            'login_audit'         => $loginAudit ?? [],
         ];
     }
 }

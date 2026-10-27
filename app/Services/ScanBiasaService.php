@@ -105,10 +105,11 @@ class ScanBiasaService
                 'headers' => $headerResults,
                 'headers_sensitif' => $exposedHeaders,
                 'semua_headers' => $allHeaders,
+                'html_body'     => $response->body(),
             ];
         } catch (\Exception $e) {
             Log::warning('Header analysis gagal: ' . $e->getMessage());
-            return ['skor' => 0, 'headers' => [], 'headers_sensitif' => [], 'semua_headers' => []];
+            return ['skor' => 0, 'headers' => [], 'headers_sensitif' => [], 'semua_headers' => [], 'html_body' => ''];
         }
     }
 
@@ -224,6 +225,21 @@ class ScanBiasaService
             $screenshotUrl = app(\App\Services\VisualEvidenceService::class)->getScreenshotUrl($url);
         }
 
+        // Deteksi Defacement & SEO-Spam (Judol/Slot)
+        $defacementData = app(\App\Services\DefacementDetectionService::class)->detect(
+            $headerData['html_body'] ?? '',
+            $url
+        );
+        if (!empty($defacementData['is_defaced'])) {
+            if (($defacementData['type'] ?? '') === 'classic_defacement') {
+                $skorReputasi = min($skorReputasi, 15);
+                $status = 'berbahaya';
+            } else {
+                $skorReputasi = max(0, $skorReputasi - 35);
+                if ($status === 'aman') $status = 'mencurigakan';
+            }
+        }
+
         return [
             'skor_reputasi' => $skorReputasi,
             'status' => $status,
@@ -240,6 +256,7 @@ class ScanBiasaService
             'teknologi' => $teknologi,
             'tech_stack_structured' => $techStackStructured,
             'screenshot_url' => $screenshotUrl,
+            'defacement_data' => $defacementData,
         ];
     }
 }

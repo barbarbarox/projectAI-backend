@@ -118,7 +118,7 @@
             @if($isIntens && !empty($ssl['protocol']))
             <div>
                 <p class="text-xs text-[#64748b]">Protokol</p>
-                <p class="text-sm font-medium {{ ($ssl['weak_protocol'] ?? false) ? 'text-red-400' : '' }}">{{ $ssl['protocol'] }} @if($ssl['weak_protocol'] ?? false) ⚠️ Lemah @endif</p>
+                <p class="text-sm font-medium {{ ($ssl['weak_protocol'] ?? false) ? 'text-red-400' : '' }}">{{ $ssl['protocol'] }} @if($ssl['weak_protocol'] ?? false) <span class="text-xs text-red-400 font-semibold">[Lemah]</span> @endif</p>
             </div>
             @endif
             @if($isIntens && !empty($ssl['cipher_name']))
@@ -317,8 +317,9 @@
         @endif
 
         @if(!empty($data['port_scan']['critical_open']))
-        <div class="mt-3 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/30">
-            <p class="text-xs text-red-400 font-semibold">⚠️ Port kritis terbuka: {{ implode(', ', $data['port_scan']['critical_open']) }}</p>
+        <div class="mt-3 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <p class="text-xs text-red-400 font-semibold">Port kritis terbuka: {{ implode(', ', $data['port_scan']['critical_open']) }}</p>
         </div>
         @endif
     </div>
@@ -361,8 +362,9 @@
         <h3 class="text-sm font-semibold text-[#7c3aed] mb-4 flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg> CORS Configuration</h3>
 
         @if($data['cors_config']['vulnerable'] ?? false)
-        <div class="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 mb-4">
-            <p class="text-sm text-red-400 font-semibold">⚠️ CORS Vulnerable — Server menerima origin berbahaya</p>
+        <div class="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <p class="text-sm text-red-400 font-semibold">CORS Vulnerable — Server menerima origin berbahaya</p>
         </div>
         @else
         <div class="px-4 py-3 rounded-lg bg-green-500/5 border border-green-500/20 mb-4">
@@ -388,7 +390,7 @@
                     <span class="text-xs text-[#64748b]">Origin:</span> <code class="text-xs text-[#94a3b8]">{{ $test['test_origin'] }}</code>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-xs {{ ($test['origin_reflected'] ?? false) ? 'text-red-400' : 'text-green-400' }}">{{ ($test['origin_reflected'] ?? false) ? 'Reflected ⚠️' : 'Blocked ✓' }}</span>
+                    <span class="text-xs font-medium {{ ($test['origin_reflected'] ?? false) ? 'text-red-400' : 'text-green-400' }}">{{ ($test['origin_reflected'] ?? false) ? 'Reflected [Risk]' : 'Blocked ✓' }}</span>
                 </div>
             </div>
             @endforeach
@@ -404,8 +406,9 @@
         @if(!empty($data['http_methods']['masalah']))
         <div class="mb-3 space-y-1">
             @foreach($data['http_methods']['masalah'] as $m)
-            <div class="px-3 py-1.5 rounded bg-red-500/5 border border-red-500/20">
-                <span class="text-xs text-red-400">⚠️ {{ $m }}</span>
+            <div class="px-3 py-1.5 rounded bg-red-500/5 border border-red-500/20 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span class="text-xs text-red-400">{{ $m }}</span>
             </div>
             @endforeach
         </div>
@@ -438,8 +441,9 @@
         @if(!empty($data['redirect_chain']['masalah']))
         <div class="mb-3 space-y-1">
             @foreach($data['redirect_chain']['masalah'] as $m)
-            <div class="px-3 py-1.5 rounded bg-red-500/5 border border-red-500/20">
-                <span class="text-xs text-red-400">⚠️ {{ $m }}</span>
+            <div class="px-3 py-1.5 rounded bg-red-500/5 border border-red-500/20 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span class="text-xs text-red-400">{{ $m }}</span>
             </div>
             @endforeach
         </div>
@@ -464,23 +468,28 @@
             <span class="text-[10px] px-2 py-1 rounded bg-green-500/10 text-green-400 border border-green-500/20">✓ HTTP→HTTPS Upgrade</span>
             @endif
             @if($data['redirect_chain']['https_to_http'] ?? false)
-            <span class="text-[10px] px-2 py-1 rounded bg-red-500/10 text-red-400 border border-red-500/20">⚠️ HTTPS→HTTP Downgrade</span>
+            <span class="text-[10px] px-2 py-1 rounded bg-red-500/10 text-red-400 border border-red-500/20 inline-flex items-center gap-1">
+                <svg class="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span>HTTPS→HTTP Downgrade</span>
+            </span>
             @endif
         </div>
     </div>
     @endif
 
-    {{-- Teknologi --}}
-    @if(!empty($data['teknologi']))
-    <div class="rounded-2xl bg-[#0f1629] border border-[#1e2d4a] p-6">
-        <h3 class="text-sm font-semibold text-[#00d4ff] mb-4 flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg> Teknologi Terdeteksi</h3>
-        <div class="flex flex-wrap gap-2">
-            @foreach($data['teknologi'] as $tech)
-            <span class="px-3 py-1.5 rounded-lg bg-[#1e2d4a] text-sm text-[#94a3b8]">{{ $tech }}</span>
-            @endforeach
-        </div>
-    </div>
-    @endif
+    {{-- Tech Stack + Screenshot (Fase C.1 + C.2) --}}
+    @php
+        $techStackData = $scan->tech_stack;
+        if (empty($techStackData) && !empty($data['tech_stack_structured'])) {
+            $techStackData = $data['tech_stack_structured'];
+        }
+        $screenshotEvidence = $data['screenshot_url'] ?? null;
+    @endphp
+    @include('components.tech-stack-badges', [
+        'techStack'  => $techStackData,
+        'screenshot' => $screenshotEvidence,
+    ])
+
 
     {{-- Server Info (Intens Only) --}}
     @if($isIntens && !empty($data['server_info']))
@@ -499,34 +508,9 @@
     </div>
     @endif
 
-    {{-- Subdomain Enumeration (Intens Only) --}}
+    {{-- Subdomain Discovery & Takeover (Fase B.1 & B.3) --}}
     @if($isIntens && !empty($data['subdomains']['subdomains']))
-    <div class="rounded-2xl bg-[#0f1629] border border-[#1e2d4a] p-6">
-        <h3 class="text-sm font-semibold text-[#7c3aed] mb-1 flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg> Subdomain Discovery (via crt.sh)</h3>
-        <p class="text-xs text-[#64748b] mb-4">{{ $data['subdomains']['total'] ?? 0 }} subdomain ditemukan dari Certificate Transparency logs</p>
-
-        @if(!empty($data['subdomains']['interesting']))
-        <div class="mb-3 px-4 py-2 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
-            <p class="text-xs text-yellow-400 font-semibold mb-1">🔍 Subdomain Menarik (dev/staging/internal):</p>
-            <div class="flex flex-wrap gap-1.5">
-                @foreach($data['subdomains']['interesting'] as $sub)
-                <span class="px-2 py-0.5 rounded bg-yellow-500/10 text-[11px] text-yellow-400 font-mono">{{ $sub }}</span>
-                @endforeach
-            </div>
-        </div>
-        @endif
-
-        <div class="max-h-60 overflow-y-auto space-y-1">
-            @foreach($data['subdomains']['subdomains'] as $sub)
-            <div class="flex items-center justify-between px-3 py-1.5 rounded {{ ($sub['menarik'] ?? false) ? 'bg-yellow-500/5 border border-yellow-500/10' : 'bg-[#0a0e1a]' }}">
-                <code class="text-xs {{ ($sub['menarik'] ?? false) ? 'text-yellow-400' : 'text-[#94a3b8]' }}">{{ $sub['name'] }}</code>
-                @if(!empty($sub['first_seen']))
-                <span class="text-[10px] text-[#475569]">{{ \Illuminate\Support\Str::limit($sub['first_seen'], 10, '') }}</span>
-                @endif
-            </div>
-            @endforeach
-        </div>
-    </div>
+    @include('components.subdomain-discovery', ['subdomainData' => $data['subdomains'] ?? [], 'scan' => $scan])
     @endif
 
     {{-- Common Files (Intens Only) --}}
@@ -542,19 +526,20 @@
                 $kategoris[$kat][] = $f;
             }
             $kategoriLabels = [
-                'source_control' => '🔓 Source Control',
-                'config_leak' => '⚙️ Config & Environment',
-                'backup' => '💾 Backup & Database',
-                'debug' => '🐛 Debug & Info Disclosure',
-                'admin_panel' => '🔑 Admin Panels',
-                'api_docs' => '📡 API Documentation',
-                'web_standard' => '🌐 Web Standard Files',
+                'source_control' => 'Source Control',
+                'config_leak' => 'Config & Environment',
+                'backup' => 'Backup & Database',
+                'debug' => 'Debug & Info Disclosure',
+                'admin_panel' => 'Admin Panels',
+                'api_docs' => 'API Documentation',
+                'web_standard' => 'Web Standard Files',
             ];
         @endphp
 
         @if(count($exposed) > 0)
-        <div class="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30">
-            <p class="text-sm text-red-400 font-semibold">⚠️ {{ count($exposed) }} file/path sensitif terekspos!</p>
+        <div class="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <p class="text-sm text-red-400 font-semibold">{{ count($exposed) }} file/path sensitif terekspos!</p>
         </div>
         @else
         <div class="mb-4 px-4 py-3 rounded-lg bg-green-500/5 border border-green-500/20">
@@ -589,15 +574,7 @@
     </div>
     @endif
 
-    {{-- Screenshot --}}
-    @if(!empty($data['screenshot_url']))
-    <div class="rounded-2xl bg-[#0f1629] border border-[#1e2d4a] p-6">
-        <h3 class="text-sm font-semibold text-[#00d4ff] mb-4 flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Screenshot Website</h3>
-        <div class="rounded-xl overflow-hidden border border-[#1e2d4a]">
-            <img src="{{ $data['screenshot_url'] }}" alt="Screenshot {{ $scan->target }}" class="w-full" loading="lazy" onerror="this.parentElement.innerHTML='<p class=\'p-8 text-center text-sm text-[#64748b]\'>Screenshot tidak tersedia</p>'">
-        </div>
-    </div>
-    @endif
+
 
     {{-- AI Analysis Button / Results --}}
     @if($isIntens || $scan->mode_scan === 'biasa')
@@ -633,7 +610,13 @@
             {{-- Simulasi Serangan --}}
             @if($scan->simulasiSerangan->count())
             <div class="mt-4">
-                <h4 class="text-sm font-semibold mb-3">Simulasi Serangan</h4>
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-sm font-semibold">Simulasi Serangan (Red Team)</h4>
+                    <a href="{{ route('simulasi.index', $scan->id) }}" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 shadow-[0_0_10px_rgba(220,38,38,0.3)]">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Jalankan Simulasi
+                    </a>
+                </div>
                 @foreach($scan->simulasiSerangan as $sim)
                 <div class="rounded-xl bg-[#0a0e1a] border border-[#1e2d4a] p-4 mb-2">
                     <h5 class="font-semibold text-red-400 text-sm">{{ $sim->nama_skenario }}</h5>
@@ -692,8 +675,15 @@
         <a href="{{ route('laporan.pdf', $scan) }}" class="glitch-radio-wrapper">
             <div class="glitch-btn">
                 Unduh PDF<span aria-hidden=""></span>
-                <span class="glitch-btn__glitch" aria-hidden="">_PDF_⬇️</span>
+                <span class="glitch-btn__glitch" aria-hidden="">_PDF_DOC</span>
                 <label class="glitch-number">r2</label>
+            </div>
+        </a>
+        <a href="{{ route('laporan.bandingkan', $scan) }}" class="glitch-radio-wrapper">
+            <div class="glitch-btn">
+                Bandingkan<span aria-hidden=""></span>
+                <span class="glitch-btn__glitch" aria-hidden="">_CMP_DIFF</span>
+                <label class="glitch-number">r3</label>
             </div>
         </a>
     </div>

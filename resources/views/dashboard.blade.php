@@ -62,7 +62,7 @@
             <p class="text-xs" style="color:#64748b;">Scan Hari Ini</p>
             {{-- Progress bar --}}
             <div class="mt-3 h-1 rounded-full overflow-hidden" style="background:#1e293b;">
-                @php $pct = $stats['batas_harian'] > 0 ? min(100, round($stats['scan_hari_ini'] / $stats['batas_harian'] * 100)) : 0; @endphp
+                @php $pct = (is_numeric($stats['batas_harian']) && $stats['batas_harian'] > 0) ? min(100, round($stats['scan_hari_ini'] / $stats['batas_harian'] * 100)) : 10; @endphp
                 <div class="h-full rounded-full transition-all duration-500"
                      style="width:{{ $pct }}%;background:linear-gradient(90deg,#06b6d4,#3b82f6);"></div>
             </div>

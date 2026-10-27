@@ -53,9 +53,9 @@ class GeminiService
 
                         return $this->aiProviderService->generate($provider, $apiKey, $model, $prompt, $isJson);
                     }
-                } catch (\Exception $e) {
-                    Log::error("User AI config gagal (user_id: {$userId}): " . $e->getMessage());
-                    throw $e;
+                } catch (\Throwable $e) {
+                    Log::warning("User AI config gagal (user_id: {$userId}), mencoba fallback: " . $e->getMessage());
+                    // Lanjutkan ke fallback berikutnya agar analisis tetap selesai
                 }
             }
         }
@@ -70,9 +70,9 @@ class GeminiService
 
             try {
                 return $this->aiProviderService->generate($provider, $apiKey, $model, $prompt, $isJson);
-            } catch (\Exception $e) {
-                Log::error("AI provider {$provider} gagal: " . $e->getMessage());
-                throw $e;
+            } catch (\Throwable $e) {
+                Log::warning("AI provider {$provider} gagal, mencoba fallback ke .env: " . $e->getMessage());
+                // Lanjutkan ke fallback .env
             }
         }
 

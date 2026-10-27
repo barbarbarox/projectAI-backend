@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="RedSim — Platform Penilaian Keamanan Sistem Berbasis AI. Analisis kerentanan kode, URL, dan file dengan teknologi AI canggih.">
-    <title>RedSim — Platform Penilaian Keamanan Sistem Berbasis AI</title>
+    <meta name="description" content="RedSim — Platform Keamanan Siber Hybrid AI+ML. Analisis kerentanan URL & kode, simulasi serangan MITRE ATT&CK, CVSSv3 Calculator, dan benchmark LLM vs Machine Learning.">
+    <title>RedSim — Platform Keamanan Siber Hybrid AI + ML</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/landing-animations.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -87,6 +87,8 @@
         .cyber-nav-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
         .cyber-nav-link.leaderboard { color: #facc15; }
         .cyber-nav-link.leaderboard:hover { background: rgba(250,204,21,0.08); }
+        .cyber-nav-link.red-lab { color: #fca5a5; }
+        .cyber-nav-link.red-lab:hover { background: rgba(220,38,38,0.08); }
         .cyber-nav-actions { display: flex; align-items: center; gap: 6px; }
         .cyber-btn-ghost {
             padding: 7px 15px;
@@ -112,6 +114,83 @@
             white-space: nowrap;
         }
         .cyber-btn-primary:hover { box-shadow: 0 0 28px rgba(0,212,255,0.38); transform: translateY(-1px); }
+
+        /* ===== HAMBURGER BUTTON ===== */
+        .cyber-hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.09);
+            background: rgba(255,255,255,0.04);
+            cursor: pointer;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+        .cyber-hamburger:hover { border-color: rgba(0,212,255,0.3); background: rgba(0,212,255,0.06); }
+        .cyber-hamburger span {
+            display: block;
+            width: 16px; height: 1.5px;
+            background: rgba(190,205,225,0.7);
+            border-radius: 2px;
+            transition: all 0.25s ease;
+        }
+        .cyber-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+        .cyber-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .cyber-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+        /* ===== MOBILE MENU DRAWER ===== */
+        .cyber-mobile-menu {
+            display: none;
+            position: fixed;
+            top: 76px; left: 12px; right: 12px;
+            z-index: 99;
+            background: rgba(6,8,18,0.97);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+            animation: menuSlideIn 0.2s ease;
+        }
+        .cyber-mobile-menu.open { display: block; }
+        @keyframes menuSlideIn {
+            from { opacity:0; transform: translateY(-8px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+        .cyber-mobile-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: rgba(190,205,225,0.75);
+            text-decoration: none;
+            transition: all 0.15s ease;
+            margin-bottom: 2px;
+        }
+        .cyber-mobile-link:hover { color:#fff; background: rgba(255,255,255,0.06); }
+        .cyber-mobile-link.yellow { color: #facc15; }
+        .cyber-mobile-link.red { color: #fca5a5; }
+        .cyber-mobile-divider { height:1px; background:rgba(255,255,255,0.06); margin: 8px 0; }
+        .cyber-mobile-actions { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+        .cyber-mobile-btn { display:block; text-align:center; padding:11px; border-radius:12px; font-size:0.875rem; font-weight:600; text-decoration:none; transition:all 0.2s; }
+        .cyber-mobile-btn.ghost { color:rgba(190,205,225,0.75); border:1px solid rgba(255,255,255,0.1); }
+        .cyber-mobile-btn.ghost:hover { color:#fff; background:rgba(255,255,255,0.05); }
+        .cyber-mobile-btn.primary { color:#fff; background:linear-gradient(135deg,#00d4ff 0%,#7c3aed 100%); }
+        .cyber-mobile-btn.primary:hover { box-shadow:0 0 20px rgba(0,212,255,0.35); }
+
+        /* ===== RESPONSIVE BREAKPOINT ===== */
+        @media (max-width: 768px) {
+            .cyber-hamburger { display: flex; }
+            .cyber-nav-links { display: none !important; }
+            .cyber-nav-actions { display: none !important; }
+        }
 
         /* ===== NEON CTA BUTTON ===== */
         .neon-btn-container { display:flex; justify-content:center; margin-top:10px; }
@@ -229,7 +308,7 @@
             position: relative; z-index: 6;
         }
         .neo-card-body p { margin-bottom: 10px; line-height: 1.5; font-size: 11.5px; font-weight: 600; }
-        .neo-card-icon { font-size: 1.8rem; margin-bottom: 6px; }
+        .neo-card-icon { width: 34px; height: 34px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
         .neo-card-btn {
             display: inline-flex; align-items: center; gap: 5px;
             padding: 4px 11px;
@@ -313,14 +392,23 @@
                 <img src="{{ asset('logo-redsim.svg') }}" alt="RedSim Logo">
                 <span>RedSim</span>
             </a>
-            <div class="cyber-nav-links hidden md:flex">
+
+            {{-- Desktop Links --}}
+            <div class="cyber-nav-links">
+                <a href="#fitur" class="cyber-nav-link">Fitur</a>
+                <a href="#pilar" class="cyber-nav-link">AI &amp; ML</a>
+                <a href="#kb" class="cyber-nav-link">Knowledge Base</a>
+                <a href="/red-team-lab" class="cyber-nav-link red-lab">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+                    Red Team Lab
+                </a>
                 <a href="/edukasi/leaderboard" class="cyber-nav-link leaderboard">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
                     Leaderboard
                 </a>
-                <a href="#fitur" class="cyber-nav-link">Fitur</a>
-                <a href="#kb" class="cyber-nav-link">Knowledge Base</a>
             </div>
+
+            {{-- Desktop Actions --}}
             <div class="cyber-nav-actions">
                 @auth
                     <a href="{{ route('dashboard') }}" class="cyber-btn-primary">Dashboard</a>
@@ -329,15 +417,44 @@
                     <a href="{{ route('daftar') }}" class="cyber-btn-primary">Daftar Gratis</a>
                 @endauth
             </div>
+
+            {{-- Mobile Hamburger --}}
+            <button class="cyber-hamburger" id="nav-hamburger" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
+
+    {{-- Mobile Menu Drawer --}}
+    <div class="cyber-mobile-menu" id="mobile-menu">
+        <a href="#fitur" class="cyber-mobile-link" onclick="closeMobileMenu()">Fitur Unggulan</a>
+        <a href="#pilar" class="cyber-mobile-link" onclick="closeMobileMenu()">AI &amp; ML Hybrid</a>
+        <a href="#kb" class="cyber-mobile-link" onclick="closeMobileMenu()">Knowledge Base</a>
+        <a href="/red-team-lab" class="cyber-mobile-link red">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+            Red Team Lab
+        </a>
+        <a href="/edukasi/leaderboard" class="cyber-mobile-link yellow">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            Leaderboard
+        </a>
+        <div class="cyber-mobile-divider"></div>
+        <div class="cyber-mobile-actions">
+            @auth
+                <a href="{{ route('dashboard') }}" class="cyber-mobile-btn primary">Ke Dashboard</a>
+            @else
+                <a href="{{ route('masuk') }}" class="cyber-mobile-btn ghost">Masuk</a>
+                <a href="{{ route('daftar') }}" class="cyber-mobile-btn primary">Daftar Gratis</a>
+            @endauth
+        </div>
+    </div>
 
     {{-- ========== HERO SECTION ========== --}}
     <section class="relative z-10 px-6 pt-16 pb-24">
         <div class="max-w-4xl mx-auto text-center landing-hero-content">
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00d4ff]/10 border border-[#00d4ff]/20 mb-8 glow-pulse">
                 <div class="w-2 h-2 rounded-full bg-[#00d4ff] animate-pulse"></div>
-                <span class="text-xs font-medium text-[#00d4ff]">Platform Keamanan Berbasis AI</span>
+                <span class="text-xs font-medium text-[#00d4ff]">Platform Keamanan Siber Hybrid AI + ML</span>
             </div>
 
             <h1 class="text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-6" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;">
@@ -380,26 +497,32 @@
                         <span class="gradient-text-anim">dalam satu platform</span>
                     </h2>
                     <p class="text-[#94a3b8] max-w-md leading-relaxed mb-8">
-                        Dilengkapi teknologi AI dan knowledge base keamanan siber dari sumber terpercaya dunia. Analisis menyeluruh dalam hitungan detik.
+                        Platform hybrid AI+ML pertama untuk keamanan siber — menggabungkan kecerdasan LLM (Gemini/Groq) dengan model Machine Learning terlatih pada 297K+ data CVE.
                     </p>
                     <div class="flex flex-col gap-3">
                         <div class="flex items-center gap-3 text-sm text-[#94a3b8]">
                             <div class="w-5 h-5 rounded-full bg-[#00d4ff]/20 flex items-center justify-center flex-shrink-0">
                                 <svg class="w-3 h-3 text-[#00d4ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                             </div>
-                            Analisis kode, URL, dan file ZIP
+                            Analisis kode &amp; URL real-time dengan AI
                         </div>
                         <div class="flex items-center gap-3 text-sm text-[#94a3b8]">
                             <div class="w-5 h-5 rounded-full bg-[#7c3aed]/20 flex items-center justify-center flex-shrink-0">
                                 <svg class="w-3 h-3 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                             </div>
-                            Simulasi serangan MITRE ATT&CK
+                            Simulasi serangan MITRE ATT&amp;CK + Kill Chain
                         </div>
                         <div class="flex items-center gap-3 text-sm text-[#94a3b8]">
                             <div class="w-5 h-5 rounded-full bg-[#22c55e]/20 flex items-center justify-center flex-shrink-0">
                                 <svg class="w-3 h-3 text-[#22c55e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                             </div>
-                            Ekspor laporan PDF profesional
+                            Benchmark LLM vs ML + Ekspor laporan PDF
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-[#94a3b8]">
+                            <div class="w-5 h-5 rounded-full bg-[#ef4444]/20 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-3 h-3 text-[#ef4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            Red Team Lab: CVSSv3.1 Calculator + Attack Visualizer
                         </div>
                     </div>
                 </div>
@@ -413,7 +536,9 @@
                             <span class="neo-card-head-tag" style="color:#ff2d78;">AI-POWERED</span>
                         </div>
                         <div class="neo-card-body">
-                            <div class="neo-card-icon">💻</div>
+                            <div class="neo-card-icon">
+                                <svg width="28" height="28" fill="none" stroke="#000" stroke-width="2.5" viewBox="0 0 24 24" style="display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                            </div>
                             <p>Tempel kode sumber dan dapatkan analisis kerentanan mendalam dengan remediasi yang jelas dan actionable.</p>
                             <a href="{{ route('daftar') }}" class="neo-card-btn" style="--btn-bg:#00d4ff;">▶ SCAN SEKARANG</a>
                         </div>
@@ -425,21 +550,25 @@
                             <span class="neo-card-head-tag" style="color:#00d4ff;">THREAT DETECT</span>
                         </div>
                         <div class="neo-card-body">
-                            <div class="neo-card-icon">🌐</div>
+                            <div class="neo-card-icon">
+                                <svg width="28" height="28" fill="none" stroke="#000" stroke-width="2.5" viewBox="0 0 24 24" style="display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/></svg>
+                            </div>
                             <p>Pindai URL dan website untuk mendeteksi phishing, malware, dan miskonfigurasi keamanan secara instan.</p>
                             <a href="{{ route('daftar') }}" class="neo-card-btn" style="--btn-bg:#7c3aed; color:#fff;">▶ PINDAI URL</a>
                         </div>
                     </div>
-                    {{-- Card 3: Analisis ZIP --}}
+                    {{-- Card 3: Red Team Lab --}}
                     <div class="neo-card neo-card-3">
                         <div class="neo-card-head">
-                            <span>⟨ PROJECT SCAN /⟩</span>
-                            <span class="neo-card-head-tag" style="color:#a78bfa;">FULL SCAN</span>
+                            <span>⟨ RED TEAM LAB /⟩</span>
+                            <span class="neo-card-head-tag" style="color:#a78bfa;">PILAR 3</span>
                         </div>
                         <div class="neo-card-body" style="color:#fff;">
-                            <div class="neo-card-icon">📦</div>
-                            <p style="color:rgba(255,255,255,0.85);">Unggah file ZIP proyek lengkap untuk analisis keamanan komprehensif seluruh kode sumber sekaligus.</p>
-                            <a href="{{ route('daftar') }}" class="neo-card-btn" style="--btn-bg:#00ff88;">▶ UPLOAD ZIP</a>
+                            <div class="neo-card-icon">
+                                <svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24" style="display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+                            </div>
+                            <p style="color:rgba(255,255,255,0.85);">CVSSv3.1 Calculator interaktif, Attack Path Visualizer berbasis Mermaid.js, dan MITRE ATT&amp;CK heatmap.</p>
+                            <a href="{{ route('daftar') }}" class="neo-card-btn" style="--btn-bg:#00ff88;">▶ BUKA LAB</a>
                         </div>
                     </div>
                     {{-- Card 4: Simulasi Serangan --}}
@@ -449,26 +578,714 @@
                             <span class="neo-card-head-tag" style="color:#00ff88;">MITRE</span>
                         </div>
                         <div class="neo-card-body">
-                            <div class="neo-card-icon">⚔️</div>
-                            <p>Visualisasi skenario serangan berdasarkan kerentanan yang ditemukan dengan framework MITRE ATT&CK.</p>
+                            <div class="neo-card-icon">
+                                <svg width="28" height="28" fill="none" stroke="#000" stroke-width="2.5" viewBox="0 0 24 24" style="display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            </div>
+                            <p>Visualisasi skenario serangan berdasarkan kerentanan yang ditemukan dengan framework MITRE ATT&amp;CK Enterprise v15.</p>
                             <a href="{{ route('daftar') }}" class="neo-card-btn" style="--btn-bg:#ff2d78; color:#fff;">▶ SIMULASI</a>
                         </div>
                     </div>
-                    {{-- Card 5: Laporan PDF --}}
+                    {{-- Card 5: Benchmark LLM vs ML --}}
                     <div class="neo-card neo-card-5">
                         <div class="neo-card-head">
-                            <span>⟨ PDF REPORT /⟩</span>
-                            <span class="neo-card-head-tag" style="color:#f97316;">EXPORT</span>
+                            <span>⟨ LLM vs ML /⟩</span>
+                            <span class="neo-card-head-tag" style="color:#f97316;">RISET</span>
                         </div>
                         <div class="neo-card-body">
-                            <div class="neo-card-icon">📋</div>
-                            <p>Unduh laporan analisis keamanan lengkap dalam format PDF profesional untuk keperluan audit dan dokumentasi.</p>
-                            <a href="{{ route('daftar') }}" class="neo-card-btn" style="--btn-bg:#7c3aed; color:#fff;">▶ EKSPOR PDF</a>
+                            <div class="neo-card-icon">
+                                <svg width="28" height="28" fill="none" stroke="#000" stroke-width="2.5" viewBox="0 0 24 24" style="display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            </div>
+                            <p>Dashboard perbandingan real-time antara prediksi LLM dan Ensemble ML (RF + XGBoost). Confusion matrix, agreement rate, dan export CSV.</p>
+                            <a href="{{ route('daftar') }}" class="neo-card-btn" style="--btn-bg:#7c3aed; color:#fff;">▶ BENCHMARK</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
+
+    {{-- ========== NEW PILLARS SECTION ========== --}}
+    <section id="pilar" class="relative z-10 px-6 py-24 border-t border-[#1e2d4a]">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-14">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#7c3aed]/10 border border-[#7c3aed]/20 mb-6">
+                    <div class="w-2 h-2 rounded-full bg-[#7c3aed] animate-pulse"></div>
+                    <span class="text-xs font-semibold text-[#a78bfa] tracking-wider uppercase">Tiga Pilar Inovasi</span>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    Lebih dari Sekadar
+                    <span class="gradient-text-anim">Scanner Biasa</span>
+                </h2>
+                <p class="text-[#94a3b8] max-w-xl mx-auto">
+                    RedSim menggabungkan AI, Machine Learning, dan framework keamanan industri untuk pengalaman penilaian keamanan yang komprehensif.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {{-- Pilar 1 --}}
+                <div class="rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-950/30 to-slate-950 p-6 hover:border-blue-500/40 transition-colors">
+                    <div class="w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3l14 9-14 9V3z"/>
+                        </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/20">PILAR 1</span>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-2">Hybrid AI + ML Verdict</h3>
+                    <p class="text-sm text-[#94a3b8] leading-relaxed mb-4">
+                        Setiap temuan dinilai oleh dua sistem: LLM (Gemini/Groq) dan model <strong class="text-blue-300">Ensemble ML (RF + XGBoost)</strong> terlatih pada 297K+ data CVE. Sistem menghasilkan konsensus severity yang lebih akurat.
+                    </p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">Ensemble ML</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">297K CVE Samples</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">Confidence Score</span>
+                    </div>
+                </div>
+
+                {{-- Pilar 2 --}}
+                <div class="rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-950/30 to-slate-950 p-6 hover:border-purple-500/40 transition-colors">
+                    <div class="w-11 h-11 rounded-xl bg-purple-500/15 border border-purple-500/25 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/20">PILAR 2</span>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-2">Benchmark LLM vs ML</h3>
+                    <p class="text-sm text-[#94a3b8] leading-relaxed mb-4">
+                        Dashboard riset dengan <strong class="text-purple-300">Agreement Rate real-time</strong>, Confusion Matrix 4×4, distribusi severity per model, trend 7 hari, dan ekspor CSV untuk analisis akademik.
+                    </p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">Confusion Matrix</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">Agreement Rate</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">Export CSV</span>
+                    </div>
+                </div>
+
+                {{-- Pilar 3 --}}
+                <div class="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-950/20 to-slate-950 p-6 hover:border-red-500/40 transition-colors">
+                    <div class="w-11 h-11 rounded-xl bg-red-500/15 border border-red-500/25 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+                        </svg>
+                    </div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20">PILAR 3</span>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-2">Red Team Lab</h3>
+                    <p class="text-sm text-[#94a3b8] leading-relaxed mb-4">
+                        <strong class="text-red-300">CVSSv3.1 Calculator</strong> dengan formula resmi FIRST.org, Attack Path Visualizer (Mermaid.js), MITRE ATT&amp;CK Heatmap interaktif, dan Composite Risk Score transparan.
+                    </p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">CVSSv3.1</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">Kill Chain</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">MITRE Heatmap</span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Stats row --}}
+            <div class="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-5 text-center">
+                    <div class="text-2xl font-black gradient-text-anim">297K+</div>
+                    <div class="text-xs text-[#475569] mt-1">CVE Training Data (ML)</div>
+                </div>
+                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-5 text-center">
+                    <div class="text-2xl font-black gradient-text-anim">14</div>
+                    <div class="text-xs text-[#475569] mt-1">MITRE ATT&CK Tactics</div>
+                </div>
+                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-5 text-center">
+                    <div class="text-2xl font-black gradient-text-anim">3+</div>
+                    <div class="text-xs text-[#475569] mt-1">LLM Provider Didukung</div>
+                </div>
+                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-5 text-center">
+                    <div class="text-2xl font-black gradient-text-anim">CVSSv3.1</div>
+                    <div class="text-xs text-[#475569] mt-1">Standard Internasional</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- ========== PRATINJAU ANALISIS SECTION ========== --}}
+    <section id="pratinjau" class="relative z-10 px-6 py-24 border-t border-[#1e2d4a]">
+        <style>
+            /* ===== PRATINJAU ANALISIS STYLES ===== */
+            .pratinjau-wrap {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 56px;
+            }
+            @media (min-width: 1024px) {
+                .pratinjau-wrap {
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 64px;
+                }
+            }
+            .pratinjau-info {
+                flex: 1;
+                max-width: 440px;
+                text-align: left;
+            }
+            .pratinjau-info p.subtitle {
+                color: #94a3b8;
+                line-height: 1.7;
+                margin-top: 16px;
+                font-size: 0.95rem;
+            }
+            .pratinjau-info .feature-list {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                margin-top: 24px;
+            }
+            .pratinjau-info .feature-list li {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 0.875rem;
+                color: #94a3b8;
+                list-style: none;
+            }
+            .pratinjau-info .feature-list li .check-icon {
+                flex-shrink: 0;
+                width: 20px; height: 20px;
+                border-radius: 50%;
+                display: flex; align-items: center; justify-content: center;
+            }
+            /* === The analysis card === */
+            .analysis-card {
+                width: 100%;
+                max-width: 580px;
+                background: #0d1620;
+                border-radius: 14px;
+                border: 1px solid #223340;
+                overflow: hidden;
+                box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(82,222,240,0.06);
+                flex-shrink: 0;
+                font-family: inherit;
+            }
+            /* Header */
+            .ac-header {
+                height: 52px;
+                background: #111e2a;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+                border-bottom: 1px solid #223340;
+            }
+            .ac-header-left {
+                display: flex;
+                align-items: center;
+                gap: 9px;
+            }
+            .ac-header-icon {
+                width: 17px; height: 17px;
+                color: #52def0;
+            }
+            .ac-header-title {
+                font-weight: 600;
+                font-size: 13px;
+                color: #eef5fa;
+                font-family: 'Inter', sans-serif;
+            }
+            .ac-header-sep {
+                font-size: 12px;
+                color: #718697;
+            }
+            .ac-header-file {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 11px;
+                color: #a5b6c6;
+            }
+            .ac-header-badge {
+                background: #102d37;
+                border-radius: 5px;
+                padding: 5px 9px;
+                font-family: 'JetBrains Mono', monospace;
+                font-weight: 500;
+                font-size: 10px;
+                color: #52def0;
+                letter-spacing: 0.04em;
+            }
+            /* Nav Tabs */
+            .ac-nav {
+                height: 48px;
+                display: flex;
+                align-items: center;
+                gap: 26px;
+                padding: 0 20px;
+                border-bottom: 1px solid #223340;
+            }
+            .ac-tab {
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                height: 100%;
+                font-size: 12px;
+                font-family: 'Inter', sans-serif;
+                color: #718697;
+                background: transparent;
+                border: none;
+                border-bottom: 2px solid transparent;
+                cursor: pointer;
+                padding: 0;
+                outline: none;
+                transition: color 0.2s;
+                font-weight: 400;
+            }
+            .ac-tab:hover { color: #a5b6c6; }
+            .ac-tab.active {
+                color: #52def0;
+                font-weight: 600;
+                border-bottom-color: #52def0;
+            }
+            .ac-tab-icon {
+                width: 14px; height: 14px;
+                flex-shrink: 0;
+            }
+            /* Body */
+            .ac-body {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                padding: 20px;
+            }
+            /* Code block */
+            .ac-code-block {
+                background: #09121b;
+                border-radius: 8px;
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                overflow: hidden;
+            }
+            .ac-code-top {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .ac-code-lang {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 10px;
+                color: #718697;
+                letter-spacing: 0.04em;
+            }
+            .ac-copy-btn {
+                width: 13px; height: 13px;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+                color: #718697;
+                transition: color 0.2s;
+                flex-shrink: 0;
+            }
+            .ac-copy-btn:hover { color: #52def0; }
+            .ac-copy-btn svg { width: 13px; height: 13px; }
+            .ac-pre {
+                margin: 0;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 12px;
+                line-height: 1.85;
+                white-space: pre-wrap;
+                word-break: break-all;
+            }
+            .ln { color: #718697; user-select: none; }
+            .kw { color: #52def0; }
+            .st { color: #f57580; }
+            .tx { color: #a5b6c6; }
+            /* Alert block */
+            .ac-alert {
+                background: #34202a;
+                border-radius: 8px;
+                padding: 16px;
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                overflow: hidden;
+            }
+            .ac-alert-icon {
+                width: 26px; height: 26px;
+                flex-shrink: 0;
+                color: #f57580;
+                margin-top: 1px;
+            }
+            .ac-alert-body { flex: 1; }
+            .ac-alert-top {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 8px;
+            }
+            .ac-alert-title {
+                font-family: 'Inter', sans-serif;
+                font-size: 15px;
+                color: #eef5fa;
+                font-weight: 400;
+                white-space: nowrap;
+            }
+            .ac-alert-severity {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 10px;
+                color: #f57580;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+                flex-shrink: 0;
+            }
+            .ac-alert-meta {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 10px;
+                color: #a5b6c6;
+                margin-top: 6px;
+            }
+            /* Method badges row */
+            .ac-methods {
+                display: flex;
+                gap: 12px;
+            }
+            .ac-method-card {
+                flex: 1;
+                border: 1px solid #223340;
+                border-radius: 8px;
+                padding: 12px;
+                display: flex;
+                flex-direction: column;
+                gap: 7px;
+                overflow: hidden;
+            }
+            .ac-method-top {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .ac-method-dot {
+                width: 5px; height: 5px;
+                border-radius: 50%;
+                background: #52def0;
+                flex-shrink: 0;
+            }
+            .ac-method-label {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 9px;
+                color: #52def0;
+                font-weight: 400;
+                letter-spacing: 0.04em;
+            }
+            .ac-method-desc {
+                font-family: 'Inter', sans-serif;
+                font-size: 11px;
+                color: #a5b6c6;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            /* Recommendation block */
+            .ac-reco {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .ac-reco-icon {
+                width: 16px; height: 16px;
+                color: #52def0;
+                flex-shrink: 0;
+                margin-top: 1px;
+            }
+            .ac-reco-body { flex: 1; }
+            .ac-reco-title {
+                font-family: 'Inter', sans-serif;
+                font-weight: 600;
+                font-size: 11px;
+                color: #eef5fa;
+                white-space: nowrap;
+            }
+            .ac-reco-text {
+                font-family: 'Inter', sans-serif;
+                font-size: 11px;
+                color: #a5b6c6;
+                margin-top: 4px;
+                line-height: 1.5;
+            }
+            /* Footer bar */
+            .ac-footer {
+                height: 35px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+                border-top: 1px solid #223340;
+            }
+            .ac-footer-label {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 9px;
+                color: #718697;
+                letter-spacing: 0.04em;
+            }
+            /* Floating glow behind card */
+            .pratinjau-glow {
+                position: absolute;
+                width: 480px; height: 480px;
+                background: radial-gradient(ellipse, rgba(82,222,240,0.07) 0%, transparent 70%);
+                border-radius: 50%;
+                pointer-events: none;
+                right: 0; top: 50%;
+                transform: translate(20%, -50%);
+                z-index: -1;
+            }
+        </style>
+
+        <div class="max-w-6xl mx-auto relative">
+            <!-- Section heading -->
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#52def0]/10 border border-[#52def0]/20 mb-6">
+                    <div class="w-2 h-2 rounded-full bg-[#52def0] animate-pulse"></div>
+                    <span class="text-xs font-semibold text-[#52def0] tracking-wider uppercase">Live Demo Preview</span>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    Lihat Cara Kerja
+                    <span class="gradient-text-anim">Analisis Keamanan</span>
+                </h2>
+                <p class="text-[#94a3b8] max-w-xl mx-auto">
+                    Pratinjau interaktif ruang analisis RedSim — scan kode, deteksi URL berbahaya, dan simulasi serangan dalam satu workspace.
+                </p>
+            </div>
+
+            <div class="pratinjau-wrap">
+                <!-- Left: info text -->
+                <div class="pratinjau-info">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#52def0]/10 border border-[#52def0]/25 mb-5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-[#52def0]"></div>
+                        <span class="text-xs font-semibold text-[#52def0] tracking-wider uppercase">Workspace Analisis</span>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-bold leading-tight">
+                        Deteksi kerentanan<br>
+                        <span class="gradient-text-anim">sebelum dieksploitasi</span>
+                    </h3>
+                    <p class="subtitle">
+                        Mesin analisis RedSim menggabungkan kekuatan LLM (Gemini/Groq) dan Machine Learning untuk mengidentifikasi kerentanan kode seperti SQL Injection, XSS, dan IDOR secara akurat.
+                    </p>
+                    <ul class="feature-list">
+                        <li>
+                            <span class="check-icon bg-[#52def0]/15">
+                                <svg class="w-3 h-3 text-[#52def0]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </span>
+                            Analisis kode multi-bahasa (Python, PHP, JS, Go, dst.)
+                        </li>
+                        <li>
+                            <span class="check-icon bg-[#a78bfa]/15">
+                                <svg class="w-3 h-3 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </span>
+                            Klasifikasi severity CVSS dengan confidence score
+                        </li>
+                        <li>
+                            <span class="check-icon bg-[#f57580]/15">
+                                <svg class="w-3 h-3 text-[#f57580]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </span>
+                            Rekomendasi remediasi actionable setiap temuan
+                        </li>
+                        <li>
+                            <span class="check-icon bg-[#22c55e]/15">
+                                <svg class="w-3 h-3 text-[#22c55e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </span>
+                            Pemetaan teknik MITRE ATT&amp;CK otomatis
+                        </li>
+                    </ul>
+                    <div class="mt-8">
+                        <a href="{{ route('daftar') }}" class="cyber-btn-primary" style="display:inline-flex;align-items:center;gap:8px;font-size:0.875rem;">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            Coba Gratis Sekarang
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right: Analysis Card (converted from React) -->
+                <div class="pratinjau-glow" aria-hidden="true"></div>
+                <div class="analysis-card" role="region" aria-label="Pratinjau analisis keamanan kode">
+
+                    <!-- Header -->
+                    <header class="ac-header">
+                        <div class="ac-header-left">
+                            <svg class="ac-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                            </svg>
+                            <span class="ac-header-title">Ruang analisis</span>
+                            <span class="ac-header-sep" aria-hidden="true">/</span>
+                            <span class="ac-header-file">autentikasi.py</span>
+                        </div>
+                        <span class="ac-header-badge" aria-label="Demo produk">DEMO PRODUK</span>
+                    </header>
+
+                    <!-- Nav tabs -->
+                    <nav class="ac-nav" aria-label="Mode analisis">
+                        <button type="button" class="ac-tab active" data-tab="code" role="tab" aria-selected="true" aria-controls="ac-panel-code" id="ac-tab-code">
+                            <svg class="ac-tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                            </svg>
+                            Analisis kode
+                        </button>
+                        <button type="button" class="ac-tab" data-tab="url" role="tab" aria-selected="false" aria-controls="ac-panel-url" id="ac-tab-url">
+                            Analisis URL
+                        </button>
+                        <button type="button" class="ac-tab" data-tab="attack" role="tab" aria-selected="false" aria-controls="ac-panel-attack" id="ac-tab-attack">
+                            Simulasi serangan
+                        </button>
+                    </nav>
+
+                    <!-- Panel: Analisis Kode -->
+                    <div id="ac-panel-code" role="tabpanel" aria-labelledby="ac-tab-code">
+                        <div class="ac-body">
+                            <!-- Code snippet -->
+                            <article class="ac-code-block">
+                                <div class="ac-code-top">
+                                    <span class="ac-code-lang">PYTHON / KODE SUMBER</span>
+                                    <button type="button" class="ac-copy-btn" id="ac-copy-btn" aria-label="Salin kode sumber" title="Salin kode sumber">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    </button>
+                                </div>
+                                <pre class="ac-pre" aria-label="Contoh kode Python"><code><span class="ln">01  </span><span class="kw">def</span><span class="tx"> cari_pengguna(nama):
+</span><span class="ln">02  </span><span class="tx">    kueri = </span><span class="st">"SELECT * FROM users WHERE name = '"</span><span class="tx">
+</span><span class="ln">03  </span><span class="tx">    kueri += nama + </span><span class="st">"'"</span><span class="tx">
+</span><span class="ln">04  </span><span class="tx">    </span><span class="kw">return</span><span class="tx"> db.execute(kueri)</span></code></pre>
+                            </article>
+
+                            <!-- SQL Injection alert -->
+                            <article class="ac-alert" aria-labelledby="ac-vuln-title">
+                                <div class="ac-alert-icon" aria-hidden="true">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                </div>
+                                <div class="ac-alert-body">
+                                    <div class="ac-alert-top">
+                                        <h3 id="ac-vuln-title" class="ac-alert-title">Potensi SQL Injection</h3>
+                                        <span class="ac-alert-severity">TINGGI</span>
+                                    </div>
+                                    <p class="ac-alert-meta">CWE-89 · Validasi input &amp; kueri database</p>
+                                </div>
+                            </article>
+
+                            <!-- Method badges -->
+                            <div class="ac-methods">
+                                <article class="ac-method-card">
+                                    <div class="ac-method-top">
+                                        <div class="ac-method-dot" aria-hidden="true"></div>
+                                        <span class="ac-method-label">LLM / GEMINI · GROQ</span>
+                                    </div>
+                                    <div class="ac-method-desc">Konteks kode dianalisis</div>
+                                </article>
+                                <article class="ac-method-card">
+                                    <div class="ac-method-top">
+                                        <div class="ac-method-dot" aria-hidden="true"></div>
+                                        <span class="ac-method-label">ML / RANDOM FOREST</span>
+                                    </div>
+                                    <div class="ac-method-desc">Pola kerentanan dikenali</div>
+                                </article>
+                            </div>
+
+                            <!-- Recommendation -->
+                            <aside class="ac-reco">
+                                <div class="ac-reco-icon" aria-hidden="true">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                    </svg>
+                                </div>
+                                <div class="ac-reco-body">
+                                    <div class="ac-reco-title">Rekomendasi remediasi</div>
+                                    <p class="ac-reco-text">Gunakan kueri berparameter untuk memisahkan input dari perintah SQL.</p>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+
+                    <!-- Panel: Analisis URL (placeholder) -->
+                    <div id="ac-panel-url" role="tabpanel" aria-labelledby="ac-tab-url" style="display:none;">
+                        <div class="ac-body" style="min-height: 280px; display:flex; align-items:center; justify-content:center;">
+                            <div style="text-align:center; color:#718697;">
+                                <svg style="width:36px;height:36px;margin:0 auto 10px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#52def0;margin-bottom:6px;">ANALISIS URL AKTIF</p>
+                                <p style="font-size:12px;">Masukkan URL untuk mendeteksi phishing,<br>malware, dan miskonfigurasi keamanan.</p>
+                                <a href="{{ route('daftar') }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:16px;padding:8px 20px;background:#102d37;border:1px solid #223340;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#52def0;text-decoration:none;transition:all 0.2s;">
+                                    Coba Sekarang →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel: Simulasi Serangan (placeholder) -->
+                    <div id="ac-panel-attack" role="tabpanel" aria-labelledby="ac-tab-attack" style="display:none;">
+                        <div class="ac-body" style="min-height: 280px; display:flex; align-items:center; justify-content:center;">
+                            <div style="text-align:center; color:#718697;">
+                                <svg style="width:36px;height:36px;margin:0 auto 10px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#f57580;margin-bottom:6px;">MITRE ATT&amp;CK ENGINE</p>
+                                <p style="font-size:12px;">Visualisasi serangan berbasis kerentanan yang<br>ditemukan dari framework MITRE ATT&amp;CK v15.</p>
+                                <a href="{{ route('daftar') }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:16px;padding:8px 20px;background:#2a1020;border:1px solid #3d2030;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#f57580;text-decoration:none;transition:all 0.2s;">
+                                    Simulasi Sekarang →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer bar -->
+                    <footer class="ac-footer">
+                        <span class="ac-footer-label">ILUSTRASI HASIL · BUKAN DATA PEMINDAIAN LANGSUNG</span>
+                        <svg style="width:12px;height:12px;color:#718697;" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </footer>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        (function() {
+            // Tab switching
+            var tabs = document.querySelectorAll('.ac-tab');
+            tabs.forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    var target = this.dataset.tab;
+                    tabs.forEach(function(t) {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+                    this.classList.add('active');
+                    this.setAttribute('aria-selected', 'true');
+
+                    // Hide all panels
+                    ['code','url','attack'].forEach(function(id) {
+                        var panel = document.getElementById('ac-panel-' + id);
+                        if (panel) panel.style.display = 'none';
+                    });
+                    var activePanel = document.getElementById('ac-panel-' + target);
+                    if (activePanel) activePanel.style.display = '';
+                });
+            });
+
+            // Copy button
+            var copyBtn = document.getElementById('ac-copy-btn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', function() {
+                    var code = "def cari_pengguna(nama):\n    kueri = \"SELECT * FROM users WHERE name = '\"\n    kueri += nama + \"'\"\n    return db.execute(kueri)";
+                    navigator.clipboard.writeText(code).then(function() {
+                        copyBtn.setAttribute('aria-label', 'Kode berhasil disalin');
+                        copyBtn.setAttribute('title', 'Kode berhasil disalin');
+                        copyBtn.querySelector('svg').style.color = '#52def0';
+                        setTimeout(function() {
+                            copyBtn.setAttribute('aria-label', 'Salin kode sumber');
+                            copyBtn.setAttribute('title', 'Salin kode sumber');
+                            copyBtn.querySelector('svg').style.color = '';
+                        }, 1500);
+                    }).catch(function() {});
+                });
+            }
+        })();
+        </script>
     </section>
 
     {{-- ========== KNOWLEDGE BASE (Terminal Style) ========== --}}
@@ -526,27 +1343,27 @@
                     <div class="terminal-output" id="term-output-1" style="display:none;">
                         <div class="terminal-grid" style="margin-bottom:10px;">
                             <div>
-                                <div class="terminal-item"><span class="term-cyan">📁</span><span class="terminal-item-name term-cyan">MITRE_ATTACK/</span></div>
+                                <div class="terminal-item"><span class="term-cyan" style="font-size:0.65rem;font-weight:700;letter-spacing:0.02em;">[DIR]</span>&nbsp;<span class="terminal-item-name term-cyan">MITRE_ATTACK/</span></div>
                                 <div class="terminal-item-desc">Taktik &amp; teknik serangan</div>
                             </div>
                             <div>
-                                <div class="terminal-item"><span class="term-yellow">📁</span><span class="terminal-item-name term-yellow">NVD_CVE/</span></div>
+                                <div class="terminal-item"><span class="term-yellow" style="font-size:0.65rem;font-weight:700;letter-spacing:0.02em;">[DIR]</span>&nbsp;<span class="terminal-item-name term-yellow">NVD_CVE/</span></div>
                                 <div class="terminal-item-desc">200K+ kerentanan nasional</div>
                             </div>
                             <div>
-                                <div class="terminal-item"><span class="term-green">📁</span><span class="terminal-item-name term-green">OWASP/</span></div>
+                                <div class="terminal-item"><span class="term-green" style="font-size:0.65rem;font-weight:700;letter-spacing:0.02em;">[DIR]</span>&nbsp;<span class="terminal-item-name term-green">OWASP/</span></div>
                                 <div class="terminal-item-desc">Standar keamanan web global</div>
                             </div>
                             <div>
-                                <div class="terminal-item"><span class="term-pink">📁</span><span class="terminal-item-name term-pink">CISA_KEV/</span></div>
+                                <div class="terminal-item"><span class="term-pink" style="font-size:0.65rem;font-weight:700;letter-spacing:0.02em;">[DIR]</span>&nbsp;<span class="terminal-item-name term-pink">CISA_KEV/</span></div>
                                 <div class="terminal-item-desc">Kerentanan dieksploitasi aktif</div>
                             </div>
                             <div>
-                                <div class="terminal-item"><span class="term-purple">📁</span><span class="terminal-item-name term-purple">CWE/</span></div>
+                                <div class="terminal-item"><span class="term-purple" style="font-size:0.65rem;font-weight:700;letter-spacing:0.02em;">[DIR]</span>&nbsp;<span class="terminal-item-name term-purple">CWE/</span></div>
                                 <div class="terminal-item-desc">Enumerasi kelemahan umum</div>
                             </div>
                             <div>
-                                <div class="terminal-item"><span class="term-orange">📁</span><span class="terminal-item-name term-orange">CAPEC/</span></div>
+                                <div class="terminal-item"><span class="term-orange" style="font-size:0.65rem;font-weight:700;letter-spacing:0.02em;">[DIR]</span>&nbsp;<span class="terminal-item-name term-orange">CAPEC/</span></div>
                                 <div class="terminal-item-desc">Pola serangan &amp; eksploitasi</div>
                             </div>
                         </div>
@@ -576,9 +1393,49 @@
     </section>
 
     {{-- ========== FOOTER ========== --}}
-    <footer class="relative z-10 px-6 py-8 border-t border-[#1e2d4a]" style="background:rgba(5,8,22,0.4)!important;backdrop-filter:blur(8px);">
-        <div class="max-w-6xl mx-auto text-center">
-            <p class="text-sm text-[#64748b]">&copy; {{ date('Y') }} RedSim. Platform Penilaian Keamanan Sistem Berbasis AI.</p>
+    <footer class="relative z-10 px-6 py-10 border-t border-[#1e2d4a]" style="background:rgba(5,8,22,0.4)!important;backdrop-filter:blur(8px);">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <div class="col-span-2 md:col-span-1">
+                    <div class="flex items-center gap-2 mb-3">
+                        <img src="{{ asset('logo-redsim.svg') }}" alt="RedSim" class="w-6 h-6">
+                        <span class="font-black text-sm" style="background:linear-gradient(90deg,#00d4ff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">RedSim</span>
+                    </div>
+                    <p class="text-xs text-[#475569] leading-relaxed">Platform keamanan siber hybrid AI+ML untuk analisis kerentanan, simulasi serangan, dan riset keamanan.</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-3">Fitur</p>
+                    <div class="space-y-2">
+                        <a href="{{ route('daftar') }}" class="block text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">Analisis URL</a>
+                        <a href="{{ route('daftar') }}" class="block text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">Analisis Kode</a>
+                        <a href="{{ route('daftar') }}" class="block text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">Simulasi Serangan</a>
+                        <a href="{{ route('daftar') }}" class="block text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">Red Team Lab</a>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-3">Riset</p>
+                    <div class="space-y-2">
+                        <a href="{{ route('daftar') }}" class="block text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">Benchmark LLM vs ML</a>
+                        <a href="{{ route('daftar') }}" class="block text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">CVSSv3.1 Calculator</a>
+                        <a href="{{ route('daftar') }}" class="block text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">MITRE ATT&CK Matrix</a>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-3">Komunitas</p>
+                    <div class="space-y-2">
+                        <a href="/edukasi/leaderboard" class="block text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">Leaderboard</a>
+                        <a href="{{ route('edukasi.index') }}" class="block text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">Hub Edukasi</a>
+                        <a href="{{ route('chat-ai') }}" class="block text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">Chat AI</a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-[#1e2d4a] pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
+                <p class="text-xs text-[#475569]">&copy; {{ date('Y') }} RedSim. Platform Keamanan Siber Hybrid AI + ML.</p>
+                <div class="flex items-center gap-4">
+                    <span class="text-[10px] px-2 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">● Sistem Online</span>
+                    <span class="text-xs text-[#475569]">Knowledge Base diperbarui {{ now()->format('d M Y') }}</span>
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -905,11 +1762,11 @@
             initDecryptedTextLoop(
                 document.getElementById('welcome-texttype'),
                 [
-                    'Selamat datang di RedSim — garda terdepan keamanan digital Anda.',
-                    'Analisis kerentanan kode, URL, dan proyek secara otomatis dengan AI.',
+                    'Selamat datang di RedSim — platform keamanan siber hybrid AI + ML.',
+                    'Analisis URL dan kode sumber secara otomatis, didukung LLM dan Ensemble ML.',
                     'Temukan celah keamanan sebelum peretas menemukannya.',
-                    'Didukung knowledge base dari MITRE, OWASP, dan NVD.',
-                    'Lindungi sistem Anda dengan kecerdasan buatan terpercaya.'
+                    'Benchmark LLM vs ML real-time — kontribusi riset keamanan siber nyata.',
+                    'Red Team Lab: CVSSv3.1 Calculator, Attack Path Visualizer, MITRE ATT&CK Heatmap.'
                 ],
                 { speed: 50, pauseDuration: 2500, maxIterations: 15 }
             );
@@ -1037,6 +1894,79 @@
                 if (terminal) termObs.observe(terminal);
             })();
         });
+
+        // ── 8. Hamburger Mobile Menu ──────────────────────────────────
+        (function() {
+            var hamburger = document.getElementById('nav-hamburger');
+            var mobileMenu = document.getElementById('mobile-menu');
+            var isOpen = false;
+
+            function openMenu() {
+                isOpen = true;
+                hamburger.classList.add('open');
+                mobileMenu.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeMenu() {
+                isOpen = false;
+                hamburger.classList.remove('open');
+                mobileMenu.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            window.closeMobileMenu = closeMenu;
+
+            if (hamburger) {
+                hamburger.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    isOpen ? closeMenu() : openMenu();
+                });
+            }
+
+            // Close on outside click
+            document.addEventListener('click', function(e) {
+                if (isOpen && mobileMenu && !mobileMenu.contains(e.target) && hamburger && !hamburger.contains(e.target)) {
+                    closeMenu();
+                }
+            });
+
+            // Close on scroll > 50px
+            var lastScrollY = window.scrollY;
+            window.addEventListener('scroll', function() {
+                var diff = Math.abs(window.scrollY - lastScrollY);
+                if (diff > 50 && isOpen) closeMenu();
+                lastScrollY = window.scrollY;
+            }, { passive: true });
+
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    var targetId = this.getAttribute('href');
+                    var target = document.querySelector(targetId);
+                    if (target) {
+                        e.preventDefault();
+                        closeMenu();
+                        setTimeout(function() {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                    }
+                });
+            });
+
+            // Navbar scroll shadow
+            var navInner = document.querySelector('.cyber-nav-inner');
+            window.addEventListener('scroll', function() {
+                if (!navInner) return;
+                if (window.scrollY > 20) {
+                    navInner.style.background = 'rgba(6,8,18,0.97)';
+                    navInner.style.boxShadow = '0 4px 40px rgba(0,0,0,0.75), inset 0 0 0 1px rgba(0,212,255,0.08)';
+                } else {
+                    navInner.style.background = 'rgba(6,8,18,0.88)';
+                    navInner.style.boxShadow = '0 4px 32px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,212,255,0.04)';
+                }
+            }, { passive: true });
+        })();
     </script>
 </body>
 </html>

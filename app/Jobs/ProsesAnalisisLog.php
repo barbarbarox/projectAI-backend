@@ -6,6 +6,7 @@ use App\Models\Scan;
 use App\Models\Temuan;
 use App\Models\SimulasiSerangan;
 use App\Services\AnalisisLogService;
+ use App\Services\MLPredictionService;
 use App\Traits\NotifyScanComplete;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,7 +30,7 @@ class ProsesAnalisisLog implements ShouldQueue
         protected ?string $filePath = null
     ) {}
 
-    public function handle(AnalisisLogService $service): void
+    public function handle(AnalisisLogService $service, MLPredictionService $mlService): void
     {
         try {
             $this->scan->update(['progress_step' => 'Membaca dan Memparsing Log...', 'progress_persen' => 20]);
@@ -71,13 +72,25 @@ class ProsesAnalisisLog implements ShouldQueue
 
             $this->notifyScanCompleteViaWa($this->scan);
 
-            // Simpan temuan dari AI
+            // Simpan temuan dari AI + prediksi ML
             foreach ($hasil['temuan'] ?? [] as $t) {
-                Temuan::create(array_merge(['scan_id' => $this->scan->id], array_intersect_key($t, array_flip([
-                    'tipe','tingkat_keparahan','judul','deskripsi','lokasi','nomor_baris',
-                    'kode_rentan','kode_aman','cve_id','cwe_id','teknik_attck',
-                    'remediasi','estimasi_usaha','tingkat_kepercayaan',
-                ]))));
+                // Pilar 1: Prediksi ML via Random Forest
+                $mlResult = $mlService->predict($t);
+
+                Temuan::create(array_merge(
+                    ['scan_id' => $this->scan->id],
+                    array_intersect_key($t, array_flip([
+                        'tipe','tingkat_keparahan','judul','deskripsi','lokasi','nomor_baris',
+                        'kode_rentan','kode_aman','cve_id','cwe_id','teknik_attck',
+                        'remediasi','estimasi_usaha','tingkat_kepercayaan',
+                    ])),
+                    [
+                        'ml_predicted_severity'   => $mlResult['ml_predicted_severity'] ?? null,
+                        'ml_confidence'           => $mlResult['ml_confidence'] ?? null,
+                        'konsensus_severity'      => $mlResult['konsensus'] ?? null,
+                        'ml_class_probabilities'  => $mlResult['class_probabilities'] ?? null,
+                    ]
+                ));
             }
 
             foreach ($hasil['simulasi_serangan'] ?? [] as $s) {
@@ -86,14 +99,36 @@ class ProsesAnalisisLog implements ShouldQueue
                     'skor_kemungkinan','skor_dampak','rantai_serangan','fase_attck',
                 ]))));
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Analisis Log gagal: " . $e->getMessage());
-            $this->scan->update(['status' => 'gagal', 'error_message' => $e->getMessage()]);
+            try {
+                \DB::table('scans')->where('id', $this->scan->id)->update([
+                    'status' => 'gagal',
+                    'progress_step' => 'Gagal',
+                    'error_message' => substr($e->getMessage(), 0, 1000),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Throwable $t) {
+                Log::error("Gagal update scan status ke gagal: " . $t->getMessage());
+            }
         } finally {
             // Hapus file setelah analisis
             if ($this->filePath && Storage::exists($this->filePath)) {
                 Storage::delete($this->filePath);
             }
         }
+    }
+
+    public function failed(?\Throwable $exception): void
+    {
+        Log::error("Job ProsesAnalisisLog failed(): " . ($exception ? $exception->getMessage() : 'No exception'));
+        try {
+            \DB::table('scans')->where('id', $this->scan->id)->update([
+                'status' => 'gagal',
+                'progress_step' => 'Gagal',
+                'error_message' => $exception ? substr($exception->getMessage(), 0, 1000) : 'Job gagal dieksekusi oleh worker.',
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $t) {}
     }
 }

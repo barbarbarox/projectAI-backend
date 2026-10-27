@@ -59,26 +59,26 @@
                         </span>
                         @endif
                     </td>
-                    <td class="px-6 py-4 flex gap-2 justify-center">
+                    <td class="px-6 py-4 flex gap-2 justify-center items-center">
                         @if(!$user->is_verified)
                         <form action="{{ route('admin.users.verify', $user) }}" method="POST">
                             @csrf @method('PATCH')
-                            <button type="submit" class="px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 rounded text-xs font-semibold transition-colors">Setujui</button>
+                            <button type="submit" class="px-3 py-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-xs font-semibold transition-all">Setujui</button>
                         </form>
                         <form action="{{ route('admin.users.resendNotification', $user) }}" method="POST">
                             @csrf
-                            <button type="submit" class="px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 rounded text-xs font-semibold transition-colors">Kirim WA</button>
+                            <button type="submit" class="px-3 py-1.5 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-lg text-xs font-semibold transition-all">Kirim WA</button>
                         </form>
                         @else
                         <form action="{{ route('admin.users.unverify', $user) }}" method="POST">
                             @csrf @method('PATCH')
-                            <button type="submit" class="px-3 py-1.5 bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 rounded text-xs font-semibold transition-colors">Batalkan</button>
+                            <button type="submit" class="px-3 py-1.5 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg text-xs font-semibold transition-all">Batalkan</button>
                         </form>
                         @endif
                         
                         <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus pengguna ini secara permanen?');">
                             @csrf @method('DELETE')
-                            <button type="submit" class="px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded text-xs font-semibold transition-colors">Hapus</button>
+                            <button type="submit" class="px-3 py-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-xs font-semibold transition-all">Hapus</button>
                         </form>
                     </td>
                 </tr>

@@ -80,6 +80,7 @@
                     </td>
                     <td>
                         @if($scan->status === 'selesai')
+                        <div class="flex items-center gap-3">
                         <a href="{{ route('laporan.detail', $scan) }}"
                            class="inline-flex items-center gap-1 text-xs font-medium transition-colors duration-200 hover:underline"
                            style="color:#ef4444;">
@@ -88,6 +89,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                         </a>
+                        <a href="{{ route('laporan.bandingkan', $scan) }}"
+                           class="inline-flex items-center gap-1.5 text-xs font-medium transition-colors duration-200 hover:text-cyan-300"
+                           style="color:#06b6d4;"
+                           title="Bandingkan dengan scan lain">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            <span>Bandingkan</span>
+                        </a>
+                        </div>
                         @endif
                     </td>
                 </tr>

@@ -6,11 +6,11 @@
 @section('content')
 @php
     $formatMeta = [
-        'quiz'       => ['icon' => '🎯', 'label' => 'Quiz',       'color' => 'text-blue-400',   'bg' => 'bg-blue-500/10',   'border' => 'border-blue-500/30'],
-        'kode'       => ['icon' => '💻', 'label' => 'Kode',       'color' => 'text-green-400',  'bg' => 'bg-green-500/10',  'border' => 'border-green-500/30'],
-        'skenario'   => ['icon' => '📋', 'label' => 'Skenario',   'color' => 'text-yellow-400', 'bg' => 'bg-yellow-500/10', 'border' => 'border-yellow-500/30'],
-        'ciphertext' => ['icon' => '🔐', 'label' => 'Kriptografi','color' => 'text-purple-400', 'bg' => 'bg-purple-500/10', 'border' => 'border-purple-500/30'],
-        'file'       => ['icon' => '📁', 'label' => 'Forensik',   'color' => 'text-orange-400', 'bg' => 'bg-orange-500/10', 'border' => 'border-orange-500/30'],
+        'quiz'       => ['label' => 'Quiz',        'icon' => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>', 'color' => 'text-blue-400',   'bg' => 'bg-blue-500/10',   'border' => 'border-blue-500/30'],
+        'kode'       => ['label' => 'Kode',        'icon' => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>', 'color' => 'text-green-400',  'bg' => 'bg-green-500/10',  'border' => 'border-green-500/30'],
+        'skenario'   => ['label' => 'Skenario',    'icon' => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>', 'color' => 'text-yellow-400', 'bg' => 'bg-yellow-500/10', 'border' => 'border-yellow-500/30'],
+        'ciphertext' => ['label' => 'Kriptografi', 'icon' => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>', 'color' => 'text-purple-400', 'bg' => 'bg-purple-500/10', 'border' => 'border-purple-500/30'],
+        'file'       => ['label' => 'Forensik',    'icon' => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>', 'color' => 'text-orange-400', 'bg' => 'bg-orange-500/10', 'border' => 'border-orange-500/30'],
     ];
     $sulitColor = ['mudah' => 'text-green-400 bg-green-500/10', 'sedang' => 'text-yellow-400 bg-yellow-500/10', 'sulit' => 'text-red-400 bg-red-500/10'];
 @endphp
@@ -36,7 +36,7 @@
                     <option value="">Semua Format</option>
                     @foreach($formatMeta as $key => $meta)
                     <option value="{{ $key }}" {{ request('kategori') == $key ? 'selected' : '' }}>
-                        {{ $meta['icon'] }} {{ $meta['label'] }}
+                        {{ $meta['label'] }}
                         @if(isset($statsFormat[$key])) ({{ $statsFormat[$key] }}) @endif
                     </option>
                     @endforeach
@@ -46,19 +46,19 @@
                 <select name="tingkat" onchange="document.getElementById('filterForm').submit()"
                         class="px-3 py-2 rounded-xl bg-[#0a0e1a] border border-[#1e2d4a] text-sm text-white focus:border-[#00d4ff] focus:outline-none">
                     <option value="">Semua Level</option>
-                    <option value="mudah"  {{ request('tingkat') == 'mudah'  ? 'selected' : '' }}>🟢 Mudah</option>
-                    <option value="sedang" {{ request('tingkat') == 'sedang' ? 'selected' : '' }}>🟡 Sedang</option>
-                    <option value="sulit"  {{ request('tingkat') == 'sulit'  ? 'selected' : '' }}>🔴 Sulit</option>
+                    <option value="mudah"  {{ request('tingkat') == 'mudah'  ? 'selected' : '' }}>Mudah</option>
+                    <option value="sedang" {{ request('tingkat') == 'sedang' ? 'selected' : '' }}>Sedang</option>
+                    <option value="sulit"  {{ request('tingkat') == 'sulit'  ? 'selected' : '' }}>Sulit</option>
                 </select>
 
                 {{-- Sort --}}
                 <select name="sort" onchange="document.getElementById('filterForm').submit()"
                         class="px-3 py-2 rounded-xl bg-[#0a0e1a] border border-[#1e2d4a] text-sm text-white focus:border-[#00d4ff] focus:outline-none">
-                    <option value="terbaru"   {{ $sort == 'terbaru'   ? 'selected' : '' }}>⏱ Terbaru</option>
-                    <option value="poin_desc" {{ $sort == 'poin_desc' ? 'selected' : '' }}>⬆ Poin Terbesar</option>
-                    <option value="poin_asc"  {{ $sort == 'poin_asc'  ? 'selected' : '' }}>⬇ Poin Terkecil</option>
-                    <option value="mudah"     {{ $sort == 'mudah'     ? 'selected' : '' }}>🟢 Termudah Dulu</option>
-                    <option value="sulit"     {{ $sort == 'sulit'     ? 'selected' : '' }}>🔴 Tersulit Dulu</option>
+                    <option value="terbaru"   {{ $sort == 'terbaru'   ? 'selected' : '' }}>Terbaru</option>
+                    <option value="poin_desc" {{ $sort == 'poin_desc' ? 'selected' : '' }}>Poin Terbesar</option>
+                    <option value="poin_asc"  {{ $sort == 'poin_asc'  ? 'selected' : '' }}>Poin Terkecil</option>
+                    <option value="mudah"     {{ $sort == 'mudah'     ? 'selected' : '' }}>Termudah Dulu</option>
+                    <option value="sulit"     {{ $sort == 'sulit'     ? 'selected' : '' }}>Tersulit Dulu</option>
                 </select>
 
                 {{-- Total --}}
@@ -73,8 +73,9 @@
                 </a>
                 @foreach($formatMeta as $key => $meta)
                 <a href="{{ route('edukasi.tantangan', array_merge(request()->except('kategori'), ['kategori' => $key, 'sort' => $sort])) }}"
-                   class="px-3 py-1 rounded-full text-xs font-medium transition-all {{ request('kategori') == $key ? $meta['color'] . ' ' . $meta['bg'] . ' border ' . $meta['border'] : 'bg-[#1e2d4a] text-[#64748b] hover:text-white' }}">
-                    {{ $meta['icon'] }} {{ $meta['label'] }}
+                   class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all {{ request('kategori') == $key ? $meta['color'] . ' ' . $meta['bg'] . ' border ' . $meta['border'] : 'bg-[#1e2d4a] text-[#64748b] hover:text-white' }}">
+                    {!! $meta['icon'] !!}
+                    <span>{{ $meta['label'] }}</span>
                 </a>
                 @endforeach
             </div>
@@ -84,7 +85,9 @@
     {{-- ===== GRID TANTANGAN ===== --}}
     @if($tantanganList->isEmpty())
     <div class="text-center py-20 text-[#475569]">
-        <p class="text-4xl mb-3">🔍</p>
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#0f1629] border border-[#1e2d4a] flex items-center justify-center text-slate-500">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
         <p class="text-lg font-semibold text-[#94a3b8]">Tidak ada tantangan ditemukan</p>
         <p class="text-sm mt-1">Coba ubah filter atau kata kunci pencarian.</p>
     </div>
@@ -109,8 +112,8 @@
 
             {{-- Header --}}
             <div class="flex items-start gap-3 mb-3">
-                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 {{ $fmt['bg'] }}">
-                    {{ $fmt['icon'] }}
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 {{ $fmt['bg'] }} {{ $fmt['color'] }}">
+                    {!! $fmt['icon'] !!}
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1">

@@ -36,6 +36,14 @@ class WhatsappService
 
 
     /**
+     * Alias method untuk sendText agar kompatibel dengan pemanggil service.
+     */
+    public function sendText(string $phone, string $message): bool
+    {
+        return $this->sendMessage($phone, $message);
+    }
+
+    /**
      * Kirim pesan WhatsApp via OpenWA API Gateway.
      *
      * @param string $phone Nomor telepon tujuan (format: 628xxxxxxxxx)

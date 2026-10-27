@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\TechStackFingerprinter;
 
 class ScanIntensService
 {
@@ -19,22 +20,31 @@ class ScanIntensService
     /**
      * Scan Mode 2 (Intens) — Full penetration testing, tanpa sensor.
      */
-    public function scan(string $url): array
+    public function scan(string $url, ?callable $onProgress = null): array
     {
         $parsed = parse_url($url);
         $host = $parsed['host'] ?? '';
 
+        if ($onProgress) $onProgress('Menganalisis Reputasi Target...', 15);
         $vtData = $this->vtService->getUrlReport($url) ?? [];
         $urlscanData = $this->submitAndPollUrlscan($url);
+
+        if ($onProgress) $onProgress('Menganalisis Security Headers & SSL...', 25);
         $headerData = $this->analyzeHeaders($url);
         $sslData = $this->analyzeSSL($url);
-        $commonFiles = $this->checkCommonFiles($url);
+
+        if ($onProgress) $onProgress('Reconnaissance DNS & Port Scanning...', 35);
         $dnsData = $this->analyzeDNS($host);
-        $portData = $this->scanCommonPorts($host);
+        $portData = $this->scanCommonPorts($host, $dnsData['cdn_waf'] ?? []);
+
+        if ($onProgress) $onProgress('Pengecekan File Sensitif & HTTP Methods...', 45);
+        $commonFiles = $this->checkCommonFiles($url);
         $cookieData = $this->analyzeCookies($url);
         $corsData = $this->analyzeCORS($url);
         $httpMethods = $this->enumerateHTTPMethods($url);
         $redirectData = $this->analyzeRedirects($url);
+
+        if ($onProgress) $onProgress('Enumerasi Subdomain & Finalisasi Recon...', 55);
         $subdomains = $this->enumerateSubdomains($host);
 
         return $this->buildReport(
@@ -58,8 +68,8 @@ class ScanIntensService
             return [];
         }
 
-        // Tunggu maksimal 45 detik
-        $result = $this->urlScanService->pollResult($submission['uuid'], 45);
+        // Tunggu maksimal 20 detik (jika antrean URLScan lama, lanjutkan tanpa menahan seluruh scan)
+        $result = $this->urlScanService->pollResult($submission['uuid'], 20);
         return $result ?? [];
     }
 
@@ -82,23 +92,23 @@ class ScanIntensService
                 $allHeaders[$name] = $values[0] ?? '';
             }
 
-            // 15 security headers dengan bobot poin
+            // 6 Core Security Headers Modern (Total 100 poin) + Header Informasional/Isolasi
             $securityHeaders = [
-                'Content-Security-Policy'            => ['poin' => 15, 'kritis' => true,  'deskripsi' => 'Mencegah XSS dan injection dengan membatasi sumber konten'],
-                'Strict-Transport-Security'           => ['poin' => 15, 'kritis' => true,  'deskripsi' => 'Memaksa koneksi HTTPS, mencegah downgrade attack'],
-                'X-Frame-Options'                     => ['poin' => 10, 'kritis' => true,  'deskripsi' => 'Mencegah clickjacking dengan melarang embedding di iframe'],
-                'X-Content-Type-Options'              => ['poin' => 10, 'kritis' => true,  'deskripsi' => 'Mencegah MIME-type sniffing attack'],
-                'Referrer-Policy'                     => ['poin' => 8,  'kritis' => false, 'deskripsi' => 'Mengontrol informasi referrer yang dikirim ke situs lain'],
-                'Permissions-Policy'                  => ['poin' => 8,  'kritis' => false, 'deskripsi' => 'Membatasi akses fitur browser (kamera, mikrofon, geolocation)'],
-                'X-XSS-Protection'                    => ['poin' => 5,  'kritis' => false, 'deskripsi' => 'Filter XSS bawaan browser (legacy, tetap relevan)'],
-                'X-DNS-Prefetch-Control'              => ['poin' => 3,  'kritis' => false, 'deskripsi' => 'Mengontrol DNS prefetching untuk mencegah kebocoran informasi'],
-                'X-Download-Options'                  => ['poin' => 3,  'kritis' => false, 'deskripsi' => 'Mencegah IE membuka file download langsung dalam konteks situs'],
-                'X-Permitted-Cross-Domain-Policies'   => ['poin' => 3,  'kritis' => false, 'deskripsi' => 'Mengontrol kebijakan cross-domain untuk Flash/PDF'],
-                'Cross-Origin-Embedder-Policy'        => ['poin' => 5,  'kritis' => false, 'deskripsi' => 'Mengontrol embedding resource cross-origin (COEP)'],
-                'Cross-Origin-Opener-Policy'          => ['poin' => 5,  'kritis' => false, 'deskripsi' => 'Mengisolasi browsing context dari cross-origin (COOP)'],
-                'Cross-Origin-Resource-Policy'        => ['poin' => 5,  'kritis' => false, 'deskripsi' => 'Membatasi siapa yang bisa memuat resource ini (CORP)'],
-                'Cache-Control'                       => ['poin' => 3,  'kritis' => false, 'deskripsi' => 'Mengontrol caching untuk mencegah data sensitif tersimpan'],
-                'X-Robots-Tag'                        => ['poin' => 2,  'kritis' => false, 'deskripsi' => 'Mengontrol indexing mesin pencari (mencegah eksposur)'],
+                'Content-Security-Policy'            => ['poin' => 25, 'kritis' => true,  'kategori' => 'core', 'deskripsi' => 'Mencegah XSS dan injection dengan membatasi sumber konten'],
+                'Strict-Transport-Security'           => ['poin' => 25, 'kritis' => true,  'kategori' => 'core', 'deskripsi' => 'Memaksa koneksi HTTPS, mencegah downgrade attack'],
+                'X-Frame-Options'                     => ['poin' => 15, 'kritis' => true,  'kategori' => 'core', 'deskripsi' => 'Mencegah clickjacking dengan melarang embedding di iframe'],
+                'X-Content-Type-Options'              => ['poin' => 15, 'kritis' => true,  'kategori' => 'core', 'deskripsi' => 'Mencegah MIME-type sniffing attack'],
+                'Referrer-Policy'                     => ['poin' => 10, 'kritis' => false, 'kategori' => 'core', 'deskripsi' => 'Mengontrol informasi referrer yang dikirim ke situs lain'],
+                'Permissions-Policy'                  => ['poin' => 10, 'kritis' => false, 'kategori' => 'core', 'deskripsi' => 'Membatasi akses fitur browser (kamera, mikrofon, geolocation)'],
+                // Modern isolation headers (informasional, nilai proteksi ekstra)
+                'Cross-Origin-Embedder-Policy'        => ['poin' => 0,  'kritis' => false, 'kategori' => 'isolation', 'deskripsi' => 'Mengontrol embedding resource cross-origin (COEP)'],
+                'Cross-Origin-Opener-Policy'          => ['poin' => 0,  'kritis' => false, 'kategori' => 'isolation', 'deskripsi' => 'Mengisolasi browsing context dari cross-origin (COOP)'],
+                'Cross-Origin-Resource-Policy'        => ['poin' => 0,  'kritis' => false, 'kategori' => 'isolation', 'deskripsi' => 'Membatasi siapa yang bisa memuat resource ini (CORP)'],
+                'Cache-Control'                       => ['poin' => 0,  'kritis' => false, 'kategori' => 'caching',   'deskripsi' => 'Mengontrol caching untuk mencegah data sensitif tersimpan'],
+                // Legacy headers (OWASP merekomendasikan proteksi via CSP; X-XSS-Protection tidak dipaksakan)
+                'X-XSS-Protection'                    => ['poin' => 0,  'kritis' => false, 'kategori' => 'legacy',    'deskripsi' => 'Filter XSS bawaan browser (legacy; digantikan CSP)'],
+                'X-DNS-Prefetch-Control'              => ['poin' => 0,  'kritis' => false, 'kategori' => 'informasi', 'deskripsi' => 'Mengontrol DNS prefetching browser'],
+                'X-Robots-Tag'                        => ['poin' => 0,  'kritis' => false, 'kategori' => 'informasi', 'deskripsi' => 'Mengontrol indexing mesin pencari pada header response'],
             ];
 
             $headerEvaluation = [];
@@ -106,7 +116,9 @@ class ScanIntensService
             $totalPoin = 0;
 
             foreach ($securityHeaders as $name => $meta) {
-                $totalPoin += $meta['poin'];
+                if ($meta['poin'] > 0) {
+                    $totalPoin += $meta['poin'];
+                }
                 $lowerName = strtolower($name);
                 $exists = isset($allHeaders[$lowerName]) || isset($allHeaders[$name]);
                 $value = $allHeaders[$lowerName] ?? $allHeaders[$name] ?? null;
@@ -116,18 +128,20 @@ class ScanIntensService
                 if ($exists) {
                     $evaluasi = $this->evaluateHeaderValue($name, $value);
                     $status = $evaluasi['baik'] ? 'baik' : 'misconfigured';
-                    $skor += $evaluasi['baik'] ? $meta['poin'] : (int)($meta['poin'] * 0.5);
+                    if ($meta['poin'] > 0) {
+                        $skor += $evaluasi['baik'] ? $meta['poin'] : (int)($meta['poin'] * 0.5);
+                    }
                 }
 
                 $headerEvaluation[$name] = [
                     'ada'       => $exists,
                     'nilai'     => $value,
                     'status'    => $status,
-                    'poin'      => $exists ? ($evaluasi['baik'] ?? false ? $meta['poin'] : (int)($meta['poin'] * 0.5)) : 0,
+                    'poin'      => $meta['poin'] > 0 ? ($exists ? ($evaluasi['baik'] ?? false ? $meta['poin'] : (int)($meta['poin'] * 0.5)) : 0) : 0,
                     'max_poin'  => $meta['poin'],
                     'kritis'    => $meta['kritis'],
                     'deskripsi' => $meta['deskripsi'],
-                    'catatan'   => $evaluasi['catatan'] ?? ($exists ? null : 'Header tidak ditemukan'),
+                    'catatan'   => $evaluasi['catatan'] ?? ($exists ? null : ($meta['poin'] > 0 ? 'Header tidak ditemukan' : 'Header opsional tidak ditemukan')),
                 ];
             }
 
@@ -196,8 +210,8 @@ class ScanIntensService
                 'catatan' => null,
             ],
             'X-XSS-Protection' => [
-                'baik'    => str_starts_with($value, '1'),
-                'catatan' => str_starts_with($value, '1') ? null : 'Harus diset "1; mode=block"',
+                'baik'    => in_array(trim($value), ['0', '1; mode=block', '1']),
+                'catatan' => 'Header legacy. OWASP merekomendasikan perlindungan melalui CSP.',
             ],
             'Cache-Control' => [
                 'baik'    => str_contains(strtolower($value), 'no-store') || str_contains(strtolower($value), 'private'),
@@ -245,7 +259,7 @@ class ScanIntensService
                 ],
             ]);
             $socket = @stream_socket_client(
-                "ssl://{$host}:443", $errno, $errstr, 10,
+                "ssl://{$host}:443", $errno, $errstr, 5, // 5s — cukup untuk SSL handshake
                 STREAM_CLIENT_CONNECT, $context
             );
 
@@ -398,23 +412,35 @@ class ScanIntensService
             ['path' => '/sitemap.xml',        'kategori' => 'web_standard',    'risiko' => 'info',    'deskripsi' => 'Sitemap — struktur website'],
             ['path' => '/crossdomain.xml',    'kategori' => 'web_standard',    'risiko' => 'sedang',  'deskripsi' => 'Flash cross-domain policy'],
             ['path' => '/.well-known/security.txt', 'kategori' => 'web_standard', 'risiko' => 'info', 'deskripsi' => 'Security contact information'],
+
+            // Modern Framework & Enterprise Endpoints
+            ['path' => '/_vti_bin/client.svc', 'kategori' => 'enterprise',     'risiko' => 'tinggi',  'deskripsi' => 'SharePoint Client Web Service (_vti_bin)'],
+            ['path' => '/actuator/env',        'kategori' => 'debug',          'risiko' => 'kritis',  'deskripsi' => 'Spring Boot Actuator Environment Leak (Spring4Shell)'],
+            ['path' => '/_next/static/',       'kategori' => 'framework',      'risiko' => 'info',    'deskripsi' => 'Next.js Frontend Build Artifacts'],
+            ['path' => '/cgi-bin/',            'kategori' => 'server',         'risiko' => 'sedang',  'deskripsi' => 'Apache/Nginx CGI-bin Directory'],
         ];
 
-        $results = [];
-        foreach ($paths as $item) {
-            try {
-                $response = Http::timeout(5)->withOptions([
+        $responses = Http::pool(function ($pool) use ($paths, $base) {
+            $poolRequests = [];
+            foreach ($paths as $idx => $item) {
+                $poolRequests[] = $pool->as((string) $idx)->timeout(4)->withOptions([
                     'verify' => false,
                     'allow_redirects' => ['max' => 2],
                 ])->get($base . $item['path']);
+            }
+            return $poolRequests;
+        });
 
-                $statusCode = $response->status();
-                $bodySize = strlen($response->body());
+        $results = [];
+        foreach ($paths as $idx => $item) {
+            $resp = $responses[(string) $idx] ?? null;
+            if ($resp instanceof \Illuminate\Http\Client\Response) {
+                $statusCode = $resp->status();
+                $bodySize = strlen($resp->body());
                 $terekspos = $statusCode === 200 && $bodySize > 0;
 
                 // Beberapa path false-positive jika redirect ke homepage
                 if ($terekspos && $bodySize > 50000) {
-                    // Kemungkinan redirect ke homepage, bukan file asli
                     $terekspos = false;
                 }
 
@@ -427,7 +453,7 @@ class ScanIntensService
                     'terekspos' => $terekspos,
                     'size'      => $bodySize,
                 ];
-            } catch (\Exception $e) {
+            } else {
                 $results[] = [
                     'path'      => $item['path'],
                     'kategori'  => $item['kategori'],
@@ -458,8 +484,9 @@ class ScanIntensService
 
         try {
             $records = [];
-            $recordTypes = [DNS_A, DNS_AAAA, DNS_MX, DNS_NS, DNS_TXT, DNS_CNAME, DNS_SOA];
-            $typeLabels = [DNS_A => 'A', DNS_AAAA => 'AAAA', DNS_MX => 'MX', DNS_NS => 'NS', DNS_TXT => 'TXT', DNS_CNAME => 'CNAME', DNS_SOA => 'SOA'];
+            // Query tipe DNS esensial yang paling relevan untuk security scan
+            $recordTypes = [DNS_A, DNS_CNAME, DNS_TXT, DNS_MX, DNS_NS];
+            $typeLabels = [DNS_A => 'A', DNS_CNAME => 'CNAME', DNS_TXT => 'TXT', DNS_MX => 'MX', DNS_NS => 'NS'];
 
             foreach ($recordTypes as $type) {
                 $result = @dns_get_record($host, $type);
@@ -494,13 +521,16 @@ class ScanIntensService
                 }
             }
 
-            // Check DKIM (common selectors)
-            $dkimSelectors = ['default', 'google', 'k1', 's1', 'selector1', 'selector2', 'dkim', 'mail'];
-            foreach ($dkimSelectors as $sel) {
-                $dkimResult = @dns_get_record("{$sel}._domainkey.{$host}", DNS_TXT);
-                if ($dkimResult && count($dkimResult) > 0) {
-                    $dkim = true;
-                    break;
+            // Check DKIM — hanya lakukan jika domain memiliki SPF atau MX (efisiensi latency)
+            $hasMx = !empty(array_filter($records, fn($r) => ($r['type'] ?? '') === 'MX'));
+            if ($spf || $hasMx) {
+                $dkimSelectors = ['default', 'google', 'k1'];
+                foreach ($dkimSelectors as $sel) {
+                    $dkimResult = @dns_get_record("{$sel}._domainkey.{$host}", DNS_TXT);
+                    if ($dkimResult && count($dkimResult) > 0) {
+                        $dkim = true;
+                        break;
+                    }
                 }
             }
 
@@ -594,7 +624,7 @@ class ScanIntensService
     /**
      * Scan port-port kritis — 23 port umum.
      */
-    public function scanCommonPorts(string $host): array
+    public function scanCommonPorts(string $host, array $detectedCdn = []): array
     {
         if (empty($host)) {
             return ['error' => 'Host kosong'];
@@ -630,31 +660,66 @@ class ScanIntensService
         $openCount = 0;
         $criticalOpen = [];
 
-        foreach ($ports as $port => $info) {
-            $open = false;
-            try {
-                $socket = @fsockopen($host, $port, $errno, $errstr, 2);
-                if ($socket) {
-                    $open = true;
-                    fclose($socket);
-                }
-            } catch (\Exception $e) {
-                // Port closed or filtered
+        // Port yang wajar terbuka jika pakai CDN/Cloudflare (80, 443, 8080, 8443)
+        // — tidak dihitung sebagai temuan kritis karena CDN memang membuka port ini
+        $cdnExpectedPorts = [80, 443, 8080, 8443, 2052, 2053, 2082, 2083, 2086, 2087, 2095, 2096];
+
+        // Async Parallel Port Probe (23 port diperiksa bersamaan dalam ~1.5 - 2.0 detik)
+        $sockets = [];
+        foreach (array_keys($ports) as $port) {
+            $s = @stream_socket_client("tcp://{$host}:{$port}", $errno, $errstr, 2, STREAM_CLIENT_ASYNC_CONNECT);
+            if ($s) {
+                stream_set_blocking($s, false);
+                $sockets[$port] = $s;
             }
+        }
+
+        $openPortMap = [];
+        $startTime = microtime(true);
+        while (!empty($sockets) && (microtime(true) - $startTime) < 2.0) {
+            $write = $sockets;
+            $read = null;
+            $except = null;
+            $num = @stream_select($read, $write, $except, 0, 100000);
+            if ($num > 0) {
+                foreach ($write as $p => $s) {
+                    $sock = socket_import_stream($s);
+                    if ($sock && socket_get_option($sock, SOL_SOCKET, SO_ERROR) === 0) {
+                        $openPortMap[$p] = true;
+                    }
+                    @fclose($s);
+                    unset($sockets[$p]);
+                }
+            }
+        }
+        foreach ($sockets as $s) {
+            @fclose($s);
+        }
+
+        foreach ($ports as $port => $info) {
+            $open = !empty($openPortMap[$port]);
+            $isCdnExpected = in_array($port, $cdnExpectedPorts);
 
             if ($open) {
                 $openCount++;
-                if (in_array($info['risiko'], ['kritis', 'tinggi'])) {
+                // Hanya masuk ke critical jika bukan port CDN-normal DAN risiko kritis/tinggi
+                if (in_array($info['risiko'], ['kritis', 'tinggi']) && !$isCdnExpected) {
                     $criticalOpen[] = "{$port}/{$info['service']}";
                 }
             }
 
+            $deskripsi = $info['deskripsi'];
+            if ($open && $isCdnExpected && (!empty($detectedCdn) || in_array($port, [8080, 8443]))) {
+                $deskripsi .= ' (Catatan: Port terbuka pada edge proxy Cloudflare/CDN, bukan server asal langsung)';
+            }
+
             $results[] = [
-                'port'      => $port,
-                'service'   => $info['service'],
-                'status'    => $open ? 'open' : 'closed',
-                'risiko'    => $info['risiko'],
-                'deskripsi' => $info['deskripsi'],
+                'port'         => $port,
+                'service'      => $info['service'],
+                'status'       => $open ? 'open' : 'closed',
+                'risiko'       => $info['risiko'],
+                'deskripsi'    => $deskripsi,
+                'cdn_expected' => $isCdnExpected,
             ];
         }
 
@@ -864,56 +929,86 @@ class ScanIntensService
     public function enumerateHTTPMethods(string $url): array
     {
         $methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD', 'TRACE'];
-        $dangerousMethods = ['TRACE' => 'Cross-Site Tracing (XST)', 'PUT' => 'File upload tanpa autentikasi', 'DELETE' => 'File deletion tanpa autentikasi'];
+        $dangerousMethods = [
+            'TRACE'  => 'Cross-Site Tracing (XST) jika mengembalikan respons 200 dengan header ter-echo',
+            'PUT'    => 'File upload/write tanpa autentikasi jika mengembalikan 200/201/204',
+            'DELETE' => 'File deletion tanpa autentikasi jika mengembalikan 200/204',
+        ];
 
         $results = [];
         $allowedMethods = [];
         $masalah = [];
 
-        foreach ($methods as $method) {
-            try {
-                $response = Http::timeout(5)->withOptions([
+        $responses = Http::pool(function ($pool) use ($methods, $url) {
+            $poolRequests = [];
+            foreach ($methods as $method) {
+                $poolRequests[] = $pool->as($method)->timeout(3)->withOptions([
                     'verify' => false,
+                    'allow_redirects' => false,
                 ])->send($method, $url);
+            }
+            return $poolRequests;
+        });
 
+        foreach ($methods as $method) {
+            $response = $responses[$method] ?? null;
+
+            if ($response instanceof \Illuminate\Http\Client\Response) {
                 $status = $response->status();
-                $allowed = !in_array($status, [405, 501]);
+                
+                // Metode standar yang aktif (2xx, 3xx, atau 401/403 yang berarti endpoint mengenali metode tapi butuh auth)
+                $isExplicitlyDisallowed = in_array($status, [405, 501]);
+                $isAllowed = in_array($status, [200, 201, 204, 301, 302, 307, 308]);
+                
+                // GET dan HEAD selalu metode web normal kecuali explicitly 405/501
+                if (in_array($method, ['GET', 'HEAD', 'OPTIONS']) && !$isExplicitlyDisallowed && $status > 0) {
+                    $isAllowed = true;
+                }
 
                 if ($method === 'OPTIONS') {
                     $allowHeader = $response->header('Allow');
                     if ($allowHeader) {
                         $serverAllowed = array_map('trim', explode(',', $allowHeader));
                         foreach ($serverAllowed as $sm) {
-                            if (!in_array(strtoupper($sm), $allowedMethods)) {
-                                $allowedMethods[] = strtoupper($sm);
+                            $upperSm = strtoupper($sm);
+                            if (!in_array($upperSm, $allowedMethods)) {
+                                $allowedMethods[] = $upperSm;
                             }
                         }
                     }
                 }
 
-                if ($allowed) {
+                if ($isAllowed) {
                     $allowedMethods[] = $method;
                 }
 
-                $isDangerous = isset($dangerousMethods[$method]) && $allowed;
-                if ($isDangerous) {
-                    $masalah[] = "Method {$method} diizinkan — {$dangerousMethods[$method]}";
+                // Kerentanan nyata:
+                // TRACE berbahaya HANYA jika server mengembalikan 200 OK (echo reflection)
+                // PUT / DELETE berbahaya HANYA jika operasi create/delete berhasil tanpa auth (200, 201, 204)
+                $isDangerous = false;
+                if ($method === 'TRACE' && $status === 200) {
+                    $isDangerous = true;
+                    $masalah[] = "Method TRACE aktif (Status 200 OK) — rentan terhadap Cross-Site Tracing (XST)";
+                } elseif (in_array($method, ['PUT', 'DELETE']) && in_array($status, [200, 201, 204])) {
+                    $isDangerous = true;
+                    $masalah[] = "Method {$method} terbuka tanpa autentikasi (Status {$status}) — rentan modifikasi resource publik";
                 }
 
                 $results[] = [
                     'method'     => $method,
                     'status'     => $status,
-                    'allowed'    => $allowed,
+                    'allowed'    => $isAllowed,
                     'berbahaya'  => $isDangerous,
-                    'deskripsi'  => $dangerousMethods[$method] ?? null,
+                    'deskripsi'  => $isDangerous ? ($dangerousMethods[$method] ?? null) : null,
                 ];
-            } catch (\Exception $e) {
+            } else {
+                // Untuk GET/HEAD, jika timeout atau connection reset, catat status error bukan 'blocked'
                 $results[] = [
                     'method'    => $method,
                     'status'    => 0,
-                    'allowed'   => false,
+                    'allowed'   => in_array($method, ['GET', 'HEAD']), // default web assumption
                     'berbahaya' => false,
-                    'error'     => 'Timeout',
+                    'error'     => 'Timeout/Unreachable',
                 ];
             }
         }
@@ -924,7 +1019,7 @@ class ScanIntensService
             'methods'         => $results,
             'allowed_methods' => array_values($allowedMethods),
             'masalah'         => $masalah,
-            'skor'            => empty($masalah) ? 100 : max(0, 100 - count($masalah) * 30),
+            'skor'            => empty($masalah) ? 100 : max(0, 100 - count($masalah) * 40),
         ];
     }
 
@@ -1027,80 +1122,38 @@ class ScanIntensService
     // =========================================================================
 
     /**
-     * Subdomain enumeration via Certificate Transparency logs (crt.sh).
+     * Subdomain enumeration via multi-source discovery (crt.sh, HackerTarget, DNS)
+     * lengkap dengan DNS resolution, HTTP live probe, dan Subdomain Takeover check.
      */
     public function enumerateSubdomains(string $host): array
     {
         if (empty($host)) {
-            return ['subdomains' => [], 'total' => 0];
+            return ['subdomains' => [], 'total' => 0, 'live_count' => 0, 'takeover_risks' => [], 'interesting' => []];
         }
 
         try {
-            // Ambil base domain (menghapus www. dll)
-            $baseDomain = preg_replace('/^(www\.)+/i', '', $host);
+            $service = app(SubdomainEnumerationService::class);
+            $res = $service->enumerate($host);
 
-            $response = Http::timeout(15)->get("https://crt.sh/?q=%.{$baseDomain}&output=json");
-
-            if (!$response->successful()) {
-                return ['subdomains' => [], 'total' => 0, 'error' => 'crt.sh tidak merespons'];
-            }
-
-            $data = $response->json();
-            if (!is_array($data)) {
-                return ['subdomains' => [], 'total' => 0, 'error' => 'Format respons tidak valid'];
-            }
-
-            $subdomains = [];
-            foreach ($data as $entry) {
-                $names = explode("\n", $entry['name_value'] ?? '');
-                foreach ($names as $name) {
-                    $name = strtolower(trim($name));
-                    // Bersihkan wildcard
-                    $name = ltrim($name, '*.');
-                    if (!empty($name) && str_ends_with($name, $baseDomain) && $name !== $baseDomain) {
-                        $subdomains[$name] = [
-                            'name'         => $name,
-                            'first_seen'   => $entry['entry_timestamp'] ?? null,
-                            'issuer'       => $entry['issuer_name'] ?? null,
-                        ];
-                    }
+            // Backward compatibility untuk template lama yang membaca 'name' dan 'menarik'
+            if (!empty($res['subdomains'])) {
+                foreach ($res['subdomains'] as &$sub) {
+                    $sub['name'] = $sub['subdomain'];
+                    $sub['menarik'] = $sub['is_interesting'] ?? false;
                 }
             }
 
-            // Sort & limit
-            $subdomains = array_values($subdomains);
-            usort($subdomains, fn($a, $b) => strcmp($a['name'], $b['name']));
-            $subdomains = array_slice($subdomains, 0, 50);
-
-            // Kategorisasi subdomain
-            $interesting = [];
-            $interestingPatterns = [
-                'dev', 'staging', 'stage', 'test', 'qa', 'uat', 'demo',
-                'admin', 'panel', 'dashboard', 'internal', 'vpn', 'api',
-                'mail', 'webmail', 'ftp', 'git', 'gitlab', 'jenkins',
-                'ci', 'cd', 'jira', 'confluence', 'grafana', 'kibana',
-                'monitoring', 'db', 'database', 'backup', 'old', 'legacy',
-            ];
-
-            foreach ($subdomains as &$sub) {
-                $sub['menarik'] = false;
-                foreach ($interestingPatterns as $pattern) {
-                    if (str_contains($sub['name'], $pattern)) {
-                        $sub['menarik'] = true;
-                        $interesting[] = $sub['name'];
-                        break;
-                    }
-                }
-            }
-
-            return [
-                'subdomains'  => $subdomains,
-                'total'       => count($subdomains),
-                'interesting' => array_unique($interesting),
-            ];
-        } catch (\Exception $e) {
+            return $res;
+        } catch (\Throwable $e) {
             Log::warning('Subdomain enumeration gagal: ' . $e->getMessage());
-            return ['subdomains' => [], 'total' => 0, 'error' => $e->getMessage()];
+            return [
+                'subdomains'      => [],
+                'total'           => 0,
+                'live_count'      => 0,
+                'takeover_risks'  => [],
+                'interesting'     => [],
+                'error'           => $e->getMessage(),
+            ];
         }
     }
 
@@ -1136,26 +1189,30 @@ class ScanIntensService
             if (($sslData['days_until_expiry'] ?? 365) < 30) $sslScore -= 10;
         }
 
-        // 4. Cookie Score (10%)
+        // 4. Cookie Score (15%)
         $cookieScore = $cookieData['skor'] ?? 100;
 
-        // 5. CORS Score (10%)
+        // 5. CORS Score (15%)
         $corsScore = $corsData['skor'] ?? 100;
 
-        // 6. HTTP Methods Score (5%)
+        // 6. Open Ports / Attack Surface Score (10%)
+        $criticalPorts = $portData['critical_open'] ?? [];
+        $portScore = max(0, 100 - (count($criticalPorts) * 25));
+
+        // 7. HTTP Methods & Redirects Score (5%)
         $httpMethodScore = $httpMethods['skor'] ?? 100;
-
-        // 7. Redirect Score (5%)
         $redirectScore = $redirectData['skor'] ?? 100;
+        $methodAndRedirectScore = (int) round(($httpMethodScore * 0.5) + ($redirectScore * 0.5));
 
-        // Penalties
-        $exposedSensitive = array_filter($commonFiles, fn($f) => ($f['terekspos'] ?? false) && in_array($f['risiko'], ['kritis', 'tinggi']));
+        // Penalti file sensitif: hanya kritis/tinggi yang BUKAN web_standard (robots, sitemap normal)
+        $exposedSensitive = array_filter($commonFiles, fn($f) =>
+            ($f['terekspos'] ?? false) &&
+            in_array($f['risiko'], ['kritis', 'tinggi']) &&
+            ($f['kategori'] ?? '') !== 'web_standard'
+        );
         $exposedPenalty = count($exposedSensitive) * 5;
 
-        $criticalPorts = $portData['critical_open'] ?? [];
-        $portPenalty = count($criticalPorts) * 3;
-
-        // DNS Email Security Bonus
+        // DNS Email Security Bonus (hingga +5)
         $emailSecurityBonus = 0;
         if (!empty($dnsData['email_security'])) {
             $emailSkor = $dnsData['email_security']['skor'] ?? 0;
@@ -1163,25 +1220,32 @@ class ScanIntensService
             elseif ($emailSkor >= 66) $emailSecurityBonus = 3;
         }
 
-        // Hitung skor akhir
+        // Hitung skor akhir — Total Bobot Tepat 100%
+        // Headers: 25%, VT (Reputasi Eksternal): 15%, SSL: 15%, Cookies: 15%, CORS: 15%, Open Ports: 10%, Methods/Redirect: 5%
         $skorReputasi = (int) round(
-            ($vtScore * 0.30) +
-            ($headerScore * 0.20) +
-            ($sslScore * 0.10) +
-            ($cookieScore * 0.10) +
-            ($corsScore * 0.10) +
-            ($httpMethodScore * 0.05) +
-            ($redirectScore * 0.05)
+            ($headerScore * 0.25) +
+            ($vtScore * 0.15) +
+            ($sslScore * 0.15) +
+            ($cookieScore * 0.15) +
+            ($corsScore * 0.15) +
+            ($portScore * 0.10) +
+            ($methodAndRedirectScore * 0.05)
             + $emailSecurityBonus
             - $exposedPenalty
-            - $portPenalty
         );
         $skorReputasi = min(100, max(0, $skorReputasi));
 
         // === STATUS ===
-        if ($malicious > 3 || count($exposedSensitive) >= 3 || ($corsData['vulnerable'] ?? false && count($criticalPorts) > 2)) {
+        // robots.txt/sitemap yang terekspos adalah hal normal, tidak memicu 'mencurigakan'
+        $exposedSensitiveForStatus = array_filter($commonFiles, fn($f) =>
+            ($f['terekspos'] ?? false) &&
+            in_array($f['risiko'], ['kritis', 'tinggi', 'sedang']) &&
+            ($f['kategori'] ?? '') !== 'web_standard'
+        );
+
+        if ($malicious > 3 || count($exposedSensitiveForStatus) >= 3 || ($corsData['vulnerable'] ?? false && count($criticalPorts) > 2)) {
             $status = 'berbahaya';
-        } elseif ($malicious > 0 || $suspicious > 1 || count($exposedSensitive) >= 1 || ($corsData['vulnerable'] ?? false) || count($criticalPorts) > 0) {
+        } elseif ($malicious > 0 || $suspicious > 1 || count($exposedSensitiveForStatus) >= 1 || ($corsData['vulnerable'] ?? false) || count($criticalPorts) > 0) {
             $status = 'mencurigakan';
         } else {
             $status = 'aman';
@@ -1235,32 +1299,44 @@ class ScanIntensService
         // Console messages
         $consoleMessages = array_slice($urlscanData['data']['console'] ?? [], 0, 10);
 
-        // Screenshot
-        $screenshotUrl = null;
-        if (!empty($urlscanData['task']['uuid'])) {
-            $screenshotUrl = $this->urlScanService->getScreenshotUrl($urlscanData['task']['uuid']);
-        }
+        // === STRUCTURED TECH STACK (Fase C.2) ===
+        $fingerprinter = new TechStackFingerprinter();
+        $techStackStructured = $fingerprinter->fingerprint(
+            headerData:   $headerData,
+            dnsData:      $dnsData,
+            urlscanData:  $urlscanData,
+            serverInfo:   $serverInfo,
+            sslData:      $sslData,
+            cookieData:   $cookieData
+        );
 
-        // === SKOR BREAKDOWN ===
+        // Screenshot: prioritaskan URLScan, fallback ke thum.io
+        $screenshotUrl = $techStackStructured['screenshot'] ?? null;
+        if (!$screenshotUrl) {
+            $screenshotUrl = 'https://image.thum.io/get/width/1280/crop/720/noanimate/url/' . urlencode($url);
+        }
+        // Hapus screenshot dari techStack (simpan terpisah)
+        unset($techStackStructured['screenshot']);
+
+        // === SKOR BREAKDOWN (Total Bobot = 100%) ===
         $skorBreakdown = [
-            'virustotal'     => ['skor' => (int) round($vtScore), 'bobot' => '30%'],
-            'headers'        => ['skor' => $headerScore, 'bobot' => '20%'],
-            'ssl'            => ['skor' => $sslScore, 'bobot' => '10%'],
-            'cookies'        => ['skor' => $cookieScore, 'bobot' => '10%'],
-            'cors'           => ['skor' => $corsScore, 'bobot' => '10%'],
-            'http_methods'   => ['skor' => $httpMethodScore, 'bobot' => '5%'],
-            'redirects'      => ['skor' => $redirectScore, 'bobot' => '5%'],
+            'headers'        => ['skor' => $headerScore, 'bobot' => '25%'],
+            'virustotal'     => ['skor' => (int) round($vtScore), 'bobot' => '15%'],
+            'ssl'            => ['skor' => $sslScore, 'bobot' => '15%'],
+            'cookies'        => ['skor' => $cookieScore, 'bobot' => '15%'],
+            'cors'           => ['skor' => $corsScore, 'bobot' => '15%'],
+            'open_ports'     => ['skor' => $portScore, 'bobot' => '10%'],
+            'http_methods'   => ['skor' => $methodAndRedirectScore, 'bobot' => '5%'],
             'email_security' => ['bonus' => $emailSecurityBonus],
             'exposed_files'  => ['penalty' => -$exposedPenalty],
-            'open_ports'     => ['penalty' => -$portPenalty],
         ];
 
         return [
-            'skor_reputasi'    => $skorReputasi,
-            'skor_breakdown'   => $skorBreakdown,
-            'status'           => $status,
-            'ssl'              => $sslData,
-            'security_headers' => $headerData,
+            'skor_reputasi'       => $skorReputasi,
+            'skor_breakdown'      => $skorBreakdown,
+            'status'              => $status,
+            'ssl'                 => $sslData,
+            'security_headers'    => $headerData,
             'virustotal' => [
                 'stats'           => $vtStats,
                 'reputation'      => $vtData['reputation'] ?? 0,
@@ -1269,20 +1345,21 @@ class ScanIntensService
                 'malicious_count' => $malicious,
                 'total_engines'   => $total,
             ],
-            'server_info'       => $serverInfo,
-            'teknologi'         => $teknologi,
-            'resources'         => $resources,
-            'external_links'    => $links,
-            'console_messages'  => $consoleMessages,
-            'common_files'      => $commonFiles,
-            'dns_recon'         => $dnsData,
-            'port_scan'         => $portData,
-            'cookie_security'   => $cookieData,
-            'cors_config'       => $corsData,
-            'http_methods'      => $httpMethods,
-            'redirect_chain'    => $redirectData,
-            'subdomains'        => $subdomains,
-            'screenshot_url'    => $screenshotUrl,
+            'server_info'         => $serverInfo,
+            'teknologi'           => $teknologi,
+            'tech_stack_structured' => $techStackStructured,
+            'resources'           => $resources,
+            'external_links'      => $links,
+            'console_messages'    => $consoleMessages,
+            'common_files'        => $commonFiles,
+            'dns_recon'           => $dnsData,
+            'port_scan'           => $portData,
+            'cookie_security'     => $cookieData,
+            'cors_config'         => $corsData,
+            'http_methods'        => $httpMethods,
+            'redirect_chain'      => $redirectData,
+            'subdomains'          => $subdomains,
+            'screenshot_url'      => $screenshotUrl,
         ];
     }
 }

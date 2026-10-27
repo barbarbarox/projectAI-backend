@@ -29,3 +29,9 @@ serve.pid
 *_rows.sql
 *_rows_mysql.sql
 convert_sql.php
+node_modules
+ml_service/.venv/
+ml_service/__pycache__/
+ml_service/nohup.out
+ml_service/models/*.pkl
+*.pkl

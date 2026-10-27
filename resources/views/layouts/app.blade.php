@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/magic-bento.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/branched-menu.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>[x-cloak] { display: none !important; }</style>
 </head>
@@ -50,216 +51,10 @@
                 </a>
             </div>
 
-            {{-- Navigation --}}
-            <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-
-                {{-- Section: Main --}}
-                <p class="px-3 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-wider" style="color:#475569;">Navigasi</p>
-
-                <a href="{{ route('dashboard') }}"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                          {{ request()->routeIs('dashboard')
-                              ? 'nav-active-default'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-                    <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                    </svg>
-                    <span>Beranda</span>
-                </a>
-
-                {{-- Section: Analysis --}}
-                <p class="px-3 pt-4 pb-2 text-[10px] font-semibold uppercase tracking-wider" style="color:#475569;">Analisis Keamanan</p>
-
-                <a href="{{ route('analisis.url') }}"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                          {{ request()->routeIs('analisis.url')
-                              ? 'nav-active-security'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-                    <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <span>Pemindai URL</span>
-                </a>
-
-                <a href="{{ route('analisis.log') }}"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                          {{ request()->routeIs('analisis.log')
-                              ? 'nav-active-security'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-                    <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    <span>Analisis Log</span>
-                </a>
-
-
-
-                <a href="{{ route('analisis.kode') }}"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                          {{ request()->routeIs('analisis.kode')
-                              ? 'nav-active-security'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-                    <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                              d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                    </svg>
-                    <span>Analisis Kode</span>
-                </a>
-
-                <a href="{{ route('laporan.index') }}"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                          {{ request()->routeIs('laporan.*')
-                              ? 'nav-active-security'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-                    <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
-                    <span>Riwayat Scan</span>
-                </a>
-
-                {{-- Section: Education --}}
-                <p class="px-3 pt-4 pb-2 text-[10px] font-semibold uppercase tracking-wider" style="color:#475569;">Edukasi</p>
-
-                <a href="{{ route('edukasi.index') }}"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                          {{ request()->routeIs('edukasi.*') && !request()->is('*/leaderboard')
-                              ? 'nav-active-default'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-                    <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                    </svg>
-                    <span>Hub Edukasi</span>
-                </a>
-
-                <a href="/edukasi/leaderboard"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                          {{ request()->is('*/leaderboard')
-                              ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-                    <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                              d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-                    </svg>
-                    <span>Leaderboard</span>
-                </a>
-
-                {{-- Section: AI --}}
-                <p class="px-3 pt-4 pb-2 text-[10px] font-semibold uppercase tracking-wider" style="color:#475569;">AI Tools</p>
-
-                <a href="{{ route('profile.ai') }}"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                          {{ request()->routeIs('profile.ai')
-                              ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-                    <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    <span>Model AI</span>
-                    <span class="ml-auto badge-ai text-[9px]">AI</span>
-                </a>
-
-                {{-- Admin Section --}}
-                @if(Auth::check() && Auth::user()->tier === 'admin')
-                <div class="pt-4 mt-2" style="border-top:1px solid #1e293b;">
-                    <p class="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider" style="color:#dc2626;">Administrator</p>
-
-                    <a href="{{ route('admin.index') }}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                              {{ request()->routeIs('admin.index')
-                                  ? 'nav-active-security'
-                                  : 'text-slate-400 hover:text-red-400 hover:bg-red-950/30' }}">
-                        <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                  d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-                        </svg>
-                        <span>Dashboard Admin</span>
-                    </a>
-
-                    <a href="{{ route('admin.users.index') }}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                              {{ request()->routeIs('admin.users.*')
-                                  ? 'nav-active-security'
-                                  : 'text-slate-400 hover:text-red-400 hover:bg-red-950/30' }}">
-                        <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                        </svg>
-                        <span>Manajemen Pengguna</span>
-                    </a>
-
-                    <a href="{{ route('admin.ai-config') }}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                              {{ request()->routeIs('admin.ai-config')
-                                  ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                                  : 'text-slate-400 hover:text-cyan-400 hover:bg-cyan-950/30' }}">
-                        <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>Konfigurasi AI</span>
-                        <span class="ml-auto badge-ai text-[9px]">AI</span>
-                    </a>
-
-                    <a href="{{ route('admin.wa-settings') }}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                              {{ request()->routeIs('admin.wa-settings*')
-                                  ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                                  : 'text-slate-400 hover:text-cyan-400 hover:bg-cyan-950/30' }}">
-                        <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                        </svg>
-                        <span>WhatsApp Gateway</span>
-                        <span class="ml-auto px-1.5 py-0.5 rounded text-[9px] font-semibold"
-                              style="background:rgba(6,182,212,0.12);color:#22d3ee;">WA</span>
-                    </a>
-
-                    <a href="{{ route('admin.tantangan.index') }}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                              {{ request()->routeIs('admin.tantangan.*')
-                                  ? 'nav-active-default'
-                                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-                        <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                        </svg>
-                        <span>Soal Edukasi</span>
-                    </a>
-
-                    <a href="{{ route('admin.kesehatan-sistem') }}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                              {{ request()->routeIs('admin.kesehatan-sistem')
-                                  ? 'nav-active-security'
-                                  : 'text-slate-400 hover:text-red-400 hover:bg-red-950/30' }}">
-                        <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                        </svg>
-                        <span>Kesehatan Sistem</span>
-                    </a>
-
-                    <a href="{{ route('admin.audit-log') }}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                              {{ request()->routeIs('admin.audit-log')
-                                  ? 'nav-active-security'
-                                  : 'text-slate-400 hover:text-red-400 hover:bg-red-950/30' }}">
-                        <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                        </svg>
-                        <span>Audit Log</span>
-                    </a>
-                </div>
-                @endif
-            </nav>
+            {{-- Navigation (BranchedMenu Circuit Tree) --}}
+            <div class="flex-1 px-3 py-3 overflow-y-auto overflow-x-hidden">
+                <x-branched-menu />
+            </div>
 
             {{-- User + Logout --}}
             <div class="px-3 py-4" style="border-top:1px solid #1e293b;">
@@ -319,7 +114,7 @@
         </aside>
 
         {{-- ══════════════ MAIN CONTENT ══════════════ --}}
-        <main class="flex-1 min-h-screen transition-all duration-300" :class="sidebarOpen && !isMobile ? 'lg:ml-64' : 'ml-0'">
+        <main class="flex-1 min-h-screen transition-all duration-300" :style="sidebarOpen && !isMobile ? 'margin-left:256px;' : 'margin-left:0;'">
 
             {{-- Top Bar --}}
             <header class="sticky top-0 z-40 px-6 py-3.5" style="background:rgba(2,6,9,0.85);backdrop-filter:blur(20px);border-bottom:1px solid #1e293b;">
@@ -529,5 +324,8 @@
     <script src="{{ asset('js/chat-widget.js') }}"></script>
 
     @stack('scripts')
+
+    {{-- Global Feature Help Modal --}}
+    @include('components.feature-help-modal')
 </body>
 </html>

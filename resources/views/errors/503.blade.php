@@ -14,8 +14,10 @@
         </div>
         <h1 class="text-7xl font-black text-[#7c3aed] mb-2">503</h1>
         <h2 class="text-xl font-semibold text-white mb-3">Layanan Tidak Tersedia</h2>
-        <p class="text-[#94a3b8] mb-8 max-w-md mx-auto">Sistem sedang dalam pemeliharaan. Kami akan kembali sebentar lagi.</p>
-        <a href="javascript:location.reload()" class="inline-block px-6 py-3 rounded-xl bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] text-white font-semibold hover:shadow-lg hover:shadow-[#00d4ff]/25 transition-all">🔄 Coba Lagi</a>
+        <a href="javascript:location.reload()" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] text-white font-semibold hover:shadow-lg hover:shadow-[#00d4ff]/25 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Coba Lagi</span>
+        </a>
     </div>
 </body>
 </html>

@@ -11,7 +11,7 @@ class URLScanService
 
     public function __construct()
     {
-        $this->apiKey = env('URLSCAN_API_KEY', '');
+        $this->apiKey = config('services.urlscan.api_key') ?: env('URLSCAN_API_KEY', '');
     }
 
     /**

@@ -61,11 +61,31 @@
                     <div class="text-sm leading-relaxed md-content" x-html="formatMessage(msg.content, msg.role)"></div>
                     
                     <template x-if="msg.role === 'ai' && msg.ragUsed">
-                        <div class="mt-3 pt-2 flex items-center gap-1.5" style="border-top:1px solid rgba(6,182,212,0.15);">
-                            <svg class="w-3 h-3" style="color:#22d3ee;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            <span class="text-[10px] font-semibold" style="color:#22d3ee;">Referensi RAG Digunakan</span>
+                        <div class="mt-3 pt-2.5 flex flex-wrap items-center gap-1.5" style="border-top:1px solid rgba(6,182,212,0.15);">
+                            <div class="flex items-center gap-1 text-[11px] font-semibold text-cyan-400">
+                                <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                </svg>
+                                <span>Dual RAG:</span>
+                            </div>
+
+                            <template x-if="msg.ragDetails && msg.ragDetails.general_count > 0">
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                                    <svg class="w-3 h-3 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                    <span>RAG Umum (<span x-text="msg.ragDetails.general_count"></span> chunk)</span>
+                                </span>
+                            </template>
+
+                            <template x-if="msg.ragDetails && msg.ragDetails.nvd_count > 0">
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                                    <svg class="w-3 h-3 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                    <span>NVD CVE: <span x-text="msg.ragDetails.nvd_cves.join(', ')"></span></span>
+                                </span>
+                            </template>
+
+                            <template x-if="!msg.ragDetails">
+                                <span class="text-[10px] font-semibold text-cyan-400">Referensi RAG Digunakan</span>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -110,10 +130,10 @@
         </form>
         <div class="mt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
             <select x-model="selectedModel"
-                    class="px-3 py-1.5 rounded-lg text-xs transition-colors max-w-full sm:max-w-[320px] w-full sm:w-auto"
-                    style="background:#0f172a;border:1px solid #1e293b;color:#64748b;outline:none;"
-                    onfocus="this.style.borderColor='rgba(6,182,212,0.4)'"
-                    onblur="this.style.borderColor='#1e293b'">
+                    class="px-3 py-1.5 rounded-lg text-xs transition-colors max-w-full sm:max-w-[320px] w-full sm:w-auto text-slate-300 font-mono"
+                    style="background:#0a0e1a;border:1px solid #1e2d4a;outline:none;"
+                    onfocus="this.style.borderColor='rgba(6,182,212,0.6)';this.style.boxShadow='0 0 0 2px rgba(6,182,212,0.15)'"
+                    onblur="this.style.borderColor='#1e2d4a';this.style.boxShadow='none'">
                 <option value="">{{ $defaultModelName ?? 'Gunakan Model Default' }}</option>
                 @foreach($availableModels as $m)
                     <option value="{{ $m['id'] }}">{{ $m['name'] }} ({{ $m['provider'] }})</option>
@@ -312,7 +332,12 @@ function chatApp() {
                 });
                 const data = await response.json();
                 if (data.status === 'success') {
-                    this.messages.push({ role: 'ai', content: data.message, ragUsed: data.rag_used });
+                    this.messages.push({
+                        role: 'ai',
+                        content: data.message,
+                        ragUsed: data.rag_used,
+                        ragDetails: data.rag_details || null
+                    });
                 } else {
                     this.messages.push({ role: 'ai', content: 'Maaf, terjadi kesalahan: ' + (data.message || 'Unknown error'), ragUsed: false });
                 }

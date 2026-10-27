@@ -375,39 +375,106 @@ class AIProviderService
 
     protected function generateGoogle(string $apiKey, string $model, string $prompt, bool $isJson = true): string
     {
-        $maxTokens = (int) env('AI_MAX_TOKENS', 2048);
+        $maxTokens = max((int) env('AI_MAX_TOKENS', 4096), 4096);
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
-        
-        $headers = [];
-        // Jika token panjang atau dimulai dengan ya29., ini adalah OAuth Token
-        if (str_starts_with($apiKey, 'ya29.') || strlen($apiKey) > 100) {
-            $headers['Authorization'] = "Bearer {$apiKey}";
+
+        $headers = ['Content-Type' => 'application/json'];
+
+        // Deteksi apakah ini OAuth Bearer Token (ya29.xxx atau panjang > 200 karakter)
+        $isOAuth = str_starts_with($apiKey, 'ya29.') || strlen($apiKey) > 200;
+
+        if ($isOAuth) {
+            // Karena scope OAuth sekarang hanya untuk identitas (agar tidak ada warning unverified app),
+            // kita gunakan Admin API Key (dari env) untuk melakukan generate aktual ke Gemini API.
+            $adminApiKey = $this->getGoogleAdminApiKey();
+            if ($adminApiKey) {
+                $url .= "?key={$adminApiKey}";
+            } else {
+                Log::error('Google OAuth AI: tidak ada Admin API Key (GOOGLE_GEMINI_API_KEY) yang ditemukan.');
+                throw new \RuntimeException('Sistem tidak memiliki Admin API Key untuk Google AI.');
+            }
         } else {
+            // API key biasa: tambahkan sebagai query param
             $url .= "?key={$apiKey}";
         }
-        
+
         $generationConfig = [
             'temperature' => 0.5,
             'maxOutputTokens' => $maxTokens,
         ];
-        
+
         if ($isJson) {
             $generationConfig['responseMimeType'] = 'application/json';
         }
 
+        // Retry otomatis jika terkena 503 (Overloaded) atau 429 (Rate Limit)
         $response = Http::timeout(120)
+            ->retry(3, 2000, function ($exception, $request) {
+                if ($exception instanceof \Illuminate\Http\Client\RequestException && $exception->response) {
+                    return in_array($exception->response->status(), [429, 500, 502, 503, 504]);
+                }
+                return true;
+            }, throw: false)
             ->withHeaders($headers)
             ->post($url, [
-            'contents' => [['parts' => [['text' => $prompt]]]],
-            'generationConfig' => $generationConfig,
-        ]);
-        
+                'contents' => [['parts' => [['text' => $prompt]]]],
+                'generationConfig' => $generationConfig,
+            ]);
+
+        // Jika model spesifik overload (503) dan bukan gemini-1.5-flash, coba fallback ke gemini-1.5-flash yang kapasitasnya paling besar
+        if (!$response->successful() && $response->status() === 503 && !str_contains($model, 'gemini-1.5-flash')) {
+            Log::warning("[Google AI] Model {$model} overloaded (503). Mencoba fallback otomatis ke gemini-1.5-flash...");
+            $fallbackUrl = preg_replace('/models\/[^:]+:/', 'models/gemini-1.5-flash:', $url);
+            $response = Http::timeout(120)
+                ->withHeaders($headers)
+                ->post($fallbackUrl, [
+                    'contents' => [['parts' => [['text' => $prompt]]]],
+                    'generationConfig' => $generationConfig,
+                ]);
+        }
+
         if (!$response->successful()) {
-            \Illuminate\Support\Facades\Log::error('Google AI Error: ' . $response->body());
+            Log::error('Google AI Error (isOAuth=' . ($isOAuth ? 'true' : 'false') . '): ' . $response->body());
             throw new \RuntimeException('Google AI gagal: ' . $response->status());
         }
-        
+
         return $response->json('candidates.0.content.parts.0.text') ?? '{}';
+    }
+
+    /**
+     * Ambil Google API key dari env atau admin config (database).
+     * Digunakan untuk scope peruserquota yang memerlukan developer key + OAuth user token.
+     */
+    protected function getGoogleAdminApiKey(): ?string
+    {
+        // Prioritas 1: env khusus GOOGLE_GEMINI_API_KEY (Google AI Studio key)
+        $envKey = env('GOOGLE_GEMINI_API_KEY', '');
+        if ($envKey && (str_starts_with($envKey, 'AIza') || str_starts_with($envKey, 'AQ.'))) {
+            return $envKey;
+        }
+
+        // Prioritas 2: cari dari admin config di database
+        try {
+            $configs = \App\Models\AiConfiguration::where('is_active', true)
+                ->where(function($q) {
+                    $q->where('provider', 'google')
+                      ->orWhere('detected_provider', 'google');
+                })
+                ->orderByDesc('is_default')
+                ->get();
+
+            foreach ($configs as $config) {
+                $key = $config->api_key;
+                // Google AI Studio key selalu dimulai dengan 'AIza' atau 'AQ.'
+                if ($key && (str_starts_with($key, 'AIza') || str_starts_with($key, 'AQ.'))) {
+                    return $key;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Gagal ambil Google admin API key dari DB: ' . $e->getMessage());
+        }
+
+        return null;
     }
 
     protected function generateOpenAI(string $apiKey, string $model, string $prompt, bool $isJson = true): string

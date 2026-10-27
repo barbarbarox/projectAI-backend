@@ -9,11 +9,11 @@
     $pilihan = is_array($tantangan->pilihan_jawaban) ? $tantangan->pilihan_jawaban : [];
     $konten = is_array($tantangan->konten_tambahan) ? $tantangan->konten_tambahan : [];
     $formatLabels = [
-        'quiz'       => '🎯 Quiz Pilihan Ganda',
-        'kode'       => '💻 Analisis Kode',
-        'skenario'   => '📋 Skenario Kronologis',
-        'ciphertext' => '🔐 Ciphertext / Kriptografi',
-        'file'       => '📁 Analisis File',
+        'quiz'       => 'Quiz Pilihan Ganda',
+        'kode'       => 'Analisis Kode',
+        'skenario'   => 'Skenario Kronologis',
+        'ciphertext' => 'Ciphertext / Kriptografi',
+        'file'       => 'Analisis File',
     ];
     $skenarioPoinJson = json_encode($konten['poin_skenario'] ?? ['']);
 @endphp

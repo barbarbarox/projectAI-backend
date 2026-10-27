@@ -16,8 +16,14 @@
                     <input type="password" x-model="apiKey" placeholder="Masukkan API key..."
                            class="flex-1 px-4 py-3 rounded-xl bg-[#0a0e1a] border border-[#1e2d4a] text-white placeholder-[#475569] focus:border-[#00d4ff] focus:outline-none text-sm">
                     <button @click="detectKey()" :disabled="detecting || !apiKey"
-                            class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] text-white text-sm font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
-                        <span x-show="!detecting">🔍 Deteksi Provider</span>
+                            class="px-5 py-3 rounded-xl text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center gap-2"
+                            style="background:linear-gradient(135deg,#06b6d4,#7c3aed);">
+                        <template x-if="!detecting">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                Deteksi Provider
+                            </span>
+                        </template>
                         <span x-show="detecting" class="flex items-center gap-2">
                             <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                             Mendeteksi...
@@ -65,8 +71,11 @@
                             </label>
                         </div>
 
-                        <button type="submit" class="px-6 py-3 rounded-xl bg-green-500 text-white text-sm font-semibold hover:bg-green-600 transition-colors">
-                            💾 Simpan Konfigurasi
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition-all"
+                                style="background:linear-gradient(135deg,#06b6d4,#7c3aed);">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Simpan Konfigurasi
                         </button>
                     </form>
                 </div>
@@ -91,8 +100,22 @@
             <div class="px-6 py-5" x-data="{ editing: false }">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center {{ $config->detected_provider === 'google' ? 'bg-blue-500/10' : ($config->detected_provider === 'openai' ? 'bg-green-500/10' : ($config->detected_provider === 'anthropic' ? 'bg-orange-500/10' : ($config->detected_provider === 'groq' ? 'bg-red-500/10' : 'bg-[#7c3aed]/10'))) }}">
-                            <span class="text-lg">{{ $config->detected_provider === 'google' ? '🔷' : ($config->detected_provider === 'openai' ? '🟢' : ($config->detected_provider === 'anthropic' ? '🟠' : ($config->detected_provider === 'groq' ? '⚡' : '🔮'))) }}</span>
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center
+                            {{ $config->detected_provider === 'google' ? 'bg-blue-500/10'
+                                : ($config->detected_provider === 'openai' ? 'bg-green-500/10'
+                                : ($config->detected_provider === 'anthropic' ? 'bg-orange-500/10'
+                                : ($config->detected_provider === 'groq' ? 'bg-red-500/10' : 'bg-[#7c3aed]/10'))) }}">
+                            @if($config->detected_provider === 'google')
+                                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                            @elseif($config->detected_provider === 'openai')
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            @elseif($config->detected_provider === 'anthropic')
+                                <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            @elseif($config->detected_provider === 'groq')
+                                <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            @else
+                                <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            @endif
                         </div>
                         <div>
                             <p class="text-sm font-semibold">{{ $config->label }}</p>
@@ -104,10 +127,22 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button @click="editing = !editing" class="px-3 py-1.5 rounded-lg bg-[#1e2d4a] text-xs text-[#94a3b8] hover:bg-[#2a3a5c] transition-colors">✏️ Edit</button>
+                        <button @click="editing = !editing"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[#94a3b8] transition-colors"
+                                style="background:#1e2d4a;border:1px solid #2a3a5c;"
+                                x-bind:class="editing ? 'text-cyan-400' : 'text-[#94a3b8]'">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            Edit
+                        </button>
                         <form method="POST" action="/admin/ai-config/{{ $config->id }}/hapus" class="inline">
                             @csrf @method('DELETE')
-                            <button type="submit" onclick="return confirm('Hapus konfigurasi ini?')" class="px-3 py-1.5 rounded-lg bg-red-500/10 text-xs text-red-400 hover:bg-red-500/20 transition-colors">🗑️</button>
+                            <button type="submit"
+                                    onclick="return confirm('Hapus konfigurasi ini?')"
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors"
+                                    style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);"
+                                    title="Hapus">
+                                <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -138,8 +173,9 @@
     </div>
 
     {{-- Model Info dari .env --}}
-    <div class="rounded-xl bg-yellow-500/5 border border-yellow-500/20 p-4">
-        <p class="text-xs text-yellow-400/80">💡 Jika tidak ada konfigurasi aktif, sistem akan menggunakan API key default dari .env ({{ env('GEMINI_MODEL', 'gemini-1.5-pro') }}).</p>
+    <div class="rounded-xl p-4 flex items-start gap-3" style="background:rgba(234,179,8,0.05);border:1px solid rgba(234,179,8,0.2);">
+        <svg class="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p class="text-xs text-yellow-400/80">Jika tidak ada konfigurasi aktif, sistem akan menggunakan API key default dari .env ({{ env('GEMINI_MODEL', 'gemini-1.5-pro') }}).</p>
     </div>
 </div>
 

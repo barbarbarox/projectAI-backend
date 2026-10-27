@@ -93,7 +93,7 @@ class UserAiConfigController extends Controller
             'client_id' => env('GOOGLE_CLIENT_ID'),
             'redirect_uri' => url('/profil/ai/oauth/google/callback'),
             'response_type' => 'code',
-            'scope' => 'https://www.googleapis.com/auth/generative-language.retriever https://www.googleapis.com/auth/cloud-platform openid email',
+            'scope' => 'openid email profile',
             'access_type' => 'offline',
             'prompt' => 'consent',
             'state' => $state,
@@ -136,13 +136,28 @@ class UserAiConfigController extends Controller
             $refreshToken = $tokens['refresh_token'] ?? null;
             $expiresIn = $tokens['expires_in'] ?? 3600;
 
-            // List available Gemini models using the OAuth token
-            $modelsResponse = Http::withHeaders([
-                'Authorization' => "Bearer {$accessToken}",
-            ])->get('https://generativelanguage.googleapis.com/v1beta/models');
+            // Gunakan Admin API Key untuk mengambil daftar model, bukan token OAuth user (karena scope OAuth sekarang hanya untuk identitas login)
+            $adminApiKey = env('GOOGLE_GEMINI_API_KEY') ?: \App\Models\AiConfiguration::where('provider', 'google')->value('api_key');
+            
+            if ($adminApiKey) {
+                $modelsResponse = Http::timeout(15)->get("https://generativelanguage.googleapis.com/v1beta/models?key={$adminApiKey}");
+            } else {
+                // Fallback kosong agar gagal dan menggunakan hardcoded models
+                $modelsResponse = Http::response([], 401);
+            }
+
+            // Daftar model Gemini stabil yang selalu bisa dipakai
+            $fallbackModels = [
+                ['id' => 'gemini-3.5-flash', 'name' => 'Gemini 3.5 Flash (Terbaru)'],
+                ['id' => 'gemini-2.5-flash', 'name' => 'Gemini 2.5 Flash (Stabil)'],
+                ['id' => 'gemini-2.5-pro', 'name' => 'Gemini 2.5 Pro (Pro / Akurat)'],
+                ['id' => 'gemini-3.6-flash', 'name' => 'Gemini 3.6 Flash'],
+                ['id' => 'gemini-3.7-flash', 'name' => 'Gemini 3.7 Flash'],
+                ['id' => 'gemini-3.8-flash', 'name' => 'Gemini 3.8 Flash'],
+            ];
 
             $availableModels = [];
-            $defaultModel = 'gemini-1.5-pro';
+            $defaultModel = 'gemini-3.5-flash';
 
             if ($modelsResponse->successful()) {
                 $modelsData = $modelsResponse->json();
@@ -187,13 +202,17 @@ class UserAiConfigController extends Controller
 
                 if (!empty($availableModels)) {
                     // Pilih model terbaik yang tersedia
-                    $preferred = collect($availableModels)->first(fn($m) => str_contains($m['id'], '2.5-pro'))
-                        ?? collect($availableModels)->first(fn($m) => str_contains($m['id'], '2.0'))
+                    $preferred = collect($availableModels)->first(fn($m) => str_contains($m['id'], '3.5'))
+                        ?? collect($availableModels)->first(fn($m) => str_contains($m['id'], '2.5'))
                         ?? $availableModels[0];
                     $defaultModel = $preferred['id'];
+                } else {
+                    // Fallback ke daftar stabil jika list dari API kosong setelah filter
+                    $availableModels = $fallbackModels;
                 }
             } else {
-                Log::error('Gagal mengambil daftar model Google saat OAuth: ' . $modelsResponse->body());
+                Log::warning('Gagal mengambil daftar model Google dengan Admin API Key (menggunakan fallback)');
+                $availableModels = $fallbackModels;
             }
 
             $user = Auth::user();
@@ -307,9 +326,12 @@ class UserAiConfigController extends Controller
         if ($config->provider === 'google') {
             // Tentukan URL berdasarkan metode
             if ($config->method === 'oauth_google') {
-                $modelsResponse = Http::withHeaders([
-                    'Authorization' => "Bearer {$apiKey}",
-                ])->get('https://generativelanguage.googleapis.com/v1beta/models');
+                $adminApiKey = env('GOOGLE_GEMINI_API_KEY') ?: \App\Models\AiConfiguration::where('provider', 'google')->value('api_key');
+                if ($adminApiKey) {
+                    $modelsResponse = Http::timeout(10)->get("https://generativelanguage.googleapis.com/v1beta/models?key={$adminApiKey}");
+                } else {
+                    return response()->json(['error' => 'Admin API key belum dikonfigurasi untuk Google AI.'], 500);
+                }
             } else {
                 $modelsResponse = Http::timeout(10)->get(
                     "https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}"

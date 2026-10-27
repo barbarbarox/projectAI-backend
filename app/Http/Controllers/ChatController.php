@@ -59,7 +59,7 @@ class ChatController extends Controller
         
         $query = $request->message;
         $modelOverride = $request->model_ai;
-        $ragData = $ragService->getKonteks($query, 5);
+        $ragData = $ragService->getKonteks($query, 5, includeNvd: true);
         $konteks = $ragData['konteks'];
         
         $prompt = <<<PROMPT
@@ -83,10 +83,22 @@ PROMPT;
         
         try {
             $response = $geminiService->generate($prompt, $modelOverride, false, \Illuminate\Support\Facades\Auth::id());
+            
+            $generalCount = count($ragData['general_chunks'] ?? []);
+            $nvdCount = count($ragData['nvd_chunks'] ?? []);
+            $nvdList = array_map(fn($c) => $c['title'] ?? ($c['source_id'] ?? 'CVE'), $ragData['nvd_chunks'] ?? []);
+            $generalList = array_map(fn($c) => $c['title'] ?? ($c['source_id'] ?? 'Doc'), $ragData['general_chunks'] ?? []);
+
             return response()->json([
                 'status' => 'success',
                 'message' => $response,
-                'rag_used' => !empty($konteks)
+                'rag_used' => !empty($konteks),
+                'rag_details' => [
+                    'general_count' => $generalCount,
+                    'nvd_count' => $nvdCount,
+                    'general_sources' => array_values(array_unique(array_filter($generalList))),
+                    'nvd_cves' => array_values(array_unique(array_filter($nvdList))),
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

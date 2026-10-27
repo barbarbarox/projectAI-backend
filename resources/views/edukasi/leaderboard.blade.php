@@ -16,8 +16,10 @@
                  style="background:#06b6d4;filter:blur(70px);"></div>
         </div>
 
-        <div class="flex items-center justify-center gap-3 mb-8 relative z-10">
-            <span class="text-2xl">🏆</span>
+        <div class="flex items-center justify-center gap-2.5 mb-8 relative z-10">
+            <div class="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-yellow-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            </div>
             <h3 class="text-lg font-bold text-white">Top 5 — Hall of Fame</h3>
         </div>
 
@@ -57,7 +59,9 @@
                         {{ strtoupper(substr($leaders[0]->name, 0, 1)) }}
                         @endif
                     </div>
-                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 text-2xl select-none">👑</div>
+                    <div class="absolute -top-5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-yellow-500/20 border border-yellow-500/40 flex items-center justify-center text-yellow-300">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5m14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>
+                    </div>
                     <div class="absolute -top-1 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-black text-white shadow"
                          style="background:linear-gradient(135deg,#fbbf24,#d97706);">1</div>
                 </div>
@@ -118,7 +122,7 @@
                     'background:#0f172a;color:#64748b;',
                     'background:#0f172a;color:#64748b;',
                 ];
-                $medals = ['👑', '🥈', '🥉', '', ''];
+                $medals = ['', '', '', '', ''];
             @endphp
             <div class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:bg-slate-800/40"
                  style="{{ $idx < 3
@@ -129,7 +133,7 @@
                     {{ $idx + 1 }}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-white truncate">{{ $medals[$idx] ?? '' }} {{ $leader->nama_lengkap ?? $leader->name }}</p>
+                    <p class="text-sm font-medium text-white truncate">{{ $leader->nama_lengkap ?? $leader->name }}</p>
                 </div>
                 <span class="text-xs font-bold text-yellow-400 flex-shrink-0">{{ $leader->total_poin }} poin</span>
             </div>
@@ -138,7 +142,9 @@
 
         @else
         <div class="text-center py-14 relative z-10">
-            <p class="text-4xl mb-3">🏆</p>
+            <div class="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center bg-yellow-500/10 border border-yellow-500/20 text-yellow-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
             <p class="text-sm" style="color:#94a3b8;">Belum ada cukup peserta. Jadilah yang pertama menyelesaikan tantangan!</p>
         </div>
         @endif
@@ -205,15 +211,17 @@
     <div class="text-center">
         @auth
         <a href="/edukasi/tantangan"
-           class="btn-security inline-flex"
+           class="btn-security inline-flex items-center gap-2"
            style="padding:0.75rem 1.75rem;font-size:0.9375rem;">
-            🎯 Ikuti Tantangan Sekarang
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span>Ikuti Tantangan Sekarang</span>
         </a>
         @else
         <a href="{{ route('masuk') }}"
-           class="btn-security inline-flex"
+           class="btn-security inline-flex items-center gap-2"
            style="padding:0.75rem 1.75rem;font-size:0.9375rem;">
-            🔐 Masuk untuk Ikut Tantangan
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+            <span>Masuk untuk Ikut Tantangan</span>
         </a>
         @endauth
     </div>

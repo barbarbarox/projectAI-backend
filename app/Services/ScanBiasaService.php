@@ -56,6 +56,11 @@ class ScanBiasaService
             ])->get($url);
 
             $headers = $response->headers();
+            $allHeaders = [];
+            foreach ($headers as $name => $values) {
+                $allHeaders[strtolower($name)] = is_array($values) ? ($values[0] ?? '') : (string) $values;
+            }
+
             $requiredHeaders = [
                 'Content-Security-Policy' => 20,
                 'Strict-Transport-Security' => 20,
@@ -79,13 +84,31 @@ class ScanBiasaService
                 if ($exists) $skor += $poin;
             }
 
+            $sensitiveHeaders = [
+                'server'            => 'Mengekspos software dan versi web server',
+                'x-powered-by'     => 'Mengekspos framework/bahasa backend',
+                'x-aspnet-version' => 'Mengekspos versi ASP.NET',
+                'x-generator'      => 'Mengekspos CMS/generator yang digunakan',
+            ];
+            $exposedHeaders = [];
+            foreach ($sensitiveHeaders as $sh => $desc) {
+                if (isset($allHeaders[$sh])) {
+                    $exposedHeaders[$sh] = [
+                        'nilai'     => $allHeaders[$sh],
+                        'deskripsi' => $desc,
+                    ];
+                }
+            }
+
             return [
                 'skor' => $skor,
                 'headers' => $headerResults,
+                'headers_sensitif' => $exposedHeaders,
+                'semua_headers' => $allHeaders,
             ];
         } catch (\Exception $e) {
             Log::warning('Header analysis gagal: ' . $e->getMessage());
-            return ['skor' => 0, 'headers' => []];
+            return ['skor' => 0, 'headers' => [], 'headers_sensitif' => [], 'semua_headers' => []];
         }
     }
 
@@ -172,10 +195,30 @@ class ScanBiasaService
         }
         $teknologi = array_unique(array_slice($teknologi, 0, 15));
 
-        // Screenshot
+        // Screenshot & Structured Tech Stack
         $screenshotUrl = null;
         if (!empty($urlscanData['task']['uuid'])) {
             $screenshotUrl = $this->urlScanService->getScreenshotUrl($urlscanData['task']['uuid']);
+        }
+
+        $fingerprinter = app(TechStackFingerprinter::class);
+        $techStackStructured = $fingerprinter->fingerprint([
+            'url'              => $url,
+            'headers'          => $headerData['semua_headers'] ?? [],
+            'server_info'      => [
+                'server'  => $pageInfo['server'] ?? null,
+                'ip'      => $pageInfo['ip'] ?? null,
+                'country' => $pageInfo['country'] ?? null,
+                'asn'     => $pageInfo['asn'] ?? null,
+            ],
+            'teknologi'        => $teknologi,
+            'ssl'              => $sslData,
+            'security_headers' => $headerData,
+            'screenshot_url'   => $screenshotUrl,
+        ]);
+
+        if (empty($screenshotUrl) && !empty($techStackStructured['screenshot'])) {
+            $screenshotUrl = $techStackStructured['screenshot'];
         }
 
         return [
@@ -192,6 +235,7 @@ class ScanBiasaService
                 'total_engines' => $total,
             ],
             'teknologi' => $teknologi,
+            'tech_stack_structured' => $techStackStructured,
             'screenshot_url' => $screenshotUrl,
         ];
     }

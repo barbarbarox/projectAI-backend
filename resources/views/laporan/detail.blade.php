@@ -15,7 +15,10 @@
             @if($scan->confidence_score)
             <p class="text-xs text-[#64748b] mt-1">Kepercayaan: {{ round($scan->confidence_score * 100) }}%</p>
             @endif
-            <a href="{{ route('laporan.pdf', $scan) }}" class="inline-block mt-4 px-4 py-2 rounded-lg bg-[#1e2d4a] text-xs text-[#94a3b8] hover:bg-[#2a3a5c] transition-colors">📄 Unduh PDF</a>
+            <a href="{{ route('laporan.pdf', $scan) }}" class="inline-flex items-center gap-1.5 mt-4 px-3.5 py-2 rounded-lg bg-[#1e2d4a] text-xs text-slate-300 hover:bg-[#2a3a5c] hover:text-white transition-colors border border-slate-700">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Unduh PDF</span>
+            </a>
         </div>
         <div class="md:col-span-2 space-y-4">
             @if($scan->ringkasan_eksekutif)
@@ -48,7 +51,13 @@
     {{-- Simulasi Serangan --}}
     @if($scan->simulasiSerangan->count())
     <div>
-        <h3 class="text-lg font-semibold mb-4">Simulasi Serangan</h3>
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Simulasi Serangan (Red Team)</h3>
+            <a href="{{ route('simulasi.index', $scan->id) }}" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(220,38,38,0.3)]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Jalankan Simulasi
+            </a>
+        </div>
         <div class="space-y-4">
             @foreach($scan->simulasiSerangan as $sim)
             <div class="rounded-2xl bg-[#0f1629] border border-[#1e2d4a] p-6">
@@ -80,8 +89,9 @@
     <x-rag-source-info :scan="$scan" />
 
     {{-- Disclaimer --}}
-    <div class="rounded-xl bg-yellow-500/5 border border-yellow-500/20 p-4">
-        <p class="text-xs text-yellow-400/80">⚠️ Penilaian ini dihasilkan AI berbasis knowledge base keamanan publik (NVD, MITRE ATT&CK, OWASP, CWE, CISA KEV). Tidak menggantikan penetration testing profesional. Gunakan sebagai panduan awal, bukan keputusan final.</p>
+    <div class="rounded-xl bg-yellow-500/5 border border-yellow-500/20 p-4 flex items-start gap-3">
+        <svg class="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <p class="text-xs text-yellow-400/90 leading-relaxed">Penilaian ini dihasilkan AI berbasis knowledge base keamanan publik (NVD, MITRE ATT&CK, OWASP, CWE, CISA KEV). Tidak menggantikan penetration testing profesional. Gunakan sebagai panduan awal, bukan keputusan final.</p>
     </div>
 </div>
 @endsection

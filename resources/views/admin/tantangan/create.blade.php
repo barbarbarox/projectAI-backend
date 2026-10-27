@@ -57,19 +57,19 @@
                 <div>
                     <label class="block text-xs font-medium text-[#94a3b8] mb-1.5">Format Soal</label>
                     <select x-model="aiFormat" class="w-full px-3 py-2 rounded-lg bg-[#0a0e1a] border border-[#1e2d4a] text-sm text-white focus:border-[#7c3aed] focus:outline-none">
-                        <option value="quiz">🎯 Quiz Pilihan Ganda</option>
-                        <option value="kode">💻 Analisis Kode (Code Box)</option>
-                        <option value="skenario">📋 Skenario Poin-per-Poin</option>
-                        <option value="ciphertext">🔐 Ciphertext / Kriptografi</option>
-                        <option value="file">📁 Analisis File (Investigasi)</option>
+                        <option value="quiz">Quiz Pilihan Ganda</option>
+                        <option value="kode">Analisis Kode (Code Box)</option>
+                        <option value="skenario">Skenario Poin-per-Poin</option>
+                        <option value="ciphertext">Ciphertext / Kriptografi</option>
+                        <option value="file">Analisis File (Investigasi)</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-[#94a3b8] mb-1.5">Tingkat Kesulitan</label>
                     <select x-model="aiTingkat" class="w-full px-3 py-2 rounded-lg bg-[#0a0e1a] border border-[#1e2d4a] text-sm text-white focus:border-[#7c3aed] focus:outline-none">
-                        <option value="mudah">🟢 Mudah</option>
-                        <option value="sedang">🟡 Sedang</option>
-                        <option value="sulit">🔴 Sulit</option>
+                        <option value="mudah">Mudah</option>
+                        <option value="sedang">Sedang</option>
+                        <option value="sulit">Sulit</option>
                     </select>
                 </div>
             </div>
@@ -118,7 +118,7 @@
                                 :class="form.format_soal === f.value
                                     ? 'border-[#7c3aed] bg-[#7c3aed]/15 text-white'
                                     : 'border-[#1e2d4a] bg-[#0a0e1a] text-[#64748b] hover:border-[#7c3aed]/50'">
-                            <span class="text-lg" x-text="f.icon"></span>
+                            <span class="w-5 h-5 flex items-center justify-center text-slate-300" x-html="f.icon"></span>
                             <span class="text-[10px] font-medium leading-tight" x-text="f.label"></span>
                         </button>
                     </template>
@@ -330,19 +330,19 @@ document.addEventListener('alpine:init', () => {
         aiError: '',
 
         formatList: [
-            { value: 'quiz',       icon: '🎯', label: 'Quiz\nPilihan Ganda' },
-            { value: 'kode',       icon: '💻', label: 'Kode\nAnalisis' },
-            { value: 'skenario',   icon: '📋', label: 'Skenario\nKronologis' },
-            { value: 'ciphertext', icon: '🔐', label: 'Cipher\nKriptografi' },
-            { value: 'file',       icon: '📁', label: 'File\nInvestigasi' },
+            { value: 'quiz',       icon: '<svg class=\'w-5 h-5 text-purple-400\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\'/></svg>', label: 'Quiz\nPilihan Ganda' },
+            { value: 'kode',       icon: '<svg class=\'w-5 h-5 text-cyan-400\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4\'/></svg>', label: 'Kode\nAnalisis' },
+            { value: 'skenario',   icon: '<svg class=\'w-5 h-5 text-orange-400\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2\'/></svg>', label: 'Skenario\nKronologis' },
+            { value: 'ciphertext', icon: '<svg class=\'w-5 h-5 text-pink-400\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z\'/></svg>', label: 'Cipher\nKriptografi' },
+            { value: 'file',       icon: '<svg class=\'w-5 h-5 text-emerald-400\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z\'/></svg>', label: 'File\nInvestigasi' },
         ],
 
         formatDesc: {
-            quiz:       '🎯 Format klasik pilihan ganda (A/B/C/D). Cocok untuk tes pengetahuan dasar dan konsep.',
-            kode:       '💻 Soal menyajikan kode program dalam code box. User menganalisis celah keamanan atau bug kritis di dalamnya.',
-            skenario:   '📋 Soal dalam bentuk skenario insiden keamanan yang disajikan poin per poin secara kronologis.',
-            ciphertext: '🔐 Tantangan kriptografi: user harus memecahkan teks terenkripsi untuk menemukan plaintext atau flag.',
-            file:       '📁 Tantangan forensik: user menganalisis konten file (log, hex dump, pcap, dll) untuk menemukan flag atau bukti.',
+            quiz:       'Format klasik pilihan ganda (A/B/C/D). Cocok untuk tes pengetahuan dasar dan konsep.',
+            kode:       'Soal menyajikan kode program dalam code box. User menganalisis celah keamanan atau bug kritis di dalamnya.',
+            skenario:   'Soal dalam bentuk skenario insiden keamanan yang disajikan poin per poin secara kronologis.',
+            ciphertext: 'Tantangan kriptografi: user harus memecahkan teks terenkripsi untuk menemukan plaintext atau flag.',
+            file:       'Tantangan forensik: user menganalisis konten file (log, hex dump, pcap, dll) untuk menemukan flag atau bukti.',
         },
 
         form: {

@@ -26,6 +26,9 @@ class Scan extends Model
         'status',
         'progress_step',
         'progress_persen',
+        'pipeline_stage',
+        'tech_stack',
+        'screenshot_path',
         'skor_keamanan',
         'verdict',
         'verdict_deploy',
@@ -44,12 +47,29 @@ class Scan extends Model
     {
         return [
             'teknologi_terdeteksi' => 'array',
-            'data_mentah' => 'array',
-            'rag_references' => 'array',
-            'selesai_at' => 'datetime',
-            'dihapus_at' => 'datetime',
-            'confidence_score' => 'float',
-            'is_verified_domain' => 'boolean',
+            'tech_stack'          => 'array',
+            'data_mentah'         => 'array',
+            'rag_references'      => 'array',
+            'selesai_at'          => 'datetime',
+            'dihapus_at'          => 'datetime',
+            'confidence_score'    => 'float',
+            'is_verified_domain'  => 'boolean',
+            'pipeline_stage'      => 'integer',
+        ];
+    }
+
+    /**
+     * Definisi 6 tahap pipeline scan RedSim.
+     */
+    public static function pipelineStages(): array
+    {
+        return [
+            1 => ['label' => 'Rekon & Aset',        'desc' => 'WHOIS, DNS, IP Geolocation',           'icon' => 'radar'],
+            2 => ['label' => 'Fingerprint Teknologi','desc' => 'Tech Stack, CDN, CMS Detection',       'icon' => 'chip'],
+            3 => ['label' => 'Analisis Keamanan',   'desc' => 'OWASP Checks, Headers, Cookies, Ports', 'icon' => 'shield'],
+            4 => ['label' => 'Analisis SSL/TLS',    'desc' => 'Certificate, Cipher, HSTS, CT Logs',   'icon' => 'lock'],
+            5 => ['label' => 'Threat Intelligence', 'desc' => 'VirusTotal, CVE Correlation, ML',       'icon' => 'brain'],
+            6 => ['label' => 'Analisis AI',         'desc' => 'LLM Synthesis, Evidence, Remediasi',   'icon' => 'sparkle'],
         ];
     }
 
@@ -76,6 +96,16 @@ class Scan extends Model
     public function simulasiSerangan(): HasMany
     {
         return $this->hasMany(SimulasiSerangan::class);
+    }
+
+    public function subdomains(): HasMany
+    {
+        return $this->hasMany(AssetSubdomain::class, 'scan_id');
+    }
+
+    public function insiden(): HasMany
+    {
+        return $this->hasMany(Insiden::class, 'scan_id');
     }
 
     public function getVerdictLabelAttribute(): string

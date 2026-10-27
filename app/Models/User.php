@@ -59,6 +59,11 @@ class User extends Authenticatable
         return $this->hasMany(Scan::class);
     }
 
+    public function insiden(): HasMany
+    {
+        return $this->hasMany(Insiden::class);
+    }
+
     public function poinUser(): HasMany
     {
         return $this->hasMany(PoinUser::class);

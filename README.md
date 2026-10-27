@@ -1,81 +1,69 @@
 <div align="center">
 
-# 🔴 RedSim
-
-### Platform Penilaian Keamanan Sistem Berbasis AI
-
-[![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.3+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
-[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-
-**RedSim** adalah platform web berbasis AI yang menyediakan analisis keamanan siber secara otomatis dan komprehensif. Didukung knowledge base dari MITRE ATT&CK, NVD, OWASP, CISA KEV, CWE, dan CAPEC — analisis kerentanan kode, URL, dan proyek dalam hitungan detik.
-
-</div>
-
 ---
 
 ## ✨ Fitur Unggulan
 
 ### 🛡️ Analisis Keamanan (AI-Powered)
 
-| Fitur | Deskripsi |
-|-------|-----------|
-| **Analisis Kode** | Scan source code untuk kerentanan OWASP Top 10, CWE, dan remediasi actionable |
-| **Analisis URL** | Pemindaian URL/domain untuk phishing, malware, miskonfigurasi. Termasuk verifikasi domain aktif |
-| **Analisis ZIP** | Upload file ZIP proyek untuk analisis keamanan komprehensif seluruh codebase sekaligus |
-| **Analisis Log** | Parsing log file (Nginx, Apache, sistem) untuk deteksi anomali dan intrusi |
-| **Scan Intensif** | Pemindaian mendalam: OSINT, enumerasi port, fingerprinting, analisis kerentanan spesifik |
-| **Simulasi Serangan** | Visualisasi skenario serangan berbasis framework MITRE ATT&CK sesuai hasil temuan |
-| **Ekspor Laporan PDF** | Generate laporan profesional siap audit dalam format PDF |
-| **Skor Keamanan** | Penilaian skor keamanan 0–100 untuk setiap hasil scan |
+| Fitur                        | Deskripsi                                                                                       |
+| ---------------------------- | ----------------------------------------------------------------------------------------------- |
+| **Analisis Kode**      | Scan source code untuk kerentanan OWASP Top 10, CWE, dan remediasi actionable                   |
+| **Analisis URL**       | Pemindaian URL/domain untuk phishing, malware, miskonfigurasi. Termasuk verifikasi domain aktif |
+| **Analisis ZIP**       | Upload file ZIP proyek untuk analisis keamanan komprehensif seluruh codebase sekaligus          |
+| **Analisis Log**       | Parsing log file (Nginx, Apache, sistem) untuk deteksi anomali dan intrusi                      |
+| **Scan Intensif**      | Pemindaian mendalam: OSINT, enumerasi port, fingerprinting, analisis kerentanan spesifik        |
+| **Simulasi Serangan**  | Visualisasi skenario serangan berbasis framework MITRE ATT&CK sesuai hasil temuan               |
+| **Ekspor Laporan PDF** | Generate laporan profesional siap audit dalam format PDF                                        |
+| **Skor Keamanan**      | Penilaian skor keamanan 0–100 untuk setiap hasil scan                                          |
 
 ### 🤖 Integrasi AI & Knowledge Base
 
-| Komponen | Detail |
-|----------|--------|
-| **Multi AI Provider** | Google Gemini, NVIDIA NIM (Llama, Mistral, dll) via `AIProviderService` |
-| **RAG System** | Retrieval-Augmented Generation dengan Pinecone sebagai vector database |
-| **AI Chatbot** | Asisten AI terintegrasi untuk tanya jawab seputar keamanan siber |
-| **RAG Debugging** | Panel debugging RAG khusus admin untuk troubleshoot konteks retrieval |
-| **Knowledge Chunking** | Ingestion otomatis knowledge base ke vector store |
-| **Knowledge Base** | MITRE ATT&CK, NVD (200K+ CVE), OWASP, CISA KEV, CWE (1000+), CAPEC |
+| Komponen                     | Detail                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| **Multi AI Provider**  | Google Gemini, NVIDIA NIM (Llama, Mistral, dll) via`AIProviderService` |
+| **RAG System**         | Retrieval-Augmented Generation dengan Pinecone sebagai vector database   |
+| **AI Chatbot**         | Asisten AI terintegrasi untuk tanya jawab seputar keamanan siber         |
+| **RAG Debugging**      | Panel debugging RAG khusus admin untuk troubleshoot konteks retrieval    |
+| **Knowledge Chunking** | Ingestion otomatis knowledge base ke vector store                        |
+| **Knowledge Base**     | MITRE ATT&CK, NVD (200K+ CVE), OWASP, CISA KEV, CWE (1000+), CAPEC       |
 
 ### 🎓 Edukasi & Gamifikasi
 
-| Fitur | Deskripsi |
-|-------|-----------|
+| Fitur                           | Deskripsi                                                       |
+| ------------------------------- | --------------------------------------------------------------- |
 | **Tantangan (CTF-Style)** | Kuis dan tantangan interaktif keamanan siber dengan sistem poin |
-| **Ensiklopedia** | Knowledge base konsep keamanan siber yang dapat dicari |
-| **Leaderboard** | Papan peringkat real-time berdasarkan poin tantangan |
-| **Sistem Poin** | Reward poin untuk setiap tantangan yang diselesaikan |
+| **Ensiklopedia**          | Knowledge base konsep keamanan siber yang dapat dicari          |
+| **Leaderboard**           | Papan peringkat real-time berdasarkan poin tantangan            |
+| **Sistem Poin**           | Reward poin untuk setiap tantangan yang diselesaikan            |
 
 ### 🔐 Autentikasi & Keamanan Akun
 
-| Fitur | Deskripsi |
-|-------|-----------|
-| **WhatsApp OTP** | Login dan reset password via OTP WhatsApp (OpenWA atau Fonnte) |
-| **Google OAuth** | Single Sign-On (SSO) via akun Google menggunakan Laravel Socialite |
-| **Notifikasi Login WA** | Notifikasi WhatsApp otomatis saat akun berhasil login |
-| **Reset Password via WA** | Link reset password dikirim langsung ke nomor WhatsApp pengguna |
-| **User Approval System** | Verifikasi manual oleh admin untuk pengguna baru |
+| Fitur                           | Deskripsi                                                          |
+| ------------------------------- | ------------------------------------------------------------------ |
+| **WhatsApp OTP**          | Login dan reset password via OTP WhatsApp (OpenWA atau Fonnte)     |
+| **Google OAuth**          | Single Sign-On (SSO) via akun Google menggunakan Laravel Socialite |
+| **Notifikasi Login WA**   | Notifikasi WhatsApp otomatis saat akun berhasil login              |
+| **Reset Password via WA** | Link reset password dikirim langsung ke nomor WhatsApp pengguna    |
+| **User Approval System**  | Verifikasi manual oleh admin untuk pengguna baru                   |
 
 ### 📊 Admin Dashboard
 
-| Fitur | Deskripsi |
-|-------|-----------|
-| **System Health Monitor** | Pemantauan status layanan: database, queue, AI provider, OpenWA |
-| **Audit Logs** | Catatan aktivitas pengguna dan event sistem secara lengkap |
-| **AI Configuration** | Kelola API key, model, dan parameter AI dari panel admin |
-| **Manajemen User** | Approve/reject pendaftaran, kelola role dan data pengguna |
-| **Manajemen Konten** | CRUD tantangan, ensiklopedia, dan knowledge base |
-| **WhatsApp Gateway Config** | Konfigurasi OpenWA/Fonnte langsung dari panel admin |
+| Fitur                             | Deskripsi                                                       |
+| --------------------------------- | --------------------------------------------------------------- |
+| **System Health Monitor**   | Pemantauan status layanan: database, queue, AI provider, OpenWA |
+| **Audit Logs**              | Catatan aktivitas pengguna dan event sistem secara lengkap      |
+| **AI Configuration**        | Kelola API key, model, dan parameter AI dari panel admin        |
+| **Manajemen User**          | Approve/reject pendaftaran, kelola role dan data pengguna       |
+| **Manajemen Konten**        | CRUD tantangan, ensiklopedia, dan knowledge base                |
+| **WhatsApp Gateway Config** | Konfigurasi OpenWA/Fonnte langsung dari panel admin             |
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Backend
+
 - **Framework:** [Laravel 13](https://laravel.com/) (PHP 8.3+)
 - **Queue:** Laravel Queue (database driver) — untuk pemrosesan scan AI asinkron
 - **PDF:** [barryvdh/laravel-dompdf](https://github.com/barryvdh/laravel-dompdf) v3.1
@@ -83,27 +71,29 @@
 - **OAuth:** Laravel Socialite v5.x
 
 ### Frontend
+
 - **CSS Framework:** Tailwind CSS via Vite
 - **Animasi:** GSAP 3.x, WebGL custom shader (GridScan effect)
 - **Font:** Inter, JetBrains Mono, Montserrat (Google Fonts)
 - **Build Tool:** Vite
 
 ### Database
+
 - **Utama:** MySQL 8.x / PostgreSQL 15+ / SQLite (development)
 - **Vector DB:** [Pinecone](https://www.pinecone.io/) (RAG & embedding)
 
 ### Integrasi Eksternal
 
-| Layanan | Fungsi | Env Key |
-|---------|--------|---------|
-| Google Gemini API | Model AI utama | `GEMINI_API_KEY` |
-| NVIDIA NIM API | Model AI alternatif | `NVIDIA_API_KEY` |
-| Pinecone | Vector database RAG | `PINECONE_API_KEY` |
-| VirusTotal | Reputasi URL/IP | `VIRUSTOTAL_API_KEY` |
-| URLScan.io | Scan URL lanjutan | `URLSCAN_API_KEY` |
-| OpenWA | WhatsApp self-hosted | `OPENWA_BASE_URL`, `OPENWA_API_KEY` |
-| Fonnte | WhatsApp cloud API | `FONNTE_TOKEN` |
-| Google OAuth | SSO login | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
+| Layanan           | Fungsi               | Env Key                                        |
+| ----------------- | -------------------- | ---------------------------------------------- |
+| Google Gemini API | Model AI utama       | `GEMINI_API_KEY`                             |
+| NVIDIA NIM API    | Model AI alternatif  | `NVIDIA_API_KEY`                             |
+| Pinecone          | Vector database RAG  | `PINECONE_API_KEY`                           |
+| VirusTotal        | Reputasi URL/IP      | `VIRUSTOTAL_API_KEY`                         |
+| URLScan.io        | Scan URL lanjutan    | `URLSCAN_API_KEY`                            |
+| OpenWA            | WhatsApp self-hosted | `OPENWA_BASE_URL`, `OPENWA_API_KEY`        |
+| Fonnte            | WhatsApp cloud API   | `FONNTE_TOKEN`                               |
+| Google OAuth      | SSO login            | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
 
 ---
 
@@ -120,24 +110,28 @@
 ### Langkah Instalasi
 
 **1. Clone repository**
+
 ```bash
 git clone https://github.com/barbarbarox/redsim.git
 cd redsim/backend
 ```
 
 **2. Install PHP & Node dependencies**
+
 ```bash
 composer install
 npm install
 ```
 
 **3. Konfigurasi environment**
+
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
 **4. Setup database**
+
 ```bash
 # Buat file SQLite (development)
 touch database/database.sqlite
@@ -153,11 +147,13 @@ php artisan db:seed   # opsional
 ```
 
 **5. Jalankan semua service (recommended)**
+
 ```bash
 composer run dev
 ```
 
 Perintah ini menjalankan secara paralel:
+
 - `php artisan serve` — web server `http://localhost:8000`
 - `php artisan queue:listen` — worker queue untuk proses AI
 - `php artisan pail` — log viewer
@@ -227,12 +223,14 @@ sudo ./setup-ubuntu-server.sh
 ```
 
 Script otomatis menginstall dan mengkonfigurasi:
+
 - PHP 8.3-FPM + Nginx
 - Node.js 20 LTS + Composer
 - Cloudflare Tunnel (HTTPS publik)
 - Semua dependency Laravel
 
 ### Stack Deployment Rekomendasi
+
 ```
 Internet → Cloudflare Tunnel → Nginx → PHP-FPM → Laravel
                                              └→ Queue Worker (systemd)
@@ -268,6 +266,7 @@ npm --version
 ```
 
 Jika di Ubuntu server, install Chromium terlebih dahulu:
+
 ```bash
 sudo apt update
 sudo apt install -y chromium-browser
@@ -286,6 +285,7 @@ nano .env
 ```
 
 Isi `.env` OpenWA:
+
 ```env
 # Server
 PORT=2785
@@ -324,6 +324,7 @@ CACHE_ENABLED=false
 ```
 
 Buat folder data:
+
 ```bash
 mkdir -p data/sessions data/media
 ```
@@ -338,13 +339,13 @@ npm start
 ```
 
 Output yang diharapkan:
+
 ```
 [OpenWA] Server running on port 2785
 [OpenWA] Dashboard: http://localhost:2785
 ```
 
-**Buka Dashboard di browser:** `http://localhost:2785`  
-*(Jika server remote, gunakan SSH tunneling: `ssh -L 2785:localhost:2785 user@server`)*
+**Buka Dashboard di browser:** `http://localhost:2785`*(Jika server remote, gunakan SSH tunneling: `ssh -L 2785:localhost:2785 user@server`)*
 
 1. Masuk dengan `API_MASTER_KEY` yang Anda set
 2. Klik **Sessions** → **New Session**
@@ -382,6 +383,7 @@ curl -X POST http://localhost:2785/api/sessions/default/messages/send-text \
 ```
 
 Response sukses:
+
 ```json
 {
   "status": true,
@@ -397,6 +399,7 @@ Response sukses:
 ### ⚙️ Langkah 5 — Hubungkan dengan Laravel (RedSim)
 
 Edit `.env` di folder `backend/`:
+
 ```env
 OPENWA_BASE_URL=http://localhost:2785
 OPENWA_API_KEY=api_key_dari_langkah_4
@@ -405,6 +408,7 @@ OPENWA_SENDER_NUMBER=628xxxxxxxxxx
 ```
 
 Verifikasi dari Admin Panel RedSim:
+
 1. Login sebagai admin
 2. **Admin** → **App Settings** → bagian **WhatsApp Gateway**
 3. Klik **Test Koneksi**
@@ -492,6 +496,7 @@ sudo certbot --nginx -d wa.domain-anda.com
 Jika tidak ingin self-host OpenWA, gunakan **[Fonnte](https://fonnte.com)**:
 
 **Setup Fonnte:**
+
 1. Daftar di [fonnte.com](https://fonnte.com)
 2. Tambahkan device → scan QR Code dengan WhatsApp
 3. Salin **Token** dari dashboard
@@ -503,31 +508,31 @@ Jika tidak ingin self-host OpenWA, gunakan **[Fonnte](https://fonnte.com)**:
 
 **Perbandingan:**
 
-| | OpenWA (Self-host) | Fonnte (Cloud) |
-|--|--|--|
-| Biaya | Gratis | ~Rp 50.000/bulan |
-| Kontrol | Penuh | Terbatas |
-| Setup | Lebih kompleks | Sangat mudah |
-| Uptime | Tergantung server | 99.9% |
+|             | OpenWA (Self-host)       | Fonnte (Cloud)   |
+| ----------- | ------------------------ | ---------------- |
+| Biaya       | Gratis                   | ~Rp 50.000/bulan |
+| Kontrol     | Penuh                    | Terbatas         |
+| Setup       | Lebih kompleks           | Sangat mudah     |
+| Uptime      | Tergantung server        | 99.9%            |
 | Cocok untuk | Dev + Production managed | Production cepat |
 
 ---
 
 ## 🗄️ Struktur Database
 
-| Tabel | Fungsi |
-|-------|--------|
-| `users` | Data pengguna, nomor WA, role, status approval |
-| `scans` | Hasil scan keamanan (kode, URL, ZIP, log, intensif) |
-| `temuan` | Detail temuan/kerentanan dari setiap scan |
-| `simulasi_serangan` | Data simulasi serangan MITRE ATT&CK |
-| `tantangan` | Data soal/tantangan edukasi |
-| `poin_users` | Poin gamifikasi pengguna |
-| `ai_configurations` | Konfigurasi AI provider (API key, model, parameter) |
-| `app_settings` | Konfigurasi aplikasi (WA gateway, dll) |
-| `audit_logs` | Log aktivitas pengguna |
-| `knowledge_chunks` | Potongan knowledge base untuk RAG |
-| `domain_verifications` | Cache verifikasi domain aktif |
+| Tabel                    | Fungsi                                              |
+| ------------------------ | --------------------------------------------------- |
+| `users`                | Data pengguna, nomor WA, role, status approval      |
+| `scans`                | Hasil scan keamanan (kode, URL, ZIP, log, intensif) |
+| `temuan`               | Detail temuan/kerentanan dari setiap scan           |
+| `simulasi_serangan`    | Data simulasi serangan MITRE ATT&CK                 |
+| `tantangan`            | Data soal/tantangan edukasi                         |
+| `poin_users`           | Poin gamifikasi pengguna                            |
+| `ai_configurations`    | Konfigurasi AI provider (API key, model, parameter) |
+| `app_settings`         | Konfigurasi aplikasi (WA gateway, dll)              |
+| `audit_logs`           | Log aktivitas pengguna                              |
+| `knowledge_chunks`     | Potongan knowledge base untuk RAG                   |
+| `domain_verifications` | Cache verifikasi domain aktif                       |
 
 ---
 
@@ -563,6 +568,7 @@ Jika tidak ingin self-host OpenWA, gunakan **[Fonnte](https://fonnte.com)**:
 ## ❓ Troubleshooting
 
 ### OpenWA: QR Code tidak muncul
+
 ```bash
 # Pastikan Chromium terinstall
 which chromium-browser || which google-chrome
@@ -573,6 +579,7 @@ sudo journalctl -u openwa -n 100
 ```
 
 ### Scan AI stuck di "pending" / tidak diproses
+
 ```bash
 # Pastikan queue worker aktif
 php artisan queue:work --tries=3
@@ -589,17 +596,20 @@ php artisan queue:work
 ```
 
 ### OpenWA disconnect setelah beberapa waktu
+
 - WhatsApp membatasi sesi web — re-scan QR Code jika expired
 - Set `AUTO_START_SESSIONS=true` di `.env` OpenWA
 - Cek stabilitas koneksi internet server
 
 ### Error 403 / Unauthorized di OpenWA API
+
 ```bash
 # Pastikan API key benar
 curl -H "X-Api-Key: API_KEY_ANDA" http://localhost:2785/api/sessions
 ```
 
 ### Pinecone connection error
+
 ```bash
 php artisan tinker
 >>> app(\App\Services\PineconeService::class)->testConnection();
@@ -614,9 +624,3 @@ Project ini dilisensikan di bawah [MIT License](https://opensource.org/licenses/
 ---
 
 <div align="center">
-
-Dibuat dengan ❤️ untuk keamanan siber Indonesia 🇮🇩
-
-**RedSim** — *Temukan celah sebelum peretas menemukannya.*
-
-</div>

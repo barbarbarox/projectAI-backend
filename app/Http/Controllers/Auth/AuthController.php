@@ -210,7 +210,8 @@ class AuthController extends Controller
         // Verifikasi berhasil!
         $user->update([
             'is_verified' => true,
-            'verification_token' => null,
+            // Simpan token agar klik ulang link tidak memunculkan halaman error
+            // Token dianggap tidak valid lagi karena is_verified sudah true
             'verification_expires_at' => null,
         ]);
 
@@ -380,8 +381,13 @@ class AuthController extends Controller
         return Socialite::driver('google')->redirect();
     }
 
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(\Illuminate\Http\Request $request)
     {
+        // Jika callback berasal dari flow OAuth AI Model (Gemini), serahkan ke UserAiConfigController
+        if (str_starts_with($request->input('state', ''), 'ai_config:')) {
+            return app(\App\Http\Controllers\UserAiConfigController::class)->handleGoogleAICallback($request);
+        }
+
         try {
             $googleUser = Socialite::driver('google')->user();
         } catch (\Exception $e) {

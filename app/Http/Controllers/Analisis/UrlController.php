@@ -274,7 +274,7 @@ class UrlController extends Controller
     {
         abort_if($scan->user_id !== Auth::id(), 403);
 
-        $scan->load(['temuan', 'simulasiSerangan']);
+        $scan->load(['temuan.evidence', 'simulasiSerangan']);
 
         return view('analisis.hasil-url', compact('scan'));
     }

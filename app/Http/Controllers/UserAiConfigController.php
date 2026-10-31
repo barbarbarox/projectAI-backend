@@ -93,16 +93,25 @@ class UserAiConfigController extends Controller
             return redirect()->route('profile.ai')->with('error', 'GOOGLE_CLIENT_ID belum dikonfigurasi di server.');
         }
 
-        $request->session()->put('google_ai_csrf', $state = \Illuminate\Support\Str::random(40));
+        $csrf = \Illuminate\Support\Str::random(40);
+        $request->session()->put('google_ai_csrf', $csrf);
+
+        // Gunakan GOOGLE_REDIRECT_URI yang sudah terdaftar di Google Cloud Console
+        $redirectUri = env('GOOGLE_AI_REDIRECT_URI') 
+            ?: config('services.google.redirect') 
+            ?: env('GOOGLE_REDIRECT_URI') 
+            ?: route('profile.ai.oauth.google.callback');
+
+        $state = 'ai_config:' . $csrf;
 
         $params = http_build_query([
-            'client_id' => $clientId,
-            'redirect_uri' => url('/profil/ai/oauth/google/callback'),
+            'client_id'     => $clientId,
+            'redirect_uri'  => $redirectUri,
             'response_type' => 'code',
-            'scope' => 'openid email profile',
-            'access_type' => 'offline',
-            'prompt' => 'consent',
-            'state' => $state,
+            'scope'         => 'openid email profile',
+            'access_type'   => 'offline',
+            'prompt'        => 'consent',
+            'state'         => $state,
         ]);
 
         return redirect('https://accounts.google.com/o/oauth2/v2/auth?' . $params);
@@ -113,8 +122,12 @@ class UserAiConfigController extends Controller
      */
     public function handleGoogleAICallback(Request $request)
     {
+        $state = (string) $request->input('state', '');
+        $csrf = str_starts_with($state, 'ai_config:') ? substr($state, 10) : $state;
+        $savedCsrf = $request->session()->pull('google_ai_csrf');
+
         // Verify CSRF state
-        if ($request->state !== $request->session()->pull('google_ai_csrf')) {
+        if (!$savedCsrf || $csrf !== $savedCsrf) {
             return redirect()->route('profile.ai')->with('error', 'Invalid OAuth state. Silakan coba lagi.');
         }
 
@@ -125,14 +138,18 @@ class UserAiConfigController extends Controller
         try {
             $clientId = config('services.google.client_id') ?: env('GOOGLE_CLIENT_ID');
             $clientSecret = config('services.google.client_secret') ?: env('GOOGLE_CLIENT_SECRET');
+            $redirectUri = env('GOOGLE_AI_REDIRECT_URI') 
+                ?: config('services.google.redirect') 
+                ?: env('GOOGLE_REDIRECT_URI') 
+                ?: route('profile.ai.oauth.google.callback');
 
             // Exchange code for tokens
             $tokenResponse = Http::asForm()->post('https://oauth2.googleapis.com/token', [
-                'client_id' => $clientId,
+                'client_id'     => $clientId,
                 'client_secret' => $clientSecret,
-                'code' => $request->code,
-                'redirect_uri' => url('/profil/ai/oauth/google/callback'),
-                'grant_type' => 'authorization_code',
+                'code'          => $request->code,
+                'redirect_uri'  => $redirectUri,
+                'grant_type'    => 'authorization_code',
             ]);
 
             if (!$tokenResponse->successful()) {
@@ -148,27 +165,29 @@ class UserAiConfigController extends Controller
             // Gunakan Admin API Key untuk mengambil daftar model, bukan token OAuth user (karena scope OAuth sekarang hanya untuk identitas login)
             $adminApiKey = env('GOOGLE_GEMINI_API_KEY') ?: \App\Models\AiConfiguration::where('provider', 'google')->value('api_key');
             
+            $modelsResponse = null;
             if ($adminApiKey) {
-                $modelsResponse = Http::timeout(15)->get("https://generativelanguage.googleapis.com/v1beta/models?key={$adminApiKey}");
-            } else {
-                // Fallback kosong agar gagal dan menggunakan hardcoded models
-                $modelsResponse = Http::response([], 401);
+                try {
+                    $modelsResponse = Http::timeout(15)->get("https://generativelanguage.googleapis.com/v1beta/models?key={$adminApiKey}");
+                } catch (\Exception $e) {
+                    $modelsResponse = null;
+                }
             }
 
-            // Daftar model Gemini stabil yang selalu bisa dipakai
+            // Daftar model Gemini stabil yang BENAR-BENAR ada di Google AI API
             $fallbackModels = [
-                ['id' => 'gemini-3.5-flash', 'name' => 'Gemini 3.5 Flash (Terbaru)'],
-                ['id' => 'gemini-2.5-flash', 'name' => 'Gemini 2.5 Flash (Stabil)'],
-                ['id' => 'gemini-2.5-pro', 'name' => 'Gemini 2.5 Pro (Pro / Akurat)'],
-                ['id' => 'gemini-3.6-flash', 'name' => 'Gemini 3.6 Flash'],
-                ['id' => 'gemini-3.7-flash', 'name' => 'Gemini 3.7 Flash'],
-                ['id' => 'gemini-3.8-flash', 'name' => 'Gemini 3.8 Flash'],
+                ['id' => 'gemini-3.5-flash-lite', 'name' => 'Gemini 3.5 Flash Lite (Free Tier / Stabil)'],
+                ['id' => 'gemini-2.5-flash-preview-05-20', 'name' => 'Gemini 2.5 Flash Preview (Free Tier / Stabil)'],
+                ['id' => 'gemini-2.5-pro-preview-05-06', 'name' => 'Gemini 2.5 Pro Preview (Pro / Akurat)'],
+                ['id' => 'gemini-2.0-flash', 'name' => 'Gemini 2.0 Flash (Free Tier / Stabil)'],
+                ['id' => 'gemini-1.5-flash', 'name' => 'Gemini 1.5 Flash (Free Tier / Stabil)'],
+                ['id' => 'gemini-1.5-pro', 'name' => 'Gemini 1.5 Pro (Pro / Limit Ketat)'],
             ];
 
             $availableModels = [];
-            $defaultModel = 'gemini-3.5-flash';
+            $defaultModel = 'gemini-3.5-flash-lite';
 
-            if ($modelsResponse->successful()) {
+            if ($modelsResponse && $modelsResponse->successful()) {
                 $modelsData = $modelsResponse->json();
                 $availableModels = collect($modelsData['models'] ?? [])
                     ->filter(function($m) {
@@ -178,16 +197,13 @@ class UserAiConfigController extends Controller
                         
                         // Buang model non-teks, eksperimental, dan yang diketahui tidak bekerja
                         $exclude = [
-                            'nano', 'banana', 'vision', 'image', 'audio', 'video',
-                            'tts', 'embedding', 'aqa', 'omni', 'computer', 'learnlm',
-                            'native-audio', 'preview-tts',
+                            'nano', 'banana', 'image', 'audio', 'video',
+                            'tts', 'embedding', 'aqa', 'computer', 'learnlm',
+                            'native-audio', 'preview-tts', 'transcribe',
                         ];
                         foreach ($exclude as $kw) {
                             if (str_contains($name, $kw)) return false;
                         }
-                        
-                        // Buang versi 3.7 dan 3.8 yang diketahui tidak bekerja
-                        if (preg_match('/gemini-3\.(7|8)/', $name)) return false;
                         
                         return true;
                     })
@@ -210,9 +226,11 @@ class UserAiConfigController extends Controller
                     ->toArray();
 
                 if (!empty($availableModels)) {
-                    // Pilih model terbaik yang tersedia
-                    $preferred = collect($availableModels)->first(fn($m) => str_contains($m['id'], '3.5'))
-                        ?? collect($availableModels)->first(fn($m) => str_contains($m['id'], '2.5'))
+                    // Pilih model terbaik: utamakan gemini-3.5-flash-lite, lalu 2.5-flash, 2.0-flash
+                    $preferred = collect($availableModels)->first(fn($m) => str_contains($m['id'], '3.5-flash-lite'))
+                        ?? collect($availableModels)->first(fn($m) => str_contains($m['id'], '2.5-flash'))
+                        ?? collect($availableModels)->first(fn($m) => str_contains($m['id'], '2.0-flash'))
+                        ?? collect($availableModels)->first(fn($m) => str_contains($m['id'], '1.5-flash'))
                         ?? $availableModels[0];
                     $defaultModel = $preferred['id'];
                 } else {
@@ -359,15 +377,13 @@ class UserAiConfigController extends Controller
                     if (!in_array('generateContent', $m['supportedGenerationMethods'] ?? [])) return false;
                     
                     $exclude = [
-                        'nano', 'banana', 'vision', 'image', 'audio', 'video',
-                        'tts', 'embedding', 'aqa', 'omni', 'computer', 'learnlm',
-                        'native-audio', 'preview-tts',
+                        'nano', 'banana', 'image', 'audio', 'video',
+                        'tts', 'embedding', 'aqa', 'computer', 'learnlm',
+                        'native-audio', 'preview-tts', 'transcribe',
                     ];
                     foreach ($exclude as $kw) {
                         if (str_contains($name, $kw)) return false;
                     }
-                    
-                    if (preg_match('/gemini-3\.(7|8)/', $name)) return false;
                     
                     return true;
                 })
@@ -552,6 +568,9 @@ class UserAiConfigController extends Controller
      */
     public function testModels(Request $request, AIProviderService $aiProvider)
     {
+        // Batasi waktu eksekusi agar tidak blocking (max 90 detik)
+        set_time_limit(90);
+
         $user = Auth::user();
         $config = UserAiConfig::getActiveForUser($user->id);
 
@@ -569,59 +588,154 @@ class UserAiConfigController extends Controller
             }
         }
 
-        $apiKey = $config->getActiveKey();
         $provider = $config->provider;
+
+        // Untuk Google OAuth: gunakan admin API key (bukan OAuth token)
+        // karena OAuth token tidak bisa dipakai sebagai ?key= parameter
+        $isGoogleOAuth = ($config->method === 'oauth_google');
+        if ($provider === 'google' && $isGoogleOAuth) {
+            $googleApiKey = env('GOOGLE_GEMINI_API_KEY')
+                ?: \App\Models\AiConfiguration::where('is_active', true)
+                    ->where(function($q) { $q->where('provider', 'google')->orWhere('detected_provider', 'google'); })
+                    ->value('api_key');
+
+            if (empty($googleApiKey)) {
+                return response()->json([
+                    'error' => 'Admin Google API key belum dikonfigurasi (GOOGLE_GEMINI_API_KEY). Tidak dapat test model Google.',
+                ], 500);
+            }
+            $effectiveApiKey = $googleApiKey;
+        } else {
+            $effectiveApiKey = $config->getActiveKey();
+        }
+
         $results = [];
+        $startTime = time();
+        $maxSeconds = 60;
 
         foreach ($config->available_models as $model) {
+            if ((time() - $startTime) >= $maxSeconds) {
+                $results[] = [
+                    'id'      => '...',
+                    'name'    => 'Model lainnya',
+                    'status'  => 'error',
+                    'message' => 'Waktu habis — model lain tidak sempat diuji',
+                ];
+                break;
+            }
+
             $modelId = $model['id'];
             try {
-                $response = $aiProvider->generate(
-                    $provider,
-                    $apiKey,
-                    $modelId,
-                    'Jawab dengan satu kata: "OK"',
-                    false // non-JSON agar lebih ringan
-                );
+                // Buat request langsung dengan timeout pendek
+                if ($provider === 'google') {
+                    $url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelId}:generateContent?key={$effectiveApiKey}";
+                    $response = Http::timeout(10)
+                        ->withHeaders(['Content-Type' => 'application/json'])
+                        ->post($url, [
+                            'contents' => [['parts' => [['text' => 'Reply with one word: OK']]]],
+                            'generationConfig' => ['maxOutputTokens' => 5],
+                        ]);
+                } elseif ($provider === 'groq') {
+                    $response = Http::timeout(10)
+                        ->withHeaders(['Authorization' => "Bearer {$effectiveApiKey}"])
+                        ->post('https://api.groq.com/openai/v1/chat/completions', [
+                            'model'      => $modelId,
+                            'messages'   => [['role' => 'user', 'content' => 'Reply with one word: OK']],
+                            'max_tokens' => 5,
+                        ]);
+                } elseif ($provider === 'openai') {
+                    $response = Http::timeout(10)
+                        ->withHeaders(['Authorization' => "Bearer {$effectiveApiKey}"])
+                        ->post('https://api.openai.com/v1/chat/completions', [
+                            'model'      => $modelId,
+                            'messages'   => [['role' => 'user', 'content' => 'Reply with one word: OK']],
+                            'max_tokens' => 5,
+                        ]);
+                } elseif ($provider === 'anthropic') {
+                    $response = Http::timeout(10)
+                        ->withHeaders(['x-api-key' => $effectiveApiKey, 'anthropic-version' => '2023-06-01'])
+                        ->post('https://api.anthropic.com/v1/messages', [
+                            'model'      => $modelId,
+                            'max_tokens' => 5,
+                            'messages'   => [['role' => 'user', 'content' => 'Reply with one word: OK']],
+                        ]);
+                } elseif ($provider === 'nvidia') {
+                    $response = Http::timeout(10)
+                        ->withHeaders(['Authorization' => "Bearer {$effectiveApiKey}"])
+                        ->post('https://integrate.api.nvidia.com/v1/chat/completions', [
+                            'model'      => $modelId,
+                            'messages'   => [['role' => 'user', 'content' => 'Reply with one word: OK']],
+                            'max_tokens' => 5,
+                            'stream'     => false,
+                        ]);
+                } else {
+                    // OpenRouter / generic
+                    $response = Http::timeout(10)
+                        ->withHeaders(['Authorization' => "Bearer {$effectiveApiKey}"])
+                        ->post('https://openrouter.ai/api/v1/chat/completions', [
+                            'model'      => $modelId,
+                            'messages'   => [['role' => 'user', 'content' => 'Reply with one word: OK']],
+                            'max_tokens' => 5,
+                        ]);
+                }
 
-                $results[] = [
-                    'id' => $modelId,
-                    'name' => $model['name'] ?? $modelId,
-                    'status' => 'ok',
-                    'message' => 'Berhasil',
-                ];
+                if ($response->successful()) {
+                    $results[] = [
+                        'id'      => $modelId,
+                        'name'    => $model['name'] ?? $modelId,
+                        'status'  => 'ok',
+                        'message' => 'Berhasil',
+                    ];
+                } else {
+                    $status = $response->status();
+                    $body   = $response->body();
+                    Log::debug("[TestModels] Model {$modelId} HTTP {$status}: " . substr($body, 0, 200));
+
+                    $msgMap = [
+                        503 => 'Server sibuk (503)',
+                        400 => 'Tidak didukung / invalid (400)',
+                        429 => 'Rate limit tercapai (429)',
+                        404 => 'Model tidak ditemukan (404)',
+                        401 => 'API key tidak valid (401)',
+                    ];
+                    $results[] = [
+                        'id'      => $modelId,
+                        'name'    => $model['name'] ?? $modelId,
+                        'status'  => 'error',
+                        'message' => $msgMap[$status] ?? "Error HTTP {$status}",
+                    ];
+                }
             } catch (\Exception $e) {
                 $msg = $e->getMessage();
-                // Singkatkan pesan error
-                if (str_contains($msg, '503')) {
+                if (str_contains($msg, 'timed out') || str_contains($msg, 'timeout')) {
+                    $msg = 'Timeout (>10 detik)';
+                } elseif (str_contains($msg, '503')) {
                     $msg = 'Server sibuk (503)';
-                } elseif (str_contains($msg, '400')) {
-                    $msg = 'Model tidak mendukung teks (400)';
-                } elseif (str_contains($msg, '429')) {
-                    $msg = 'Rate limit tercapai (429)';
                 } elseif (str_contains($msg, '404')) {
                     $msg = 'Model tidak ditemukan (404)';
+                } elseif (str_contains($msg, '429')) {
+                    $msg = 'Rate limit tercapai (429)';
                 }
 
                 $results[] = [
-                    'id' => $modelId,
-                    'name' => $model['name'] ?? $modelId,
-                    'status' => 'error',
+                    'id'      => $modelId,
+                    'name'    => $model['name'] ?? $modelId,
+                    'status'  => 'error',
                     'message' => $msg,
                 ];
             }
 
-            // Delay antar request agar tidak kena rate-limit
-            usleep(300000); // 300ms
+            usleep(150000); // 150ms delay antar request
         }
 
         return response()->json([
             'provider' => $provider,
-            'total' => count($results),
-            'working' => count(array_filter($results, fn($r) => $r['status'] === 'ok')),
-            'results' => $results,
+            'total'    => count($results),
+            'working'  => count(array_filter($results, fn($r) => $r['status'] === 'ok')),
+            'results'  => $results,
         ]);
     }
+
 
     protected function generateLabel(string $provider): string
     {

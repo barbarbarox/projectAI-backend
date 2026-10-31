@@ -23,7 +23,7 @@ class LaporanController extends Controller
     {
         abort_if($scan->user_id !== Auth::id(), 403);
 
-        $scan->load(['temuan', 'simulasiSerangan']);
+        $scan->load(['temuan.evidence', 'simulasiSerangan']);
 
         // Jika scan tipe log, gunakan view khusus
         if ($scan->tipe_scan === 'url' && in_array($scan->mode_scan, ['biasa', 'intens'])) {
@@ -72,7 +72,7 @@ class LaporanController extends Controller
     {
         abort_if($scan->user_id !== Auth::id(), 403);
 
-        $scan->load(['temuan', 'simulasiSerangan']);
+        $scan->load(['temuan.evidence', 'simulasiSerangan']);
 
         // Redirect URL scans ke hasil-url view
         if ($scan->tipe_scan === 'url' && in_array($scan->mode_scan, ['biasa', 'intens'])) {
@@ -91,7 +91,7 @@ class LaporanController extends Controller
     {
         abort_if($scan->user_id !== Auth::id(), 403);
 
-        $scan->load(['temuan', 'simulasiSerangan']);
+        $scan->load(['temuan.evidence', 'simulasiSerangan']);
 
         // === AUDIT LOG: PDF laporan diunduh ===
         AuditLog::create([
@@ -110,7 +110,7 @@ class LaporanController extends Controller
     {
         abort_if($scan->user_id !== Auth::id(), 403);
 
-        $scan->load(['temuan']);
+        $scan->load(['temuan.evidence']);
 
         // Ambil scan lain milik user yang sama dan target sama (atau scan lain untuk dipilih)
         $scanTarget = $scan->target ?? $scan->nama_file;
@@ -138,7 +138,7 @@ class LaporanController extends Controller
         }
 
         if ($scanSebelumnya) {
-            $scanSebelumnya->load(['temuan']);
+            $scanSebelumnya->load(['temuan.evidence']);
         }
 
         // Semua scan selesai milik user (untuk dropdown pilih banding)
@@ -151,5 +151,42 @@ class LaporanController extends Controller
             ->get();
 
         return view('laporan.bandingkan', compact('scan', 'scanSebelumnya', 'semuaScan'));
+    }
+
+    public function destroy(Scan $scan)
+    {
+        abort_if($scan->user_id !== Auth::id(), 403);
+
+        // Jangan hapus scan yang sedang diproses
+        if ($scan->status === 'memproses' || $scan->status === 'antri') {
+            if (request()->wantsJson()) {
+                return response()->json(['error' => 'Scan sedang diproses, tidak dapat dihapus.'], 422);
+            }
+            return back()->with('error', 'Scan sedang diproses, tidak dapat dihapus.');
+        }
+
+        $target = $scan->target ?? $scan->nama_file ?? 'Scan #' . substr($scan->id, 0, 8);
+
+        // Hapus file jika ada
+        if ($scan->nama_file && \Storage::exists('uploads/' . $scan->nama_file)) {
+            \Storage::delete('uploads/' . $scan->nama_file);
+        }
+
+        // Cascade delete temuan & simulasi (via DB constraint atau manual)
+        $scan->temuan()->delete();
+        $scan->simulasiSerangan()->delete();
+        $scan->delete();
+
+        AuditLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'scan_deleted',
+            'description' => "Riwayat scan dihapus: {$target}",
+        ]);
+
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->route('laporan.index')->with('success', "Riwayat scan \"{$target}\" berhasil dihapus.");
     }
 }

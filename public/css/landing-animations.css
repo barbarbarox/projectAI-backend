@@ -107,12 +107,11 @@
   100% { background-position: 200% center; }
 }
 .gradient-text-anim {
-  background: linear-gradient(90deg, #00d4ff, #7c3aed, #ff6bef, #00d4ff);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradientShift 3s linear infinite;
+  color: #ffffff;
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: #ffffff;
+  background-clip: initial;
 }
 
 /* Glow pulse for hero badge */
@@ -513,4 +512,48 @@
 }
 @keyframes cardSlideUp {
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== SHUFFLE TEXT ANIMATION ===== */
+.shuffle-parent {
+  display: inline-block;
+  white-space: normal;
+  word-wrap: break-word;
+  will-change: transform;
+  line-height: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  visibility: hidden;
+}
+
+.shuffle-parent.is-ready {
+  visibility: visible;
+}
+
+.shuffle-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.shuffle-space {
+  display: inline-block;
+}
+
+.shuffle-char-wrapper {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: baseline;
+  position: relative;
+}
+
+.shuffle-char-wrapper > span {
+  display: inline-flex;
+  will-change: transform;
+}
+
+.shuffle-char {
+  line-height: inherit;
+  display: inline-block;
+  text-align: center;
 }

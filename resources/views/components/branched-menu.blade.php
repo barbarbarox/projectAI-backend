@@ -210,27 +210,22 @@
 
     $activeSectionIndex = 0;
     $activeItemValue = 'dashboard';
-    $openIndices = [];
 
+    // Cari section dan item yang aktif
     foreach ($sections as $sIdx => $sec) {
-        $secHasActive = false;
         foreach ($sec['children'] as $kid) {
             if (!empty($kid['active'])) {
                 $activeSectionIndex = $sIdx;
                 $activeItemValue = $kid['value'];
-                $secHasActive = true;
-                break;
+                break 2;
             }
         }
-        if ($secHasActive) {
-            $openIndices[] = $sIdx;
-        }
-    }
-    if (empty($openIndices)) {
-        $openIndices[] = 0;
     }
 
-    $defaultOpenJson = json_encode($openIndices);
+    // Semua section terbuka by default (user bisa tutup manual)
+    $allIndices = array_keys($sections);
+
+    $defaultOpenJson = json_encode($allIndices);
 @endphp
 
 <nav class="branched-menu"

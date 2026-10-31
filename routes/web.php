@@ -64,6 +64,12 @@ Route::post('/verifikasi/kirim-ulang', [AuthController::class, 'kirimUlangVerifi
 // Public Edukasi
 Route::get('/edukasi/leaderboard', [EdukasiController::class, 'leaderboard']);
 
+// Legal pages
+Route::view('/ketentuan-layanan', 'legal.ketentuan-layanan')->name('ketentuan-layanan');
+Route::view('/kebijakan-privasi', 'legal.kebijakan-privasi')->name('kebijakan-privasi');
+
+
+
 // Google OAuth (bisa diakses guest maupun auth)
 Route::get('/oauth/google', [AuthController::class, 'redirectToGoogle'])->name('oauth.google');
 Route::get('/oauth/google/callback', [AuthController::class, 'handleGoogleCallback']);
@@ -90,7 +96,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profil/ai/model', [\App\Http\Controllers\UserAiConfigController::class, 'updateModel'])->name('profile.ai.update-model');
     Route::delete('/profil/ai', [\App\Http\Controllers\UserAiConfigController::class, 'destroy'])->name('profile.ai.destroy');
     Route::get('/profil/ai/oauth/google', [\App\Http\Controllers\UserAiConfigController::class, 'redirectGoogleAI'])->name('profile.ai.oauth.google');
-    Route::get('/profil/ai/oauth/google/callback', [\App\Http\Controllers\UserAiConfigController::class, 'handleGoogleAICallback']);
+    Route::get('/profil/ai/oauth/google/callback', [\App\Http\Controllers\UserAiConfigController::class, 'handleGoogleAICallback'])->name('profile.ai.oauth.google.callback');
     Route::get('/profil/ai/oauth/openai', [\App\Http\Controllers\UserAiConfigController::class, 'redirectOpenAI'])->name('profile.ai.oauth.openai');
     Route::get('/profil/ai/oauth/openai/callback', [\App\Http\Controllers\UserAiConfigController::class, 'handleOpenAICallback']);
     Route::post('/profil/ai/test-models', [\App\Http\Controllers\UserAiConfigController::class, 'testModels'])->name('profile.ai.test-models');
@@ -145,6 +151,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan/{scan}', [LaporanController::class, 'detail'])->name('laporan.detail');
         Route::get('/laporan/{scan}/pdf', [LaporanController::class, 'exportPDF'])->name('laporan.pdf');
         Route::get('/laporan/{scan}/bandingkan', [LaporanController::class, 'bandingkan'])->name('laporan.bandingkan');
+        Route::delete('/laporan/{scan}', [LaporanController::class, 'destroy'])->name('laporan.destroy');
         Route::post('/analisis/url/ai-analisis/{scan}', [UrlController::class, 'aiAnalisis'])->name('analisis.url.ai-analisis');
         
         // Red Team Simulation
@@ -155,7 +162,18 @@ Route::middleware('auth')->group(function () {
         
         // Payload Generator
         Route::post('/payload/generate/{temuan}', [\App\Http\Controllers\PayloadController::class, 'generate'])->name('payload.generate');
+
+        // ─── Evidence / Bukti per Temuan ───────────────────────────────
+        Route::get('/evidence/{temuan}',                   [\App\Http\Controllers\EvidenceController::class, 'index'])->name('evidence.index');
+        Route::post('/evidence/{temuan}/capture-screenshot',[\App\Http\Controllers\EvidenceController::class, 'captureScreenshot'])->name('evidence.capture-screenshot');
+        Route::post('/evidence/{temuan}/capture-url',      [\App\Http\Controllers\EvidenceController::class, 'captureUrl'])->name('evidence.capture-url');
+        Route::post('/evidence/{temuan}/add-text',         [\App\Http\Controllers\EvidenceController::class, 'addText'])->name('evidence.add-text');
+        Route::post('/evidence/{temuan}/upload',           [\App\Http\Controllers\EvidenceController::class, 'upload'])->name('evidence.upload');
     });
+
+    // Evidence standalone (tidak butuh scan.owner, tapi butuh ownership evidence)
+    Route::patch('/evidence-item/{evidence}/verify',  [\App\Http\Controllers\EvidenceController::class, 'verify'])->name('evidence.verify');
+    Route::delete('/evidence-item/{evidence}',        [\App\Http\Controllers\EvidenceController::class, 'destroy'])->name('evidence.destroy');
 
     // Laporan index (tidak perlu scan.owner karena sudah filter by user)
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
@@ -233,3 +251,4 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');
 });
+

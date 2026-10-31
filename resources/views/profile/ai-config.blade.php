@@ -186,45 +186,31 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    {{-- Metode 2: OAuth Login --}}
+    </div>    {{-- Metode 2: OAuth Login --}}
     <div class="rounded-2xl bg-[#0f1629] border border-[#1e2d4a] p-6">
         <h3 class="text-sm font-semibold text-[#00d4ff] mb-1 flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-            Hubungkan via OAuth
+            Hubungkan via OAuth Google
         </h3>
-        <p class="text-xs text-[#64748b] mb-4">Login dengan akun Google atau OpenAI Anda untuk mengakses model AI secara langsung.</p>
+        <p class="text-xs text-[#64748b] mb-4">Login dengan akun Google Anda untuk mengakses model Gemini secara langsung. Tersedia <span class="text-green-400 font-medium">Free Tier</span> tanpa biaya.</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {{-- Google OAuth --}}
-            <a href="{{ route('profile.ai.oauth.google') }}" class="flex items-center gap-3 px-5 py-3.5 rounded-xl bg-white/5 border border-[#1e2d4a] hover:bg-white/10 hover:border-[#4285F4] transition-all duration-300 group">
-                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                <div>
-                    <span class="text-sm font-semibold text-white group-hover:text-[#4285F4] transition-colors">Google AI</span>
-                    <p class="text-[10px] text-[#64748b]">Model Gemini • Ada Free Tier</p>
-                </div>
-            </a>
-
-            {{-- OpenAI OAuth --}}
-            <a href="{{ route('profile.ai.oauth.openai') }}" class="flex items-center gap-3 px-5 py-3.5 rounded-xl bg-white/5 border border-[#1e2d4a] hover:bg-white/10 hover:border-[#10a37f] transition-all duration-300 group">
-                <div class="w-5 h-5 shrink-0 rounded-sm bg-[#10a37f] flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/></svg>
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-white group-hover:text-[#10a37f] transition-colors">OpenAI</span>
-                    <p class="text-[10px] text-[#64748b]">Model GPT & o-series • Berbayar</p>
-                </div>
-            </a>
-        </div>
+        <a href="{{ route('profile.ai.oauth.google') }}" class="flex items-center gap-4 px-5 py-4 rounded-xl bg-white/5 border border-[#1e2d4a] hover:bg-white/10 hover:border-[#4285F4] transition-all duration-300 group">
+            <svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            <div class="flex-1">
+                <span class="text-sm font-semibold text-white group-hover:text-[#4285F4] transition-colors">Login dengan Google</span>
+                <p class="text-[11px] text-[#64748b] mt-0.5">Gemini 3.5 Flash Lite · Gemini 2.5 Flash · Gemini 2.0 Flash · dan lainnya</p>
+            </div>
+            <svg class="w-4 h-4 text-[#64748b] group-hover:text-[#4285F4] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
 
         <p class="text-[10px] text-[#475569] mt-3 flex items-start gap-1.5">
             <svg class="w-3 h-3 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span>OpenAI memerlukan akun berbayar (API credit). Jika belum punya, gunakan API Key dari <a href="https://platform.openai.com/api-keys" target="_blank" class="text-[#10a37f] hover:underline">platform.openai.com</a> sebagai gantinya.</span>
+            <span>Sistem akan otomatis menggunakan <strong class="text-[#94a3b8]">Gemini 3.5 Flash Lite</strong> sebagai model default. Anda dapat menggantinya setelah terhubung.</span>
         </p>
     </div>
 
     {{-- Info Box --}}
+
     <div class="rounded-xl bg-[#0f1629] border border-[#1e2d4a] p-5">
         <h4 class="text-xs font-semibold text-[#64748b] mb-3 flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>

@@ -1,0 +1,19 @@
+[Unit]
+Description=RedSim ML Prediction Service v2.0 (FastAPI Ensemble)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/redsim/ml_service
+ExecStart=/var/www/redsim/ml_service/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 5001 --workers 1 --log-level info
+Restart=always
+RestartSec=5
+KillMode=process
+StandardOutput=journal
+StandardError=journal
+Environment="PYTHONUNBUFFERED=1"
+Environment="PATH=/var/www/redsim/ml_service/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+
+[Install]
+WantedBy=multi-user.target

@@ -206,6 +206,7 @@ Berikan respons dalam format JSON murni TANPA markdown block (```json):
             ->limit(20)
             ->get();
 
-        return view('edukasi.leaderboard', compact('leaders'));
+        $view = auth()->check() ? 'edukasi.leaderboard' : 'edukasi.leaderboard-guest';
+        return view($view, compact('leaders'));
     }
 }

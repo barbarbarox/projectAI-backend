@@ -164,4 +164,9 @@ class Temuan extends Model
     {
         return $this->hasOne(Insiden::class, 'temuan_id');
     }
+
+    public function evidence(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TemuanEvidence::class, 'temuan_id')->orderBy('created_at');
+    }
 }

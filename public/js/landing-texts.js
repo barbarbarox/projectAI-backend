@@ -713,6 +713,362 @@ function initDecryptedTextLoop(container, texts, options = {}) {
     animateToNext();
 }
 
+// --- Shuffle Text Animation (React Bits Shuffle Port) ---
+function initShuffle(element, options) {
+    if (!element) return;
+
+    var opts = Object.assign({
+        text: element.textContent ? element.textContent.trim() : '',
+        effect: 'slide',
+        shuffleDirection: 'right',
+        duration: 0.35,
+        maxDelay: 0,
+        ease: 'power3.out',
+        threshold: 0.1,
+        rootMargin: '-50px',
+        shuffleTimes: 1,
+        animationMode: 'evenodd',
+        loop: false,
+        loopDelay: 0,
+        stagger: 0.03,
+        scrambleCharset: '',
+        colorFrom: '',
+        colorTo: '',
+        triggerOnce: true,
+        respectReducedMotion: true,
+        triggerOnHover: true,
+        hoverRadius: 0,
+        motionBlur: false,
+        color: '',
+        accentColor: ''
+    }, options || {});
+
+    if (opts.respectReducedMotion && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        element.classList.add('is-ready');
+        return;
+    }
+
+    if (typeof gsap === 'undefined') {
+        element.classList.add('is-ready');
+        return;
+    }
+
+    var el = element;
+    if (opts.color) el.style.color = opts.color;
+    var baseColor = opts.color || window.getComputedStyle(el).color || '#00d4ff';
+
+    var mode = opts.effect === 'flip' || opts.effect === 'blur' ? opts.effect : 'slide';
+    var isVertical = opts.shuffleDirection === 'up' || opts.shuffleDirection === 'down';
+    var axis = isVertical ? 'y' : 'x';
+    var forward = opts.shuffleDirection === 'right' || opts.shuffleDirection === 'down';
+    var rolls = Math.max(1, Math.floor(opts.shuffleTimes));
+    var text = opts.text || el.textContent.trim();
+    var cells = [];
+    var tl = null;
+    var playing = false;
+    var unhover = null;
+
+    var pick = function(fallback) {
+        if (opts.scrambleCharset && opts.scrambleCharset.length > 0) {
+            return opts.scrambleCharset.charAt(Math.floor(Math.random() * opts.scrambleCharset.length));
+        }
+        return fallback;
+    };
+
+    var teardown = function() {
+        if (tl) {
+            tl.kill();
+            tl = null;
+        }
+        playing = false;
+        cells = [];
+    };
+
+    var fillStrip = function(cell, count) {
+        var head = cell.orig.cloneNode(true);
+        var mids = [];
+        for (var k = 0; k < count; k++) {
+            var node = cell.orig.cloneNode(true);
+            node.textContent = pick(cell.text);
+            if (opts.accentColor) node.style.color = opts.accentColor;
+            mids.push(node);
+        }
+        cell.mids = mids;
+        cell.inner.innerHTML = '';
+        var items = forward ? [cell.orig].concat(mids, [head]) : [head].concat(mids, [cell.orig]);
+        items.forEach(function(item) { cell.inner.appendChild(item); });
+
+        var span = (count + 1) * cell.size;
+        cell.from = forward ? -span : 0;
+        cell.to = forward ? 0 : -span;
+        gsap.set(cell.inner, { x: 0, y: 0, [axis]: cell.from, force3D: true });
+    };
+
+    var fillSequence = function(cell, count) {
+        cell.seq = [cell.text];
+        for (var k = 0; k < count; k++) cell.seq.push(pick(cell.text));
+        cell.seq.push(cell.text);
+        cell.shown = -1;
+    };
+
+    var showGlyph = function(cell, index) {
+        if (cell.shown === index) return;
+        cell.shown = index;
+        cell.orig.textContent = cell.seq[index];
+        cell.orig.style.color = opts.accentColor && index > 0 && index < cell.seq.length - 1 ? opts.accentColor : '';
+    };
+
+    var renderFlip = function(cell, t) {
+        var last = cell.seq.length - 1;
+        var nearest = Math.round(t);
+        showGlyph(cell, Math.max(0, Math.min(last, nearest)));
+        var angle = (t - nearest) * 180;
+        var facing = Math.abs(Math.cos((angle * Math.PI) / 180));
+        var turn = isVertical ? (forward ? -angle : angle) : forward ? angle : -angle;
+        gsap.set(cell.inner, {
+            [isVertical ? 'rotationX' : 'rotationY']: turn,
+            z: Math.sin(Math.PI * Math.min(1, Math.max(0, t / last))) * cell.h * 0.22,
+            opacity: 0.22 + 0.78 * Math.pow(facing, 1.5)
+        });
+    };
+
+    var renderBlur = function(cell, t) {
+        var last = cell.seq.length - 1;
+        var nearest = Math.round(t);
+        var phase = Math.max(-0.5, Math.min(0.5, t - nearest));
+        showGlyph(cell, Math.max(0, Math.min(last, nearest)));
+        gsap.set(cell.inner, {
+            [axis]: (forward ? 1 : -1) * phase * cell.size * 0.42,
+            opacity: 0.5 + 0.5 * Math.pow(Math.cos(phase * Math.PI), 0.7)
+        });
+    };
+
+    var animateCell = function(cell, count, dur) {
+        var cellTl = gsap.timeline();
+        if (mode === 'slide') {
+            fillStrip(cell, count);
+            cellTl.fromTo(
+                cell.inner,
+                { [axis]: cell.from },
+                {
+                    [axis]: cell.to,
+                    duration: dur,
+                    ease: opts.ease,
+                    force3D: true,
+                    immediateRender: false
+                },
+                0
+            );
+        } else {
+            fillSequence(cell, count);
+            var proxy = { t: 0 };
+            var render = mode === 'flip' ? renderFlip : renderBlur;
+            cellTl.fromTo(
+                proxy,
+                { t: 0 },
+                {
+                    t: count + 1,
+                    duration: dur,
+                    ease: opts.ease,
+                    immediateRender: false,
+                    onUpdate: function() { render(cell, proxy.t); }
+                },
+                0
+            );
+        }
+
+        if (opts.colorFrom || opts.colorTo) {
+            cellTl.fromTo(
+                cell.wrap,
+                { color: opts.colorFrom || baseColor },
+                { color: opts.colorTo || baseColor, duration: dur, ease: opts.ease, immediateRender: false },
+                0
+            );
+        }
+        return cellTl;
+    };
+
+    var settle = function(cell) {
+        if (mode === 'slide') {
+            cell.inner.innerHTML = '';
+            cell.inner.appendChild(cell.orig);
+            cell.mids = [];
+        } else {
+            cell.orig.textContent = cell.text;
+            cell.orig.style.color = '';
+            cell.shown = -1;
+        }
+        gsap.set(cell.inner, { clearProps: 'transform,opacity' });
+        if (opts.colorTo) cell.wrap.style.color = opts.colorTo;
+    };
+
+    var startOffsets = function() {
+        if (opts.animationMode === 'evenodd') {
+            var oddCount = Math.floor(cells.length / 2);
+            var evenStart = oddCount ? (opts.duration + Math.max(0, oddCount - 1) * opts.stagger) * 0.7 : 0;
+            return cells.map(function(_, i) {
+                return (i % 2 === 1 ? Math.floor(i / 2) * opts.stagger : evenStart + Math.floor(i / 2) * opts.stagger);
+            });
+        }
+        if (opts.animationMode === 'center') {
+            var mid = (cells.length - 1) / 2;
+            return cells.map(function(_, i) {
+                return Math.abs(i - mid) * opts.stagger;
+            });
+        }
+        if (opts.animationMode === 'sequence') {
+            return cells.map(function(_, i) { return i * opts.stagger; });
+        }
+        return cells.map(function() { return Math.random() * opts.maxDelay; });
+    };
+
+    var build = function() {
+        teardown();
+        el.innerHTML = '';
+        cells = [];
+
+        var words = text.split(' ');
+        words.forEach(function(wordText, wIdx) {
+            var wordSpan = document.createElement('span');
+            wordSpan.className = 'shuffle-word';
+
+            for (var cIdx = 0; cIdx < wordText.length; cIdx++) {
+                var char = wordText[cIdx];
+                var ch = document.createElement('span');
+                ch.className = 'shuffle-char';
+                ch.textContent = char;
+                wordSpan.appendChild(ch);
+            }
+            el.appendChild(wordSpan);
+
+            if (wIdx < words.length - 1) {
+                var spaceSpan = document.createElement('span');
+                spaceSpan.className = 'shuffle-space';
+                spaceSpan.innerHTML = '&nbsp;';
+                el.appendChild(spaceSpan);
+            }
+        });
+
+        var charEls = el.querySelectorAll('.shuffle-char');
+        charEls.forEach(function(ch) {
+            var rect = ch.getBoundingClientRect();
+            var w = rect.width;
+            var h = rect.height;
+            if (!w || w <= 0) {
+                w = Math.round(parseFloat(window.getComputedStyle(el).fontSize || 32) * 0.6);
+            }
+            if (!h || h <= 0) {
+                h = Math.round(parseFloat(window.getComputedStyle(el).fontSize || 32) * 1.2);
+            }
+
+            var wrap = document.createElement('span');
+            wrap.className = 'shuffle-char-wrapper';
+            wrap.style.width = w + 'px';
+            wrap.style.height = h + 'px';
+
+            var inner = document.createElement('span');
+            inner.style.display = 'inline-block';
+            inner.style.whiteSpace = isVertical ? 'normal' : 'nowrap';
+            inner.style.willChange = 'transform';
+
+            ch.parentNode.insertBefore(wrap, ch);
+            wrap.appendChild(inner);
+
+            ch.style.width = w + 'px';
+            inner.appendChild(ch);
+
+            cells.push({
+                wrap: wrap,
+                inner: inner,
+                orig: ch,
+                text: ch.textContent || '',
+                w: w,
+                h: h,
+                size: isVertical ? h : w,
+                mids: [],
+                seq: [],
+                shown: -1
+            });
+        });
+    };
+
+    var play = function() {
+        if (!cells.length) return;
+        playing = true;
+        var offsets = startOffsets();
+
+        tl = gsap.timeline({
+            repeat: opts.loop ? -1 : 0,
+            repeatDelay: opts.loop ? opts.loopDelay : 0,
+            onComplete: function() {
+                playing = false;
+                if (opts.loop) return;
+                cells.forEach(settle);
+                armHover();
+            }
+        });
+
+        cells.forEach(function(cell, i) {
+            tl.add(animateCell(cell, rolls, opts.duration), offsets[i]);
+        });
+    };
+
+    var armHover = function() {
+        if (!opts.triggerOnHover) return;
+        if (unhover) unhover();
+
+        var handleEnter = function() {
+            if (playing) return;
+            build();
+            play();
+        };
+        el.addEventListener('mouseenter', handleEnter);
+        unhover = function() {
+            el.removeEventListener('mouseenter', handleEnter);
+        };
+    };
+
+    var create = function() {
+        build();
+        play();
+        armHover();
+        el.classList.add('is-ready');
+    };
+
+    var readyInit = function() {
+        if (opts.threshold > 0 && typeof IntersectionObserver !== 'undefined') {
+            var observer = new IntersectionObserver(function(entries) {
+                if (entries[0].isIntersecting) {
+                    if (opts.triggerOnce) observer.disconnect();
+                    create();
+                }
+            }, { threshold: opts.threshold, rootMargin: opts.rootMargin || '-50px' });
+            observer.observe(el);
+        } else {
+            create();
+        }
+    };
+
+    if ('fonts' in document) {
+        if (document.fonts.status === 'loaded') {
+            readyInit();
+        } else {
+            document.fonts.ready.then(readyInit).catch(readyInit);
+        }
+    } else {
+        readyInit();
+    }
+
+    window.addEventListener('resize', function() {
+        if (!playing && el.classList.contains('is-ready')) {
+            build();
+            cells.forEach(settle);
+        }
+    });
+}
+
 window.initTechText = initTechText;
 window.initStrokeText = initStrokeText;
 window.initDecryptedTextLoop = initDecryptedTextLoop;
+window.initShuffle = initShuffle;
+

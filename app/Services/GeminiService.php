@@ -83,13 +83,43 @@ class GeminiService
     protected function generateFromEnv(string $prompt, ?string $modelOverride = null, bool $isJson = true): string
     {
         $apiKey = env('GEMINI_API_KEY', '');
-        $model = $modelOverride ?? env('GEMINI_MODEL', 'gemini-1.5-pro');
+        $defaultModel = env('GEMINI_MODEL', 'gemini-1.5-flash');
+        $model = $modelOverride ?? $defaultModel;
 
-        if (str_starts_with($apiKey, 'gsk_')) {
+        // Deteksi provider berdasarkan key
+        $isGroqKey   = str_starts_with($apiKey, 'gsk_');
+        $isNvidiaKey = str_starts_with($apiKey, 'nvapi-') || str_starts_with($apiKey, '$NVIDIA');
+        $isGeminiModel = str_contains(strtolower($model), 'gemini');
+
+        // Jika model adalah Gemini tapi key adalah Groq/NVIDIA → coba admin Google key dulu
+        if ($isGeminiModel && ($isGroqKey || $isNvidiaKey)) {
+            $googleKey = env('GOOGLE_GEMINI_API_KEY', '');
+            if (!empty($googleKey)) {
+                try {
+                    return $this->aiProviderService->generate('google', $googleKey, $model, $prompt, $isJson);
+                } catch (\Throwable $e) {
+                    Log::warning('[GeminiService] Google fallback dengan GOOGLE_GEMINI_API_KEY gagal: ' . $e->getMessage());
+                }
+            }
+            // Coba dari admin DB config (Google)
+            try {
+                $googleAdminKey = $this->aiProviderService->getGoogleAdminApiKeyPublic();
+                if ($googleAdminKey) {
+                    return $this->aiProviderService->generate('google', $googleAdminKey, $model, $prompt, $isJson);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('[GeminiService] Google DB fallback gagal: ' . $e->getMessage());
+            }
+            // Tidak ada Google key yang tersedia → fallback model Groq default
+            $model = $defaultModel;
+            Log::warning("[GeminiService] Model Gemini ({$modelOverride}) tidak bisa diakses. Fallback ke Groq dengan model default: {$model}");
+        }
+
+        if ($isGroqKey) {
             return $this->aiProviderService->generate('groq', $apiKey, $model, $prompt, $isJson);
         }
 
-        if (str_starts_with($apiKey, '$NVIDIA') || str_starts_with($apiKey, 'nvapi-')) {
+        if ($isNvidiaKey) {
             return $this->aiProviderService->generate('nvidia', $apiKey, $model, $prompt, $isJson);
         }
 
@@ -116,6 +146,7 @@ class GeminiService
 
         return $response->json('candidates.0.content.parts.0.text') ?? '{}';
     }
+
 
     /**
      * Refresh Google OAuth token yang expired.

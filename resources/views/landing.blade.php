@@ -10,9 +10,33 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* ===== BASE OVERRIDES ===== */
-        html, body { background: transparent !important; }
+        html {
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+            scroll-behavior: smooth;
+        }
+        body {
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+            position: relative;
+            background: transparent !important;
+            padding-top: 78px;
+        }
+        @media (max-width: 640px) {
+            body { padding-top: 68px; }
+        }
+        *, ::before, ::after {
+            box-sizing: border-box;
+        }
+        section {
+            background: transparent !important;
+            overflow-x: clip;
+            max-width: 100%;
+            width: 100%;
+        }
         #ghost-fibers-bg { z-index: 0; }
-        section { background: transparent !important; }
         #splash-screen { background: #050816 !important; }
         .cs-card {
             background: rgba(15, 22, 41, 0.60) !important;
@@ -25,39 +49,116 @@
             -webkit-backdrop-filter: blur(10px);
         }
 
-        /* ===== BODY TOP PADDING FOR FIXED NAV ===== */
-        body { padding-top: 76px; }
+        /* ======================================================
+           CARD NAV — CardNav-style glassmorphism navbar
+           ====================================================== */
+        :root {
+            --cn-panel: rgba(6, 8, 18, 0.88);
+            --cn-solid: #060812;
+            --cn-edge: rgba(255,255,255,0.08);
+            --cn-highlight: rgba(255,255,255,0.07);
+            --cn-shadow: 0 24px 48px -20px rgba(0,0,0,0.9), 0 6px 16px -8px rgba(0,0,0,0.6);
+            --cn-text: #e8edf5;
+            --cn-muted: rgba(180,200,225,0.65);
+            --cn-hover: rgba(255,255,255,0.08);
+            --cn-ring: rgba(0,212,255,0.5);
+            --cn-tile: linear-gradient(180deg, rgba(10,15,35,0.95) 0%, rgba(6,8,20,0.98) 100%);
+            --cn-tile-rim: inset 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 10px -4px rgba(0,0,0,0.8);
+            --cn-cta: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+            --cn-cta-ink: #ffffff;
+            --cn-cta-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 6px 18px -6px rgba(0,212,255,0.4);
+            --cn-cta-hover: brightness(1.12);
+            --cn-blur: blur(24px) saturate(1.6);
+            --cn-max: 960px;
+            --cn-bar: 62px;
+            --cn-inset: 8px;
+            --cn-gap: 7px;
+            --cn-radius: 20px;
+        }
 
-        /* ===== CYBERPUNK PILL NAVBAR ===== */
-        .cyber-nav {
+        @media (max-width: 640px) {
+            :root {
+                --cn-bar: 56px;
+                --cn-radius: 16px;
+                --cn-inset: 6px;
+            }
+        }
+
+        /* Wrapper positioning — always 100% width, never overflowing */
+        .cn-root {
             position: fixed;
             top: 0; left: 0; right: 0;
-            z-index: 100;
-            padding: 12px 24px;
+            width: 100%;
+            z-index: 200;
+            padding: 10px 16px;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
         }
-        .cyber-nav-inner {
-            max-width: 920px;
+        @media (max-width: 640px) {
+            .cn-root {
+                padding: 8px 10px;
+            }
+        }
+        .cn-root-inner {
+            width: 100%;
+            max-width: var(--cn-max);
             margin: 0 auto;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Panel — the pill bar */
+        .cn-panel {
+            position: relative;
+            width: 100%;
+            border-radius: var(--cn-radius);
+            background: var(--cn-panel);
+            backdrop-filter: var(--cn-blur);
+            -webkit-backdrop-filter: var(--cn-blur);
+            box-shadow: var(--cn-shadow);
+            overflow: visible;
+            transition: border-radius 0.35s cubic-bezier(0.22,1,0.36,1), background 0.2s ease, box-shadow 0.2s ease;
+            box-sizing: border-box;
+        }
+        .cn-panel-rim {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            box-shadow: inset 0 0 0 1px var(--cn-edge), inset 0 1px 0 var(--cn-highlight);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* Bar — flex layout for perfect responsiveness */
+        .cn-bar {
+            height: var(--cn-bar);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(6, 8, 18, 0.88);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 999px;
-            padding: 7px 10px 7px 16px;
-            box-shadow: 0 4px 32px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,212,255,0.04);
+            padding: 0 var(--cn-inset);
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            box-sizing: border-box;
         }
-        .cyber-nav-logo {
-            display: flex;
+
+        /* Logo */
+        .cn-logo {
+            display: inline-flex;
             align-items: center;
             gap: 8px;
             text-decoration: none;
+            padding: 0 8px;
+            color: var(--cn-text);
             flex-shrink: 0;
         }
-        .cyber-nav-logo img { width: 30px; height: 30px; object-fit: contain; }
-        .cyber-nav-logo span {
+        .cn-logo img { width: 26px; height: 26px; object-fit: contain; }
+        @media (min-width: 641px) {
+            .cn-logo img { width: 28px; height: 28px; }
+            .cn-logo { gap: 9px; padding: 0 10px; }
+        }
+        .cn-logo-text {
             font-family: 'Montserrat', sans-serif;
             font-weight: 900;
             font-size: 1.05rem;
@@ -66,140 +167,283 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .cyber-nav-links {
+
+        /* Desktop links row */
+        .cn-links {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 2px;
         }
-        .cyber-nav-link {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 6px 13px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: rgba(190,205,225,0.65);
-            text-decoration: none;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-        .cyber-nav-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
-        .cyber-nav-link.leaderboard { color: #facc15; }
-        .cyber-nav-link.leaderboard:hover { background: rgba(250,204,21,0.08); }
-        .cyber-nav-link.red-lab { color: #fca5a5; }
-        .cyber-nav-link.red-lab:hover { background: rgba(220,38,38,0.08); }
-        .cyber-nav-actions { display: flex; align-items: center; gap: 6px; }
-        .cyber-btn-ghost {
-            padding: 7px 15px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: rgba(190,205,225,0.75);
-            text-decoration: none;
-            border: 1px solid rgba(255,255,255,0.09);
-            transition: all 0.2s ease;
-        }
-        .cyber-btn-ghost:hover { color:#fff; border-color:rgba(255,255,255,0.2); background:rgba(255,255,255,0.05); }
-        .cyber-btn-primary {
-            padding: 7px 17px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-            box-shadow: 0 0 18px rgba(0,212,255,0.18);
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-        .cyber-btn-primary:hover { box-shadow: 0 0 28px rgba(0,212,255,0.38); transform: translateY(-1px); }
 
-        /* ===== HAMBURGER BUTTON ===== */
-        .cyber-hamburger {
+        /* Each nav item — may be plain link or dropdown trigger */
+        .cn-item { position: relative; }
+        .cn-item-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: calc(var(--cn-bar) - var(--cn-inset) * 2);
+            padding: 0 14px;
+            border: 0;
+            border-radius: calc(var(--cn-radius) - var(--cn-inset));
+            background: none;
+            color: var(--cn-muted);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.18s, color 0.18s;
+            outline: none;
+        }
+        .cn-item-btn:hover, .cn-item-btn.active { color: var(--cn-text); background: var(--cn-hover); }
+        .cn-item-btn.leaderboard { color: #facc15; }
+        .cn-item-btn.leaderboard:hover { background: rgba(250,204,21,0.08); }
+        .cn-item-btn.red-lab { color: #fca5a5; }
+        .cn-item-btn.red-lab:hover { background: rgba(220,38,38,0.08); }
+
+        /* Chevron inside dropdown trigger */
+        .cn-chevron {
+            width: 14px; height: 14px;
+            opacity: 0.5;
+            transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), opacity 0.2s;
+            flex-shrink: 0;
+        }
+        .cn-item.open .cn-chevron { transform: rotate(180deg); opacity: 0.8; }
+
+        /* Card dropdown panel */
+        .cn-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 260px;
+            background: var(--cn-panel);
+            backdrop-filter: var(--cn-blur);
+            -webkit-backdrop-filter: var(--cn-blur);
+            border-radius: 16px;
+            box-shadow: var(--cn-shadow);
+            border: 1px solid var(--cn-edge);
+            padding: var(--cn-inset);
             display: none;
+            z-index: 100;
+            animation: cnDropIn 0.22s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        @keyframes cnDropIn {
+            from { opacity:0; transform: translateX(-50%) translateY(-8px) scale(0.97); }
+            to   { opacity:1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+        .cn-item.open .cn-dropdown { display: block; }
+
+        /* Individual card inside dropdown */
+        .cn-card {
+            background: var(--cn-tile);
+            box-shadow: var(--cn-tile-rim);
+            border-radius: 12px;
+            padding: 14px 14px 12px;
+            margin-bottom: 6px;
+        }
+        .cn-card:last-child { margin-bottom: 0; }
+        .cn-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--cn-text);
+            letter-spacing: -0.01em;
+            margin-bottom: 3px;
+        }
+        .cn-card-desc {
+            font-size: 12px;
+            color: var(--cn-muted);
+            line-height: 1.4;
+            margin: 0 0 10px;
+        }
+        .cn-card-links {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            list-style: none;
+            margin: 0; padding: 0;
+        }
+        .cn-card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 2px;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(180,200,225,0.75);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: color 0.15s, background 0.15s;
+        }
+        .cn-card-link:hover { color: var(--cn-text); }
+        .cn-card-link svg { flex-shrink: 0; opacity: 0.6; transition: opacity 0.15s, transform 0.3s cubic-bezier(0.22,1,0.36,1); }
+        .cn-card-link:hover svg { opacity: 1; transform: translate(2px,-2px); }
+
+        /* CTA Button (right side) */
+        .cn-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: calc(var(--cn-bar) - var(--cn-inset) * 2);
+            padding: 0 18px;
+            border: 0;
+            border-radius: calc(var(--cn-radius) - var(--cn-inset));
+            background: var(--cn-cta);
+            box-shadow: var(--cn-cta-shadow);
+            color: var(--cn-cta-ink);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: filter 0.2s, transform 0.2s;
+            outline: none;
+        }
+        .cn-cta:hover { filter: var(--cn-cta-hover); transform: translateY(-1px); }
+        .cn-ghost {
+            display: inline-flex;
+            align-items: center;
+            height: calc(var(--cn-bar) - var(--cn-inset) * 2);
+            padding: 0 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: calc(var(--cn-radius) - var(--cn-inset));
+            color: var(--cn-muted);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-right: 6px;
+        }
+        .cn-ghost:hover { color: var(--cn-text); border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); }
+        .cn-actions { display: flex; align-items: center; justify-self: end; }
+
+        /* Hamburger */
+        .cn-hamburger {
+            display: none;
+            justify-self: end;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 36px; height: 36px;
+            width: 38px; height: 38px;
             border-radius: 50%;
             border: 1px solid rgba(255,255,255,0.09);
             background: rgba(255,255,255,0.04);
             cursor: pointer;
             gap: 5px;
             transition: all 0.2s ease;
+            margin-right: 4px;
         }
-        .cyber-hamburger:hover { border-color: rgba(0,212,255,0.3); background: rgba(0,212,255,0.06); }
-        .cyber-hamburger span {
+        .cn-hamburger:hover { border-color: rgba(0,212,255,0.3); background: rgba(0,212,255,0.06); }
+        .cn-hamburger span {
             display: block;
-            width: 16px; height: 1.5px;
-            background: rgba(190,205,225,0.7);
+            width: 17px; height: 1.5px;
+            background: rgba(190,205,225,0.75);
             border-radius: 2px;
-            transition: all 0.25s ease;
+            transition: all 0.28s cubic-bezier(0.22,1,0.36,1);
         }
-        .cyber-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
-        .cyber-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-        .cyber-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+        .cn-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+        .cn-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .cn-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
-        /* ===== MOBILE MENU DRAWER ===== */
-        .cyber-mobile-menu {
+        /* Mobile drawer */
+        .cn-mobile-drawer {
             display: none;
             position: fixed;
-            top: 76px; left: 12px; right: 12px;
-            z-index: 99;
-            background: rgba(6,8,18,0.97);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            top: 72px; left: 12px; right: 12px;
+            width: calc(100% - 24px);
+            max-width: var(--cn-max);
+            margin: 0 auto;
+            z-index: 199;
+            background: rgba(6,8,18,0.98);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 20px;
             padding: 16px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.7);
-            animation: menuSlideIn 0.2s ease;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.85);
+            max-height: calc(100dvh - 86px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            box-sizing: border-box;
+            animation: cnMobileIn 0.22s cubic-bezier(0.22,1,0.36,1) both;
         }
-        .cyber-mobile-menu.open { display: block; }
-        @keyframes menuSlideIn {
-            from { opacity:0; transform: translateY(-8px); }
-            to   { opacity:1; transform: translateY(0); }
+        @keyframes cnMobileIn {
+            from { opacity:0; transform: translateY(-10px) scale(0.98); }
+            to   { opacity:1; transform: translateY(0) scale(1); }
         }
-        .cyber-mobile-link {
+        .cn-mobile-drawer.open { display: block; }
+        .cn-mobile-link {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 11px 14px;
+            padding: 11px 13px;
             border-radius: 12px;
             font-size: 0.875rem;
             font-weight: 500;
-            color: rgba(190,205,225,0.75);
+            color: rgba(180,200,225,0.75);
             text-decoration: none;
-            transition: all 0.15s ease;
+            transition: all 0.15s;
             margin-bottom: 2px;
         }
-        .cyber-mobile-link:hover { color:#fff; background: rgba(255,255,255,0.06); }
-        .cyber-mobile-link.yellow { color: #facc15; }
-        .cyber-mobile-link.red { color: #fca5a5; }
-        .cyber-mobile-divider { height:1px; background:rgba(255,255,255,0.06); margin: 8px 0; }
-        .cyber-mobile-actions { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
-        .cyber-mobile-btn { display:block; text-align:center; padding:11px; border-radius:12px; font-size:0.875rem; font-weight:600; text-decoration:none; transition:all 0.2s; }
-        .cyber-mobile-btn.ghost { color:rgba(190,205,225,0.75); border:1px solid rgba(255,255,255,0.1); }
-        .cyber-mobile-btn.ghost:hover { color:#fff; background:rgba(255,255,255,0.05); }
-        .cyber-mobile-btn.primary { color:#fff; background:linear-gradient(135deg,#00d4ff 0%,#7c3aed 100%); }
-        .cyber-mobile-btn.primary:hover { box-shadow:0 0 20px rgba(0,212,255,0.35); }
+        .cn-mobile-link:hover { color:#fff; background: rgba(255,255,255,0.06); }
+        .cn-mobile-link.yellow { color: #facc15; }
+        .cn-mobile-link.red    { color: #fca5a5; }
+        .cn-mobile-link.muted  { color: rgba(180,200,225,0.45); font-size: 0.78rem; }
+        .cn-mobile-sep { height:1px; background:rgba(255,255,255,0.06); margin: 8px 0; }
+        .cn-mobile-section-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(180,200,225,0.3);
+            padding: 6px 13px 4px;
+        }
+        .cn-mobile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .cn-mobile-btn {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .cn-mobile-btn.ghost  { color:rgba(180,200,225,0.75); border:1px solid rgba(255,255,255,0.1); }
+        .cn-mobile-btn.ghost:hover  { color:#fff; background:rgba(255,255,255,0.05); }
+        .cn-mobile-btn.primary { color:#fff; background:linear-gradient(135deg,#00d4ff 0%,#7c3aed 100%); box-shadow:0 0 18px rgba(0,212,255,0.18); }
+        .cn-mobile-btn.primary:hover { box-shadow:0 0 26px rgba(0,212,255,0.38); }
 
-        /* ===== RESPONSIVE BREAKPOINT ===== */
-        @media (max-width: 768px) {
-            .cyber-hamburger { display: flex; }
-            .cyber-nav-links { display: none !important; }
-            .cyber-nav-actions { display: none !important; }
+        /* Responsive — hide desktop links on screens <= 1024px */
+        @media (max-width: 1024px) {
+            .cn-links { display: none !important; }
+            .cn-actions { display: none !important; }
+            .cn-hamburger { display: flex !important; }
+        }
+        @media (min-width: 1025px) {
+            .cn-mobile-drawer { display: none !important; }
+            .cn-hamburger { display: none !important; }
         }
 
         /* ===== NEON CTA BUTTON ===== */
-        .neon-btn-container { display:flex; justify-content:center; margin-top:10px; }
-        .neon-btn-wrap { font-family:'Montserrat',sans-serif; font-style:italic; font-weight:bold; font-size:1.1em; }
+        .neon-btn-container { display:flex; justify-content:center; margin-top:10px; max-width:100%; }
+        .neon-btn-wrap { font-family:'Montserrat',sans-serif; font-style:italic; font-weight:bold; font-size:1.1em; max-width:100%; }
         .neon-btn {
-            width: 340px; height: 64px;
+            width: min(340px, calc(100vw - 36px));
+            max-width: 100%;
+            height: 60px;
             cursor: pointer;
             display: flex; justify-content: center; align-items: center;
-            padding: 0.5em 4em;
+            padding: 0.5em 1.5em;
             background: transparent;
             position: relative;
             overflow: hidden;
@@ -207,6 +451,7 @@
             clip-path: polygon(6% 0, 93% 0, 100% 8%, 100% 86%, 90% 89%, 88% 100%, 5% 100%, 0% 85%);
             text-decoration: none;
             transition: all 0.3s ease;
+            box-sizing: border-box;
         }
         .neon-btn .neon-span {
             display: flex;
@@ -220,7 +465,7 @@
         .neon-btn .neon-txt {
             position: relative; z-index: 2;
             color: aliceblue;
-            font-size: 1em;
+            font-size: 0.95em;
             text-shadow: 0px 0px 1px #4090b5, 0px 0px 1px #9e30a9, 0 0 1px white;
             display: flex; align-items: center; gap: 0.5rem;
             white-space: nowrap;
@@ -251,19 +496,36 @@
         }
 
         /* ===== NEOBRUTALIST CYBERPUNK CARDS ===== */
-        .neo-card-swap-container { position:relative; width:380px; height:300px; flex-shrink:0; }
+        .neo-card-swap-container {
+            position: relative;
+            width: min(380px, calc(100vw - 32px));
+            max-width: 100%;
+            height: 300px;
+            flex-shrink: 0;
+            margin: 0 auto;
+        }
         .neo-card {
             font-family: 'Montserrat', sans-serif;
-            width: 360px; min-height: 210px;
+            width: min(350px, calc(100vw - 44px));
+            max-width: 100%;
+            min-height: 200px;
             background: var(--card-bg, #ff66a3);
             border: 3px solid #000;
-            box-shadow: 10px 10px 0 #000;
+            box-shadow: 6px 6px 0 #000;
             overflow: hidden;
             transition: all 0.25s ease;
             position: absolute;
             top: 50%; left: 50%;
+            box-sizing: border-box;
         }
-        .neo-card:hover { box-shadow: 14px 14px 0 #000; }
+        @media (min-width: 641px) {
+            .neo-card {
+                width: 360px;
+                min-height: 210px;
+                box-shadow: 10px 10px 0 #000;
+            }
+            .neo-card:hover { box-shadow: 14px 14px 0 #000; }
+        }
         /* Scanlines */
         .neo-card::after {
             content: '';
@@ -336,8 +598,10 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,255,0.08);
             overflow: hidden;
             max-width: 680px;
+            width: 100%;
             margin: 0 auto;
             font-family: 'JetBrains Mono','Courier New',monospace;
+            box-sizing: border-box;
         }
         .terminal-titlebar {
             height: 36px; background: #0d0e17;
@@ -351,12 +615,37 @@
         .terminal-dot.yellow { background:#febc2e; }
         .terminal-dot.green { background:#28c840; }
         .terminal-title { flex:1; text-align:center; color:rgba(255,255,255,0.35); font-size:0.7rem; font-family:'JetBrains Mono',monospace; }
-        .terminal-body { padding:16px; min-height:260px; }
+        .terminal-body {
+            padding: 12px;
+            min-height: 240px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            box-sizing: border-box;
+        }
+        @media (min-width: 641px) {
+            .terminal-body { padding: 16px; min-height: 260px; }
+        }
         .terminal-line { display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; font-size:0.8rem; }
         .terminal-prompt { color:#00d4ff; white-space:nowrap; flex-shrink:0; }
         .terminal-cmd { color:#e2e8f0; white-space:nowrap; }
         .terminal-output { padding:8px 0; }
-        .terminal-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px 8px; }
+        .terminal-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        @media (min-width: 480px) {
+            .terminal-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px 10px;
+            }
+        }
+        @media (min-width: 768px) {
+            .terminal-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 4px 8px;
+            }
+        }
         .terminal-item { display:flex; align-items:center; gap:5px; font-size:0.75rem; padding:2px 0; }
         .terminal-item-name { font-weight:700; letter-spacing:0.02em; }
         .terminal-item-desc { font-size:0.62rem; color:rgba(255,255,255,0.35); padding-left:18px; margin-bottom:4px; font-family:'JetBrains Mono',monospace; }
@@ -385,85 +674,140 @@
     {{-- ========== GHOST FIBERS BACKGROUND ========== --}}
     <div id="ghost-fibers-bg" style="position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;"><canvas id="ghost-fibers-canvas" style="width:100%;height:100%;display:block;"></canvas></div>
 
-    {{-- ========== CYBERPUNK NAVIGATION ========== --}}
-    <nav class="cyber-nav">
-        <div class="cyber-nav-inner">
-            <a href="/" class="cyber-nav-logo">
-                <img src="{{ asset('logo-redsim.svg') }}" alt="RedSim Logo">
-                <span>RedSim</span>
-            </a>
+    {{-- ========== CARD NAV — Premium Glassmorphism Navbar ========== --}}
+    <div class="cn-root" id="cn-root">
+        <div class="cn-root-inner">
+            <div class="cn-panel" id="cn-panel">
+                <div class="cn-bar">
+                    {{-- Logo --}}
+                    <a href="/" class="cn-logo">
+                        <img src="{{ asset('logo-redsim.svg') }}" alt="RedSim Logo">
+                        <span class="cn-logo-text">RedSim</span>
+                    </a>
 
-            {{-- Desktop Links --}}
-            <div class="cyber-nav-links">
-                <a href="#fitur" class="cyber-nav-link">Fitur</a>
-                <a href="#pilar" class="cyber-nav-link">AI &amp; ML</a>
-                <a href="#kb" class="cyber-nav-link">Knowledge Base</a>
-                <a href="/red-team-lab" class="cyber-nav-link red-lab">
-                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
-                    Red Team Lab
-                </a>
-                <a href="/edukasi/leaderboard" class="cyber-nav-link leaderboard">
-                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                    Leaderboard
-                </a>
-            </div>
+                    {{-- Desktop Nav Links --}}
+                    <div class="cn-links" id="cn-links">
 
-            {{-- Desktop Actions --}}
-            <div class="cyber-nav-actions">
-                @auth
-                    <a href="{{ route('dashboard') }}" class="cyber-btn-primary">Dashboard</a>
-                @else
-                    <a href="{{ route('masuk') }}" class="cyber-btn-ghost">Masuk</a>
-                    <a href="{{ route('daftar') }}" class="cyber-btn-primary">Daftar Gratis</a>
-                @endauth
-            </div>
+                        {{-- Platform dropdown --}}
+                        <div class="cn-item" id="cn-item-platform">
+                            <button type="button" class="cn-item-btn" onclick="cnToggle('cn-item-platform')" aria-expanded="false">
+                                Platform
+                                <svg class="cn-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                            <div class="cn-dropdown">
+                                <div class="cn-card">
+                                    <div class="cn-card-title">Fitur Utama</div>
+                                    <p class="cn-card-desc">Analisis kerentanan dan simulasi serangan berbasis AI + ML.</p>
+                                    <ul class="cn-card-links">
+                                        <li><a href="#fitur" class="cn-card-link" onclick="cnCloseAll()">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>Fitur Unggulan</a></li>
+                                        <li><a href="#pilar" class="cn-card-link" onclick="cnCloseAll()">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>AI &amp; ML Hybrid</a></li>
+                                        <li><a href="#kb" class="cn-card-link" onclick="cnCloseAll()">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>Knowledge Base</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
 
-            {{-- Mobile Hamburger --}}
-            <button class="cyber-hamburger" id="nav-hamburger" aria-label="Toggle menu">
-                <span></span><span></span><span></span>
-            </button>
-        </div>
-    </nav>
+                        {{-- Red Team Lab --}}
+                        <a href="/red-team-lab" class="cn-item-btn red-lab">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+                            Red Team Lab
+                        </a>
 
-    {{-- Mobile Menu Drawer --}}
-    <div class="cyber-mobile-menu" id="mobile-menu">
-        <a href="#fitur" class="cyber-mobile-link" onclick="closeMobileMenu()">Fitur Unggulan</a>
-        <a href="#pilar" class="cyber-mobile-link" onclick="closeMobileMenu()">AI &amp; ML Hybrid</a>
-        <a href="#kb" class="cyber-mobile-link" onclick="closeMobileMenu()">Knowledge Base</a>
-        <a href="/red-team-lab" class="cyber-mobile-link red">
+                        {{-- Leaderboard --}}
+                        <a href="/edukasi/leaderboard" class="cn-item-btn leaderboard">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                            Leaderboard
+                        </a>
+
+                        {{-- Legal dropdown --}}
+                        <div class="cn-item" id="cn-item-legal">
+                            <button type="button" class="cn-item-btn" onclick="cnToggle('cn-item-legal')" aria-expanded="false">
+                                Legal
+                                <svg class="cn-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                            <div class="cn-dropdown">
+                                <div class="cn-card">
+                                    <div class="cn-card-title">Kebijakan &amp; Hukum</div>
+                                    <p class="cn-card-desc">Informasi penggunaan layanan dan perlindungan data Anda.</p>
+                                    <ul class="cn-card-links">
+                                        <li><a href="/ketentuan-layanan" class="cn-card-link">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>Ketentuan Layanan</a></li>
+                                        <li><a href="/kebijakan-privasi" class="cn-card-link">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>Kebijakan Privasi</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>{{-- end cn-links --}}
+
+                    {{-- Desktop CTA + Hamburger --}}
+                    <div class="cn-actions">
+                        @auth
+                            <a href="{{ route('dashboard') }}" class="cn-cta">Dashboard</a>
+                        @else
+                            <a href="{{ route('masuk') }}" class="cn-ghost">Masuk</a>
+                            <a href="{{ route('daftar') }}" class="cn-cta">Daftar Gratis</a>
+                        @endauth
+                    </div>
+
+                    <button type="button" class="cn-hamburger" id="cn-hamburger" aria-label="Toggle menu" onclick="cnMobileToggle()">
+                        <span></span><span></span><span></span>
+                    </button>
+                </div>
+                <span class="cn-panel-rim"></span>
+            </div>{{-- end cn-panel --}}
+        </div>{{-- end cn-root-inner --}}
+    </div>{{-- end cn-root --}}
+
+    {{-- Mobile Drawer --}}
+    <div class="cn-mobile-drawer" id="cn-mobile-drawer">
+        <div class="cn-mobile-section-label">Platform</div>
+        <a href="#fitur" class="cn-mobile-link" onclick="cnMobileClose()">Fitur Unggulan</a>
+        <a href="#pilar" class="cn-mobile-link" onclick="cnMobileClose()">AI &amp; ML Hybrid</a>
+        <a href="#kb" class="cn-mobile-link" onclick="cnMobileClose()">Knowledge Base</a>
+        <div class="cn-mobile-sep"></div>
+        <a href="/red-team-lab" class="cn-mobile-link red">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
             Red Team Lab
         </a>
-        <a href="/edukasi/leaderboard" class="cyber-mobile-link yellow">
+        <a href="/edukasi/leaderboard" class="cn-mobile-link yellow">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
             Leaderboard
         </a>
-        <div class="cyber-mobile-divider"></div>
-        <div class="cyber-mobile-actions">
+        <div class="cn-mobile-sep"></div>
+        <div class="cn-mobile-section-label">Legal</div>
+        <a href="/ketentuan-layanan" class="cn-mobile-link">Ketentuan Layanan</a>
+        <a href="/kebijakan-privasi" class="cn-mobile-link">Kebijakan Privasi</a>
+        <div class="cn-mobile-sep"></div>
+        <div class="cn-mobile-actions">
             @auth
-                <a href="{{ route('dashboard') }}" class="cyber-mobile-btn primary">Ke Dashboard</a>
+                <a href="{{ route('dashboard') }}" class="cn-mobile-btn primary">Ke Dashboard</a>
             @else
-                <a href="{{ route('masuk') }}" class="cyber-mobile-btn ghost">Masuk</a>
-                <a href="{{ route('daftar') }}" class="cyber-mobile-btn primary">Daftar Gratis</a>
+                <a href="{{ route('masuk') }}" class="cn-mobile-btn ghost">Masuk</a>
+                <a href="{{ route('daftar') }}" class="cn-mobile-btn primary">Daftar Gratis</a>
             @endauth
         </div>
     </div>
 
     {{-- ========== HERO SECTION ========== --}}
-    <section class="relative z-10 px-6 pt-16 pb-24">
+    <section class="relative z-10 px-4 sm:px-6 pt-14 pb-20 sm:pt-16 sm:pb-24 overflow-hidden">
         <div class="max-w-4xl mx-auto text-center landing-hero-content">
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00d4ff]/10 border border-[#00d4ff]/20 mb-8 glow-pulse">
                 <div class="w-2 h-2 rounded-full bg-[#00d4ff] animate-pulse"></div>
                 <span class="text-xs font-medium text-[#00d4ff]">Platform Keamanan Siber Hybrid AI + ML</span>
             </div>
 
-            <h1 class="text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-6" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;">
-                <div id="tech-text-container" style="width: 100%; height: 100px; position: relative; max-width: 800px; display: flex; justify-content: center;"></div>
-                <div id="stroke-text-container" style="width: 100%; position: relative; max-width: 600px; display: flex; justify-content: center; margin-top: -30px;"></div>
+            <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-6" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; width: 100%; max-width: 100%; overflow: hidden;">
+                <div id="tech-text-container" style="width: 100%; height: 90px; position: relative; max-width: 800px; display: flex; justify-content: center; overflow: hidden;"></div>
+                <div id="stroke-text-container" style="width: 100%; position: relative; max-width: 600px; display: flex; justify-content: center; margin-top: -24px; overflow: hidden;"></div>
             </h1>
 
             {{-- Text Typing Welcome --}}
-            <div class="text-lg md:text-xl text-[#94a3b8] max-w-2xl mx-auto mb-10 leading-relaxed min-h-[3em]">
+            <div class="text-base sm:text-lg md:text-xl text-[#94a3b8] max-w-2xl mx-auto mb-10 leading-relaxed min-h-[3em]">
                 <div id="welcome-texttype" class="texttype-wrap"></div>
             </div>
 
@@ -483,7 +827,7 @@
     </section>
 
     {{-- ========== FEATURES (CardSwap) ========== --}}
-    <section id="fitur" class="relative z-10 px-6 py-24">
+    <section id="fitur" class="relative z-10 px-4 sm:px-6 py-20 sm:py-24 overflow-hidden">
         <div class="max-w-6xl mx-auto">
             <div class="card-swap-section">
                 {{-- Left: info text --}}
@@ -492,9 +836,9 @@
                         <div class="w-1.5 h-1.5 rounded-full bg-[#7c3aed]"></div>
                         <span class="text-xs font-semibold text-[#a78bfa] tracking-wider uppercase">Fitur Unggulan</span>
                     </div>
-                    <h2 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4 leading-tight text-white">
                         Semua yang Anda butuhkan<br>
-                        <span class="gradient-text-anim">dalam satu platform</span>
+                        <span class="text-white">dalam satu platform</span>
                     </h2>
                     <p class="text-[#94a3b8] max-w-md leading-relaxed mb-8">
                         Platform hybrid AI+ML pertama untuk keamanan siber — menggabungkan kecerdasan LLM (Gemini/Groq) dengan model Machine Learning terlatih pada 297K+ data CVE.
@@ -605,16 +949,15 @@
     </section>
 
     {{-- ========== NEW PILLARS SECTION ========== --}}
-    <section id="pilar" class="relative z-10 px-6 py-24 border-t border-[#1e2d4a]">
+    <section id="pilar" class="relative z-10 px-4 sm:px-6 py-20 sm:py-24 border-t border-[#1e2d4a] overflow-hidden">
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-14">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#7c3aed]/10 border border-[#7c3aed]/20 mb-6">
                     <div class="w-2 h-2 rounded-full bg-[#7c3aed] animate-pulse"></div>
                     <span class="text-xs font-semibold text-[#a78bfa] tracking-wider uppercase">Tiga Pilar Inovasi</span>
                 </div>
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">
-                    Lebih dari Sekadar
-                    <span class="gradient-text-anim">Scanner Biasa</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">
+                    Lebih dari Sekadar Scanner Biasa
                 </h2>
                 <p class="text-[#94a3b8] max-w-xl mx-auto">
                     RedSim menggabungkan AI, Machine Learning, dan framework keamanan industri untuk pengalaman penilaian keamanan yang komprehensif.
@@ -687,21 +1030,21 @@
             </div>
 
             {{-- Stats row --}}
-            <div class="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-5 text-center">
-                    <div class="text-2xl font-black gradient-text-anim">297K+</div>
+            <div class="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-4 sm:p-5 text-center">
+                    <div class="text-xl sm:text-2xl font-black text-white">297K+</div>
                     <div class="text-xs text-[#475569] mt-1">CVE Training Data (ML)</div>
                 </div>
-                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-5 text-center">
-                    <div class="text-2xl font-black gradient-text-anim">14</div>
+                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-4 sm:p-5 text-center">
+                    <div class="text-xl sm:text-2xl font-black text-white">14</div>
                     <div class="text-xs text-[#475569] mt-1">MITRE ATT&CK Tactics</div>
                 </div>
-                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-5 text-center">
-                    <div class="text-2xl font-black gradient-text-anim">3+</div>
+                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-4 sm:p-5 text-center">
+                    <div class="text-xl sm:text-2xl font-black text-white">3+</div>
                     <div class="text-xs text-[#475569] mt-1">LLM Provider Didukung</div>
                 </div>
-                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-5 text-center">
-                    <div class="text-2xl font-black gradient-text-anim">CVSSv3.1</div>
+                <div class="rounded-xl border border-[#1e2d4a] bg-[#0a0e1a]/60 p-4 sm:p-5 text-center">
+                    <div class="text-xl sm:text-2xl font-black text-white">CVSSv3.1</div>
                     <div class="text-xs text-[#475569] mt-1">Standard Internasional</div>
                 </div>
             </div>
@@ -709,14 +1052,16 @@
     </section>
 
     {{-- ========== PRATINJAU ANALISIS SECTION ========== --}}
-    <section id="pratinjau" class="relative z-10 px-6 py-24 border-t border-[#1e2d4a]">
+    <section id="pratinjau" class="relative z-10 px-4 sm:px-6 py-20 sm:py-24 border-t border-[#1e2d4a] overflow-hidden">
         <style>
             /* ===== PRATINJAU ANALISIS STYLES ===== */
             .pratinjau-wrap {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 56px;
+                gap: 40px;
+                width: 100%;
+                box-sizing: border-box;
             }
             @media (min-width: 1024px) {
                 .pratinjau-wrap {
@@ -729,7 +1074,9 @@
             .pratinjau-info {
                 flex: 1;
                 max-width: 440px;
+                width: 100%;
                 text-align: left;
+                box-sizing: border-box;
             }
             .pratinjau-info p.subtitle {
                 color: #94a3b8;
@@ -768,31 +1115,41 @@
                 box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(82,222,240,0.06);
                 flex-shrink: 0;
                 font-family: inherit;
+                box-sizing: border-box;
             }
             /* Header */
             .ac-header {
-                height: 52px;
+                min-height: 52px;
                 background: #111e2a;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 0 20px;
+                padding: 10px 14px;
                 border-bottom: 1px solid #223340;
+                gap: 8px;
+                box-sizing: border-box;
+            }
+            @media (min-width: 641px) {
+                .ac-header { padding: 0 20px; }
             }
             .ac-header-left {
                 display: flex;
                 align-items: center;
-                gap: 9px;
+                gap: 8px;
+                min-width: 0;
+                flex: 1;
             }
             .ac-header-icon {
                 width: 17px; height: 17px;
                 color: #52def0;
+                flex-shrink: 0;
             }
             .ac-header-title {
                 font-weight: 600;
                 font-size: 13px;
                 color: #eef5fa;
                 font-family: 'Inter', sans-serif;
+                white-space: nowrap;
             }
             .ac-header-sep {
                 font-size: 12px;
@@ -802,25 +1159,37 @@
                 font-family: 'JetBrains Mono', monospace;
                 font-size: 11px;
                 color: #a5b6c6;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             .ac-header-badge {
                 background: #102d37;
                 border-radius: 5px;
-                padding: 5px 9px;
+                padding: 4px 8px;
                 font-family: 'JetBrains Mono', monospace;
                 font-weight: 500;
                 font-size: 10px;
                 color: #52def0;
                 letter-spacing: 0.04em;
+                flex-shrink: 0;
             }
             /* Nav Tabs */
             .ac-nav {
                 height: 48px;
                 display: flex;
                 align-items: center;
-                gap: 26px;
-                padding: 0 20px;
+                gap: 16px;
+                padding: 0 14px;
                 border-bottom: 1px solid #223340;
+                overflow-x: auto;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+                box-sizing: border-box;
+            }
+            .ac-nav::-webkit-scrollbar { display: none; }
+            @media (min-width: 641px) {
+                .ac-nav { padding: 0 20px; gap: 26px; }
             }
             .ac-tab {
                 display: flex;
@@ -838,6 +1207,8 @@
                 outline: none;
                 transition: color 0.2s;
                 font-weight: 400;
+                white-space: nowrap;
+                flex-shrink: 0;
             }
             .ac-tab:hover { color: #a5b6c6; }
             .ac-tab.active {
@@ -854,17 +1225,25 @@
                 display: flex;
                 flex-direction: column;
                 gap: 16px;
-                padding: 20px;
+                padding: 14px;
+                box-sizing: border-box;
+            }
+            @media (min-width: 641px) {
+                .ac-body { padding: 20px; }
             }
             /* Code block */
             .ac-code-block {
                 background: #09121b;
                 border-radius: 8px;
-                padding: 16px;
+                padding: 14px;
                 display: flex;
                 flex-direction: column;
                 gap: 8px;
                 overflow: hidden;
+                box-sizing: border-box;
+            }
+            @media (min-width: 641px) {
+                .ac-code-block { padding: 16px; }
             }
             .ac-code-top {
                 display: flex;
@@ -892,10 +1271,11 @@
             .ac-pre {
                 margin: 0;
                 font-family: 'JetBrains Mono', monospace;
-                font-size: 12px;
+                font-size: 11.5px;
                 line-height: 1.85;
                 white-space: pre-wrap;
                 word-break: break-all;
+                overflow-x: auto;
             }
             .ln { color: #718697; user-select: none; }
             .kw { color: #52def0; }
@@ -905,31 +1285,35 @@
             .ac-alert {
                 background: #34202a;
                 border-radius: 8px;
-                padding: 16px;
+                padding: 14px;
                 display: flex;
                 align-items: flex-start;
-                gap: 16px;
+                gap: 12px;
                 overflow: hidden;
+                box-sizing: border-box;
+            }
+            @media (min-width: 641px) {
+                .ac-alert { padding: 16px; gap: 16px; }
             }
             .ac-alert-icon {
-                width: 26px; height: 26px;
+                width: 24px; height: 24px;
                 flex-shrink: 0;
                 color: #f57580;
                 margin-top: 1px;
             }
-            .ac-alert-body { flex: 1; }
+            .ac-alert-body { flex: 1; min-width: 0; }
             .ac-alert-top {
                 display: flex;
                 align-items: flex-start;
                 justify-content: space-between;
                 gap: 8px;
+                flex-wrap: wrap;
             }
             .ac-alert-title {
                 font-family: 'Inter', sans-serif;
-                font-size: 15px;
+                font-size: 14px;
                 color: #eef5fa;
-                font-weight: 400;
-                white-space: nowrap;
+                font-weight: 500;
             }
             .ac-alert-severity {
                 font-family: 'JetBrains Mono', monospace;
@@ -948,10 +1332,18 @@
             /* Method badges row */
             .ac-methods {
                 display: flex;
-                gap: 12px;
+                gap: 10px;
+                flex-direction: column;
+            }
+            @media (min-width: 520px) {
+                .ac-methods {
+                    flex-direction: row;
+                    gap: 12px;
+                }
             }
             .ac-method-card {
                 flex: 1;
+                min-width: 0;
                 border: 1px solid #223340;
                 border-radius: 8px;
                 padding: 12px;
@@ -959,6 +1351,7 @@
                 flex-direction: column;
                 gap: 7px;
                 overflow: hidden;
+                box-sizing: border-box;
             }
             .ac-method-top {
                 display: flex;
@@ -998,13 +1391,12 @@
                 flex-shrink: 0;
                 margin-top: 1px;
             }
-            .ac-reco-body { flex: 1; }
+            .ac-reco-body { flex: 1; min-width: 0; }
             .ac-reco-title {
                 font-family: 'Inter', sans-serif;
                 font-weight: 600;
                 font-size: 11px;
                 color: #eef5fa;
-                white-space: nowrap;
             }
             .ac-reco-text {
                 font-family: 'Inter', sans-serif;
@@ -1019,8 +1411,12 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 0 20px;
+                padding: 0 14px;
                 border-top: 1px solid #223340;
+                box-sizing: border-box;
+            }
+            @media (min-width: 641px) {
+                .ac-footer { padding: 0 20px; }
             }
             .ac-footer-label {
                 font-family: 'JetBrains Mono', monospace;
@@ -1031,26 +1427,27 @@
             /* Floating glow behind card */
             .pratinjau-glow {
                 position: absolute;
-                width: 480px; height: 480px;
+                width: min(480px, 90vw);
+                height: min(480px, 90vw);
                 background: radial-gradient(ellipse, rgba(82,222,240,0.07) 0%, transparent 70%);
                 border-radius: 50%;
                 pointer-events: none;
                 right: 0; top: 50%;
-                transform: translate(20%, -50%);
-                z-index: -1;
+                transform: translate(0, -50%);
+                z-index: 0;
             }
         </style>
 
-        <div class="max-w-6xl mx-auto relative">
+        <div class="max-w-6xl mx-auto relative overflow-hidden">
             <!-- Section heading -->
             <div class="text-center mb-16">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#52def0]/10 border border-[#52def0]/20 mb-6">
                     <div class="w-2 h-2 rounded-full bg-[#52def0] animate-pulse"></div>
                     <span class="text-xs font-semibold text-[#52def0] tracking-wider uppercase">Live Demo Preview</span>
                 </div>
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">
                     Lihat Cara Kerja
-                    <span class="gradient-text-anim">Analisis Keamanan</span>
+                    <span class="text-white">Analisis Keamanan</span>
                 </h2>
                 <p class="text-[#94a3b8] max-w-xl mx-auto">
                     Pratinjau interaktif ruang analisis RedSim — scan kode, deteksi URL berbahaya, dan simulasi serangan dalam satu workspace.
@@ -1064,9 +1461,9 @@
                         <div class="w-1.5 h-1.5 rounded-full bg-[#52def0]"></div>
                         <span class="text-xs font-semibold text-[#52def0] tracking-wider uppercase">Workspace Analisis</span>
                     </div>
-                    <h3 class="text-2xl md:text-3xl font-bold leading-tight">
+                    <h3 class="text-2xl md:text-3xl font-bold leading-tight text-white">
                         Deteksi kerentanan<br>
-                        <span class="gradient-text-anim">sebelum dieksploitasi</span>
+                        <span class="text-white">sebelum dieksploitasi</span>
                     </h3>
                     <p class="subtitle">
                         Mesin analisis RedSim menggabungkan kekuatan LLM (Gemini/Groq) dan Machine Learning untuk mengidentifikasi kerentanan kode seperti SQL Injection, XSS, dan IDOR secara akurat.
@@ -1289,7 +1686,7 @@
     </section>
 
     {{-- ========== KNOWLEDGE BASE (Terminal Style) ========== --}}
-    <section id="kb" class="relative z-10 px-6 py-24 border-t border-[#1e2d4a]">
+    <section id="kb" class="relative z-10 px-4 sm:px-6 py-16 sm:py-24 border-t border-[#1e2d4a] overflow-hidden">
         <div class="max-w-4xl mx-auto text-center">
             <div class="relative inline-block mb-3">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00d4ff]/10 border border-[#00d4ff]/20">
@@ -1300,26 +1697,26 @@
                     <span class="text-xs font-semibold text-[#00d4ff] tracking-wider uppercase">Knowledge Base</span>
                 </div>
             </div>
-            <h2 class="text-3xl md:text-4xl font-bold mb-4">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">
                 Didukung
-                <span class="gradient-text-anim">Knowledge Base Terpercaya</span>
+                <span class="text-white">Knowledge Base Terpercaya</span>
             </h2>
             <p class="text-[#94a3b8] mb-4 max-w-lg mx-auto">
                 Analisis kami berbasis data dari sumber keamanan siber internasional terkemuka.
             </p>
-            <div class="flex justify-center gap-8 mb-12">
+            <div class="flex justify-center items-center gap-4 sm:gap-8 mb-10 sm:mb-12 flex-wrap">
                 <div class="kb-stat text-center" style="animation-delay:0.2s">
-                    <div class="text-2xl font-black gradient-text-anim">200K+</div>
+                    <div class="text-2xl font-black text-white">200K+</div>
                     <div class="text-xs text-[#475569] mt-0.5">CVE Entries</div>
                 </div>
-                <div class="w-px bg-[#1e2d4a]"></div>
+                <div class="w-px h-8 bg-[#1e2d4a] hidden sm:block"></div>
                 <div class="kb-stat text-center" style="animation-delay:0.35s">
-                    <div class="text-2xl font-black gradient-text-anim">14+</div>
+                    <div class="text-2xl font-black text-white">14+</div>
                     <div class="text-xs text-[#475569] mt-0.5">MITRE Tactics</div>
                 </div>
-                <div class="w-px bg-[#1e2d4a]"></div>
+                <div class="w-px h-8 bg-[#1e2d4a] hidden sm:block"></div>
                 <div class="kb-stat text-center" style="animation-delay:0.5s">
-                    <div class="text-2xl font-black gradient-text-anim">1000+</div>
+                    <div class="text-2xl font-black text-white">1000+</div>
                     <div class="text-xs text-[#475569] mt-0.5">Kerentanan CWE</div>
                 </div>
             </div>
@@ -1393,7 +1790,7 @@
     </section>
 
     {{-- ========== FOOTER ========== --}}
-    <footer class="relative z-10 px-6 py-10 border-t border-[#1e2d4a]" style="background:rgba(5,8,22,0.4)!important;backdrop-filter:blur(8px);">
+    <footer class="relative z-10 px-4 sm:px-6 py-10 border-t border-[#1e2d4a] overflow-hidden" style="background:rgba(5,8,22,0.4)!important;backdrop-filter:blur(8px);">
         <div class="max-w-6xl mx-auto">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
                 <div class="col-span-2 md:col-span-1">
@@ -1794,7 +2191,8 @@
                 fillDelay: 0.2
             });
 
-            // 4. Init KB Animation
+
+            // 7. Init KB Animation
             initKBAnimation();
 
             // 5. Animate KB stats when in view
@@ -1816,7 +2214,17 @@
                 if (!container || typeof gsap === 'undefined') return;
                 var cards = Array.from(container.querySelectorAll('.neo-card'));
                 if (!cards.length) return;
-                var W = 360, H = 210;
+                
+                function getDims() {
+                    var card = cards[0];
+                    var w = card ? card.offsetWidth : 350;
+                    var h = card ? card.offsetHeight : 210;
+                    return { W: w || 350, H: h || 210 };
+                }
+
+                var dims = getDims();
+                var W = dims.W, H = dims.H;
+
                 cards.forEach(function(card, i) {
                     gsap.set(card, {
                         x: -W/2, y: -H/2 + i * 8,
@@ -1829,13 +2237,19 @@
                 function swapNext() {
                     var total = cards.length;
                     var topCard = cards[current % total];
+                    var isMobile = window.innerWidth <= 640;
+                    var flyX = isMobile ? Math.min(260, window.innerWidth * 0.65) : 520;
+                    var currentDims = getDims();
+                    var curW = currentDims.W;
+                    var curH = currentDims.H;
+
                     gsap.to(topCard, {
-                        x: -W/2 + 520, y: -H/2 - 80,
+                        x: -curW/2 + flyX, y: -curH/2 - (isMobile ? 40 : 80),
                         rotation: 18, opacity: 0,
                         duration: 0.45, ease: 'power2.in',
                         onComplete: function() {
                             gsap.set(topCard, {
-                                x: -W/2, y: -H/2 + (total - 1) * 8,
+                                x: -curW/2, y: -curH/2 + (total - 1) * 8,
                                 rotation: (total - 3) * 2.5,
                                 zIndex: 1, opacity: 0.55
                             });
@@ -1844,7 +2258,7 @@
                                 var idx = (current + j) % total;
                                 var card = cards[idx];
                                 gsap.to(card, {
-                                    x: -W/2, y: -H/2 + j * 8,
+                                    x: -curW/2, y: -curH/2 + j * 8,
                                     rotation: (j - 2) * 2.5,
                                     zIndex: total - j,
                                     opacity: j === 0 ? 1 : 0.82 - j * 0.1,
@@ -1855,7 +2269,21 @@
                         }
                     });
                 }
-                setInterval(swapNext, 3500);
+                var swapInterval = setInterval(swapNext, 3500);
+
+                window.addEventListener('resize', function() {
+                    var newDims = getDims();
+                    var curW = newDims.W;
+                    var curH = newDims.H;
+                    var total = cards.length;
+                    for (var j = 0; j < total; j++) {
+                        var idx = (current + j) % total;
+                        var card = cards[idx];
+                        gsap.set(card, {
+                            x: -curW/2, y: -curH/2 + j * 8
+                        });
+                    }
+                });
             })();
 
             // 7. Terminal Typewriter
@@ -1895,78 +2323,107 @@
             })();
         });
 
-        // ── 8. Hamburger Mobile Menu ──────────────────────────────────
-        (function() {
-            var hamburger = document.getElementById('nav-hamburger');
-            var mobileMenu = document.getElementById('mobile-menu');
-            var isOpen = false;
+        // ── 8. CardNav — Dropdown & Mobile Drawer JS ─────────────────
+        // Dropdown toggle
+        window.cnToggle = function(itemId) {
+            var item = document.getElementById(itemId);
+            if (!item) return;
+            var isOpen = item.classList.contains('open');
+            cnCloseAll();
+            if (!isOpen) {
+                item.classList.add('open');
+                var btn = item.querySelector('.cn-item-btn');
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+            }
+        };
 
-            function openMenu() {
-                isOpen = true;
-                hamburger.classList.add('open');
-                mobileMenu.classList.add('open');
+        window.cnCloseAll = function() {
+            document.querySelectorAll('.cn-item.open').forEach(function(el) {
+                el.classList.remove('open');
+                var btn = el.querySelector('.cn-item-btn');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            });
+        };
+
+        // Mobile drawer toggle
+        var cnDrawer = document.getElementById('cn-mobile-drawer');
+        var cnHamburger = document.getElementById('cn-hamburger');
+        var cnDrawerOpen = false;
+
+        window.cnMobileToggle = function() {
+            cnDrawerOpen = !cnDrawerOpen;
+            if (cnDrawerOpen) {
+                cnDrawer && cnDrawer.classList.add('open');
+                cnHamburger && cnHamburger.classList.add('open');
                 document.body.style.overflow = 'hidden';
+            } else {
+                cnMobileClose();
             }
+        };
 
-            function closeMenu() {
-                isOpen = false;
-                hamburger.classList.remove('open');
-                mobileMenu.classList.remove('open');
-                document.body.style.overflow = '';
+        window.cnMobileClose = function() {
+            cnDrawerOpen = false;
+            cnDrawer && cnDrawer.classList.remove('open');
+            cnHamburger && cnHamburger.classList.remove('open');
+            document.body.style.overflow = '';
+        };
+
+        // Close dropdown & drawer on outside click
+        document.addEventListener('click', function(e) {
+            var root = document.getElementById('cn-root');
+            if (root && !root.contains(e.target)) {
+                cnCloseAll();
             }
-
-            window.closeMobileMenu = closeMenu;
-
-            if (hamburger) {
-                hamburger.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    isOpen ? closeMenu() : openMenu();
-                });
+            if (cnDrawerOpen && cnDrawer && !cnDrawer.contains(e.target) && cnHamburger && !cnHamburger.contains(e.target)) {
+                cnMobileClose();
             }
+        });
 
-            // Close on outside click
-            document.addEventListener('click', function(e) {
-                if (isOpen && mobileMenu && !mobileMenu.contains(e.target) && hamburger && !hamburger.contains(e.target)) {
-                    closeMenu();
-                }
-            });
+        // Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { cnCloseAll(); cnMobileClose(); }
+        });
 
-            // Close on scroll > 50px
-            var lastScrollY = window.scrollY;
-            window.addEventListener('scroll', function() {
-                var diff = Math.abs(window.scrollY - lastScrollY);
-                if (diff > 50 && isOpen) closeMenu();
-                lastScrollY = window.scrollY;
-            }, { passive: true });
+        // Close drawer on desktop resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 1024 && cnDrawerOpen) {
+                cnMobileClose();
+            }
+        });
 
-            // Smooth scroll for anchor links
-            document.querySelectorAll('a[href^="#"]').forEach(function(link) {
-                link.addEventListener('click', function(e) {
-                    var targetId = this.getAttribute('href');
-                    var target = document.querySelector(targetId);
-                    if (target) {
-                        e.preventDefault();
-                        closeMenu();
-                        setTimeout(function() {
-                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 100);
-                    }
-                });
-            });
+        // Close drawer on scroll > 60px
+        var cnLastScroll = window.scrollY;
+        window.addEventListener('scroll', function() {
+            if (Math.abs(window.scrollY - cnLastScroll) > 60 && cnDrawerOpen) cnMobileClose();
+            cnLastScroll = window.scrollY;
 
-            // Navbar scroll shadow
-            var navInner = document.querySelector('.cyber-nav-inner');
-            window.addEventListener('scroll', function() {
-                if (!navInner) return;
+            // Scroll shadow on navbar
+            var panel = document.getElementById('cn-panel');
+            if (panel) {
                 if (window.scrollY > 20) {
-                    navInner.style.background = 'rgba(6,8,18,0.97)';
-                    navInner.style.boxShadow = '0 4px 40px rgba(0,0,0,0.75), inset 0 0 0 1px rgba(0,212,255,0.08)';
+                    panel.style.background = 'rgba(4,5,14,0.96)';
+                    panel.style.boxShadow = '0 24px 48px -20px rgba(0,0,0,0.95), 0 6px 16px -8px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(0,212,255,0.06)';
                 } else {
-                    navInner.style.background = 'rgba(6,8,18,0.88)';
-                    navInner.style.boxShadow = '0 4px 32px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,212,255,0.04)';
+                    panel.style.background = '';
+                    panel.style.boxShadow = '';
                 }
-            }, { passive: true });
-        })();
+            }
+        }, { passive: true });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                var targetId = this.getAttribute('href');
+                var target = document.querySelector(targetId);
+                if (target) {
+                    e.preventDefault();
+                    cnCloseAll();
+                    setTimeout(function() {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 80);
+                }
+            });
+        });
     </script>
 </body>
 </html>

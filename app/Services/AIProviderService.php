@@ -449,11 +449,17 @@ class AIProviderService
     {
         // Prioritas 1: env khusus GOOGLE_GEMINI_API_KEY (Google AI Studio key)
         $envKey = env('GOOGLE_GEMINI_API_KEY', '');
-        if ($envKey && (str_starts_with($envKey, 'AIza') || str_starts_with($envKey, 'AQ.'))) {
+        if ($envKey && (str_starts_with($envKey, 'AIza') || str_starts_with($envKey, 'AQ.') || strlen($envKey) > 30)) {
             return $envKey;
         }
 
-        // Prioritas 2: cari dari admin config di database
+        // Prioritas 2: env GEMINI_API_KEY jika berformat Google (AIza)
+        $geminiKey = env('GEMINI_API_KEY', '');
+        if ($geminiKey && str_starts_with($geminiKey, 'AIza')) {
+            return $geminiKey;
+        }
+
+        // Prioritas 3: cari dari admin config di database
         try {
             $configs = \App\Models\AiConfiguration::where('is_active', true)
                 ->where(function($q) {
@@ -475,6 +481,15 @@ class AIProviderService
         }
 
         return null;
+    }
+
+
+    /**
+     * Public accessor untuk getGoogleAdminApiKey (digunakan oleh GeminiService).
+     */
+    public function getGoogleAdminApiKeyPublic(): ?string
+    {
+        return $this->getGoogleAdminApiKey();
     }
 
     protected function generateOpenAI(string $apiKey, string $model, string $prompt, bool $isJson = true): string

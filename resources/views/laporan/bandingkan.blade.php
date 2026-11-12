@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Perbandingan Scan — RedSim')
+@section('header', 'Perbandingan Pemindaian')
+@section('subheader', 'Bandingkan dua hasil pemindaian keamanan secara berdampingan')
+@section('page_feature', 'laporan')
 
 @push('styles')
 <style>

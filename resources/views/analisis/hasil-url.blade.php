@@ -2,6 +2,7 @@
 @section('title', 'Hasil Scan URL — RedSim')
 @section('header', 'Hasil Pemindaian URL')
 @section('subheader', ucfirst($scan->mode_scan) . ' — ' . $scan->target)
+@section('page_feature', 'pemindai-url')
 
 @section('content')
 @php

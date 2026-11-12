@@ -22,7 +22,10 @@ class ProsesAIAnalisisURL implements ShouldQueue
     public int $tries = 2;
     public int $timeout = 180;
 
-    public function __construct(protected Scan $scan) {}
+    public function __construct(protected Scan $scan)
+    {
+        $this->onQueue('default');
+    }
 
     public function handle(RAGService $ragService, MLPredictionService $mlService): void
     {
@@ -187,10 +190,19 @@ TUGAS;
                 $customChunks
             );
 
+            $eksekutif = $hasil['ringkasan_eksekutif'] ?? null;
+            $teknis = $hasil['ringkasan_teknis'] ?? null;
+            if (is_array($eksekutif)) {
+                $eksekutif = implode("\n", array_map(fn($e) => is_array($e) ? json_encode($e) : (string)$e, $eksekutif));
+            }
+            if (is_array($teknis)) {
+                $teknis = implode("\n", array_map(fn($t) => is_array($t) ? json_encode($t) : (string)$t, $teknis));
+            }
+
             $this->scan->update([
                 'verdict' => $hasil['verdict'] ?? null,
-                'ringkasan_eksekutif' => $hasil['ringkasan_eksekutif'] ?? null,
-                'ringkasan_teknis' => $hasil['ringkasan_teknis'] ?? null,
+                'ringkasan_eksekutif' => $eksekutif,
+                'ringkasan_teknis' => $teknis,
                 'confidence_score' => $hasil['confidence_score'] ?? null,
                 'skor_keamanan' => $hasil['skor_keamanan'] ?? $this->scan->skor_keamanan,
                 'rag_references' => $hasil['rag_references'] ?? null,
@@ -241,7 +253,7 @@ TUGAS;
             ]);
 
         } catch (\Exception $e) {
-            Log::error("AI Analisis URL gagal: " . $e->getMessage());
+            Log::error("AI Analisis URL gagal at " . $e->getFile() . ":" . $e->getLine() . ": " . $e->getMessage() . "\n" . $e->getTraceAsString());
             $this->scan->update(['error_message' => 'Analisis AI gagal: ' . $e->getMessage()]);
             // === AUDIT LOG: AI analysis gagal ===
             AuditLog::create([
@@ -311,7 +323,8 @@ TUGAS;
         if (empty($headers)) return 'Tidak ada';
         $parts = [];
         foreach ($headers as $name => $value) {
-            $parts[] = "{$name}: {$value}";
+            $valStr = is_array($value) ? implode('; ', array_map(fn($v) => is_array($v) ? json_encode($v) : (string)$v, $value)) : (string) $value;
+            $parts[] = "{$name}: {$valStr}";
         }
         return implode(', ', $parts);
     }

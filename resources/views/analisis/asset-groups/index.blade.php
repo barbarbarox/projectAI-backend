@@ -3,6 +3,7 @@
 @section('title', 'Grup Aset & Manajemen Permukaan Serangan (ASM) — RedSim')
 @section('header', 'Grup Aset & Multi-Target ASM')
 @section('subheader', 'Kelompokkan domain, API, dan infrastruktur target Anda untuk pemantauan postur keamanan terpadu dan pemindaian massal')
+@section('page_feature', 'asset-groups')
 
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6 pb-12">

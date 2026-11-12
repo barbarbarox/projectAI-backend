@@ -3,6 +3,7 @@
 @section('title', 'Dashboard — RedSim')
 @section('header', 'Dashboard')
 @section('subheader', 'Selamat datang kembali, ' . Auth::user()->name)
+@section('page_feature', 'welcome')
 
 @section('content')
 <div class="space-y-6">

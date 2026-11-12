@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn() => view('landing'))->name('beranda');
 Route::get('/privacy-policy', fn() => view('legal.privacy-policy'))->name('privacy-policy');
 Route::get('/terms', fn() => view('legal.terms'))->name('terms');
-Route::get('/ketentuan-layanan', fn() => view('legal.terms'))->name('legal.ketentuan');
 
 // RFC 9116 — Security Contact (/.well-known/security.txt)
 Route::get('/.well-known/security.txt', function () {
@@ -67,6 +66,8 @@ Route::get('/edukasi/leaderboard', [EdukasiController::class, 'leaderboard']);
 // Legal pages
 Route::view('/ketentuan-layanan', 'legal.ketentuan-layanan')->name('ketentuan-layanan');
 Route::view('/kebijakan-privasi', 'legal.kebijakan-privasi')->name('kebijakan-privasi');
+Route::redirect('/legal/ketentuan', '/ketentuan-layanan')->name('legal.ketentuan');
+Route::redirect('/legal/kebijakan', '/kebijakan-privasi')->name('legal.kebijakan');
 
 
 
@@ -148,6 +149,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('scan.owner')->group(function () {
         Route::get('/analisis/status/{scan}', [LaporanController::class, 'status'])->name('analisis.status');
         Route::get('/analisis/hasil/{scan}', [LaporanController::class, 'hasil'])->name('analisis.hasil');
+        Route::get('/analisis/url/hasil/{scan}', [LaporanController::class, 'hasil'])->name('analisis.url.hasil');
         Route::get('/laporan/{scan}', [LaporanController::class, 'detail'])->name('laporan.detail');
         Route::get('/laporan/{scan}/pdf', [LaporanController::class, 'exportPDF'])->name('laporan.pdf');
         Route::get('/laporan/{scan}/bandingkan', [LaporanController::class, 'bandingkan'])->name('laporan.bandingkan');
@@ -247,6 +249,38 @@ Route::middleware('auth')->group(function () {
         Route::post('/wa-settings/test', [\App\Http\Controllers\AdminUserController::class, 'testWaMessage'])->name('admin.wa-settings.test');
         Route::get('/wa-settings/status', [\App\Http\Controllers\AdminUserController::class, 'checkWaStatus'])->name('admin.wa-settings.status');
 
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Website Integrity & Defacement Monitoring
+    // ─────────────────────────────────────────────────────────────────────────
+    Route::prefix('monitoring')->name('monitoring.')->group(function () {
+        // Dashboard & list monitor
+        Route::get('/', [\App\Http\Controllers\WebsiteMonitorController::class, 'index'])->name('index');
+
+        // Buat & simpan monitor baru (dengan cooldown middleware)
+        Route::get('/tambah', [\App\Http\Controllers\WebsiteMonitorController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\WebsiteMonitorController::class, 'store'])
+            ->middleware(\App\Http\Middleware\MonitoringCooldown::class)
+            ->name('store');
+
+        // Quick defacement check (tanpa verifikasi, dengan cooldown)
+        Route::post('/quick-check', [\App\Http\Controllers\WebsiteMonitorController::class, 'quickCheck'])
+            ->middleware(\App\Http\Middleware\MonitoringCooldown::class)
+            ->name('quick-check');
+
+        // Detail monitor
+        Route::get('/{monitor}', [\App\Http\Controllers\WebsiteMonitorController::class, 'show'])->name('show');
+        Route::patch('/{monitor}/toggle-pause', [\App\Http\Controllers\WebsiteMonitorController::class, 'togglePause'])->name('toggle-pause');
+        Route::delete('/{monitor}', [\App\Http\Controllers\WebsiteMonitorController::class, 'destroy'])->name('destroy');
+        Route::post('/{monitor}/update-baseline', [\App\Http\Controllers\WebsiteMonitorController::class, 'updateBaseline'])
+            ->middleware(\App\Http\Middleware\MonitoringCooldown::class)
+            ->name('update-baseline');
+
+        // Alert routes
+        Route::get('/alerts/semua', [\App\Http\Controllers\WebsiteMonitorController::class, 'alerts'])->name('alerts');
+        Route::get('/alerts/{alert}', [\App\Http\Controllers\WebsiteMonitorController::class, 'showAlert'])->name('alert.show');
+        Route::patch('/alerts/{alert}/acknowledge', [\App\Http\Controllers\WebsiteMonitorController::class, 'acknowledgeAlert'])->name('alert.acknowledge');
     });
 
     Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');

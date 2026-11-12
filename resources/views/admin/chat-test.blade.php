@@ -384,7 +384,7 @@ function chatApp() {
             this.scrollToBottom();
 
             try {
-                const response = await fetch('{{ route('admin.chat-test') }}', {
+                const response = await fetch('{{ route('chat-ai.send') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

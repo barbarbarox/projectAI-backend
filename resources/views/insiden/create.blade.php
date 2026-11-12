@@ -3,6 +3,7 @@
 @section('title', 'Buat Insiden Keamanan Baru — RedSim')
 @section('header', 'Buat Insiden Baru')
 @section('subheader', 'Daftarkan tiket penanganan kerentanan dan remediasi keamanan')
+@section('page_feature', 'insiden')
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6 pb-12">

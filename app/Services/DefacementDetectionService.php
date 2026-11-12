@@ -185,4 +185,80 @@ class DefacementDetectionService
         $snippet = substr($html, $start, $length);
         return '...' . strip_tags($snippet) . '...';
     }
+
+    /**
+     * Deteksi script injection baru dibanding baseline.
+     * Mengembalikan array src script yang ada di $currentScripts tapi tidak di $baselineScripts.
+     */
+    public function detectScriptInjection(array $currentScripts, array $baselineScripts): array
+    {
+        $new = array_diff($currentScripts, $baselineScripts);
+
+        // Filter: hanya asing (bukan same-origin atau CDN resmi dikenal)
+        $trustedDomains = [
+            'googleapis.com', 'gstatic.com', 'google.com', 'jquery.com',
+            'cloudflare.com', 'bootstrapcdn.com', 'jsdelivr.net', 'unpkg.com',
+            'cdnjs.cloudflare.com', 'ajax.googleapis.com',
+        ];
+
+        $suspicious = [];
+        foreach ($new as $src) {
+            $isTrusted = false;
+            foreach ($trustedDomains as $trusted) {
+                if (str_contains($src, $trusted)) {
+                    $isTrusted = true;
+                    break;
+                }
+            }
+            if (!$isTrusted) {
+                $suspicious[] = $src;
+            }
+        }
+
+        return $suspicious;
+    }
+
+    /**
+     * Deteksi iframe injection baru.
+     * Mengembalikan array iframe src yang baru dan tidak ada di baseline.
+     */
+    public function detectIframeInjection(array $currentIframes, array $baselineIframes): array
+    {
+        return array_values(array_diff($currentIframes, $baselineIframes));
+    }
+
+    /**
+     * Deteksi meta refresh mencurigakan dalam HTML.
+     * Mengembalikan array ['found' => bool, 'url' => string|null, 'delay' => int].
+     */
+    public function detectMetaRefresh(string $html): array
+    {
+        // Cari <meta http-equiv="refresh" content="...">
+        if (!preg_match(
+            '#<meta\s[^>]*http-equiv=["\']refresh["\'][^>]*content=["\'](\d+)(?:;\s*url=([^"\']+))?["\'][^>]*>#i',
+            $html,
+            $m
+        )) {
+            // Coba urutan atribut terbalik
+            if (!preg_match(
+                '#<meta\s[^>]*content=["\'](\d+)(?:;\s*url=([^"\']+))?["\'][^>]*http-equiv=["\']refresh["\'][^>]*>#i',
+                $html,
+                $m
+            )) {
+                return ['found' => false, 'url' => null, 'delay' => 0];
+            }
+        }
+
+        $delay    = (int) ($m[1] ?? 0);
+        $url      = trim($m[2] ?? '');
+
+        // Hanya curigai jika delay sangat kecil (< 3 detik) dan ada URL redirect
+        $suspicious = $delay < 3 && !empty($url);
+
+        return [
+            'found'      => $suspicious,
+            'url'        => $url ?: null,
+            'delay'      => $delay,
+        ];
+    }
 }

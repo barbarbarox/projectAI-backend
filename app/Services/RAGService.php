@@ -96,6 +96,7 @@ class RAGService
         ?array $customChunks = null
     ): array
     {
+        $modelOverride = !empty($modelOverride) ? trim($modelOverride) : null;
         $konteks    = '';
         $nvdKonteks = '';
         $peringatan = "Knowledge base tidak digunakan (Analisis berdasarkan AI dasar).";

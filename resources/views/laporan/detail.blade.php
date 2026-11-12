@@ -2,6 +2,7 @@
 @section('title', 'Laporan #' . substr($scan->id, 0, 8) . ' — RedSim')
 @section('header', 'Laporan Analisis')
 @section('subheader', 'Hasil pemindaian ' . ucfirst($scan->tipe_scan) . ' — ' . $scan->created_at->format('d M Y H:i'))
+@section('page_feature', 'laporan')
 
 @section('content')
 <div class="space-y-6">

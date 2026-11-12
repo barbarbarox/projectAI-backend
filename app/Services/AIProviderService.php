@@ -12,6 +12,32 @@ class AIProviderService
      */
     public function detectAndListModels(string $apiKey): array
     {
+        // Cek prefix key terlebih dahulu untuk akurasi dan kecepatan tinggi
+        if (str_starts_with($apiKey, 'gsk_')) {
+            $groq = $this->tryGroq($apiKey);
+            if ($groq['detected']) return $groq;
+        }
+        if (str_starts_with($apiKey, 'nvapi-')) {
+            $nvidia = $this->tryNvidia($apiKey);
+            if ($nvidia['detected']) return $nvidia;
+        }
+        if (str_starts_with($apiKey, 'sk-ant-')) {
+            $anthropic = $this->tryAnthropic($apiKey);
+            if ($anthropic['detected']) return $anthropic;
+        }
+        if (str_starts_with($apiKey, 'AIza') || str_starts_with($apiKey, 'AQ.')) {
+            $google = $this->tryGoogleAI($apiKey);
+            if ($google['detected']) return $google;
+        }
+        if (str_starts_with($apiKey, 'sk-or-')) {
+            $openrouter = $this->tryOpenRouter($apiKey);
+            if ($openrouter['detected']) return $openrouter;
+        }
+        if (str_starts_with($apiKey, 'sk-')) {
+            $openai = $this->tryOpenAI($apiKey);
+            if ($openai['detected']) return $openai;
+        }
+
         // Coba Google AI Studio / Gemini
         $google = $this->tryGoogleAI($apiKey);
         if ($google['detected']) return $google;
@@ -24,13 +50,15 @@ class AIProviderService
         $anthropic = $this->tryAnthropic($apiKey);
         if ($anthropic['detected']) return $anthropic;
 
-        // Coba NVIDIA NIM
-        $nvidia = $this->tryNvidia($apiKey);
-        if ($nvidia['detected']) return $nvidia;
-
         // Coba Groq
         $groq = $this->tryGroq($apiKey);
         if ($groq['detected']) return $groq;
+
+        // Coba NVIDIA NIM (hanya jika bukan key provider lain)
+        if (!str_starts_with($apiKey, 'gsk_')) {
+            $nvidia = $this->tryNvidia($apiKey);
+            if ($nvidia['detected']) return $nvidia;
+        }
 
         // Coba OpenRouter
         $openrouter = $this->tryOpenRouter($apiKey);
@@ -302,6 +330,10 @@ class AIProviderService
 
     protected function tryNvidia(string $apiKey): array
     {
+        if (str_starts_with($apiKey, 'gsk_') || str_starts_with($apiKey, 'sk-') || str_starts_with($apiKey, 'AIza') || str_starts_with($apiKey, 'AQ.')) {
+            return ['detected' => false];
+        }
+
         try {
             $response = Http::timeout(10)
                 ->withHeaders(['Authorization' => "Bearer {$apiKey}"])
@@ -376,6 +408,13 @@ class AIProviderService
     protected function generateGoogle(string $apiKey, string $model, string $prompt, bool $isJson = true): string
     {
         $maxTokens = max((int) env('AI_MAX_TOKENS', 4096), 4096);
+
+        // Guard: model tidak boleh kosong
+        if (empty(trim($model))) {
+            $model = 'gemini-3.5-flash-lite';
+            Log::warning('[generateGoogle] Model kosong terdeteksi, fallback ke gemini-3.5-flash-lite');
+        }
+
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
 
         $headers = ['Content-Type' => 'application/json'];
@@ -421,10 +460,10 @@ class AIProviderService
                 'generationConfig' => $generationConfig,
             ]);
 
-        // Jika model spesifik overload (503) dan bukan gemini-1.5-flash, coba fallback ke gemini-1.5-flash yang kapasitasnya paling besar
-        if (!$response->successful() && $response->status() === 503 && !str_contains($model, 'gemini-1.5-flash')) {
-            Log::warning("[Google AI] Model {$model} overloaded (503). Mencoba fallback otomatis ke gemini-1.5-flash...");
-            $fallbackUrl = preg_replace('/models\/[^:]+:/', 'models/gemini-1.5-flash:', $url);
+        // Jika model spesifik overload (503) dan bukan gemini-3.5-flash-lite, coba fallback ke gemini-3.5-flash-lite yang stabil
+        if (!$response->successful() && $response->status() === 503 && !str_contains($model, 'gemini-3.5-flash-lite')) {
+            Log::warning("[Google AI] Model {$model} overloaded (503). Mencoba fallback otomatis ke gemini-3.5-flash-lite...");
+            $fallbackUrl = preg_replace('/models\/[^:]+:/', 'models/gemini-3.5-flash-lite:', $url);
             $response = Http::timeout(120)
                 ->withHeaders($headers)
                 ->post($fallbackUrl, [

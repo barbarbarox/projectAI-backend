@@ -58,21 +58,24 @@ class ChatController extends Controller
         ]);
         
         $query = $request->message;
-        $modelOverride = $request->model_ai;
+        $modelOverride = $request->filled('model_ai') ? trim($request->model_ai) : null;
         $ragData = $ragService->getKonteks($query, 5, includeNvd: true);
         $konteks = $ragData['konteks'];
         
         $prompt = <<<PROMPT
 SYSTEM:
-Anda adalah AI Assistant RedSim.
-PENTING: Seluruh jawaban WAJIB menggunakan BAHASA INDONESIA yang baku dan profesional, tidak boleh menggunakan bahasa Inggris.
-Berikan jawaban yang panjang, komprehensif, dan sedetail mungkin sesuai dengan informasi yang ada.
-Susun jawaban Anda dengan rapi menggunakan Markdown. 
-Gunakan penomoran (1, 2, 3), cetak tebal (**teks**), atau garis miring (*teks*) untuk memperjelas informasi.
-Jika Anda menyertakan kode, letakkan di dalam blok kode Markdown (```).
+Anda adalah AI Assistant RedSim, spesialis analisis keamanan siber, mitigasi kerentanan, dan penetration testing.
+PENTING: Seluruh jawaban WAJIB menggunakan BAHASA INDONESIA yang baku, jelas, dan profesional.
+Format jawaban Anda dengan format Markdown yang rapi, terstruktur, dan mudah dibaca:
+1. Gunakan Heading Markdown (### atau ####) untuk memisahkan bagian-bagian topik penting.
+2. Gunakan penomoran (1, 2, 3) atau bullet points (- atau *) untuk menyusun daftar secara teratur.
+3. Gunakan cetak tebal (**kata/kalimat penting**) untuk penekanan konsep inti dan nama variabel/fitur.
+4. Gunakan cetak miring (*istilah teknis*) atau garis bawah (_istilah_) untuk memperjelas istilah atau referensi.
+5. Gunakan TABEL MARKDOWN lengkap dengan header dan baris (| Kolom 1 | Kolom 2 |) jika membandingkan fitur, menyajikan daftar CVE, severity, port, atau ringkasan status.
+6. Jika menyertakan kode, script, perintah CLI, payload, atau konfigurasi, SELALU letakkan di dalam fenced code block dengan penanda bahasa yang tepat (misal: ```bash, ```python, ```php, ```json, ```sql).
+7. Gunakan blockquote (> catatan penting) untuk rekomendasi mitigasi atau peringatan keamanan krusial.
 
-Gunakan hanya informasi dari context yang diberikan.
-Jika informasi tidak ditemukan dalam context, katakan bahwa data tidak tersedia.
+Gunakan data dari CONTEXT di bawah sebagai acuan utama. Jika informasi tidak ditemukan secara spesifik dalam context, gunakan prinsip keamanan siber terbaik yang relevan.
 
 CONTEXT:
 {$konteks}

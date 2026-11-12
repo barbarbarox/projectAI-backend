@@ -2,6 +2,7 @@
 @section('title', 'Analisis Kode — RedSim')
 @section('header', 'Analisis Kode')
 @section('subheader', 'Tempel kode sumber untuk analisis kerentanan keamanan')
+@section('page_feature', 'analisis-kode')
 
 @section('content')
 <div class="max-w-4xl">

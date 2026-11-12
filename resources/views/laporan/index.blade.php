@@ -2,13 +2,75 @@
 @section('title', 'Riwayat Scan — RedSim')
 @section('header', 'Riwayat Scan')
 @section('subheader', 'Kelola semua riwayat pemindaian keamanan Anda')
+@section('page_feature', 'laporan')
 
 @section('content')
+@php
+$totalRiwayat = $scans->total();
+$selesai = $scans->getCollection()->where('status', 'selesai')->count();
+$gagal = $scans->getCollection()->where('status', 'gagal')->count();
+$avgSkor = $scans->getCollection()->whereNotNull('skor_keamanan')->avg('skor_keamanan');
+@endphp
+
+<div class="space-y-4">
+
+{{-- SUB-NAVIGATION TABS (RIWAYAT | INSIDEN | RED TEAM) --}}
+<div class="flex items-center justify-between gap-4 flex-wrap pb-2" style="border-bottom:1px solid #242424;">
+    <div class="flex items-center gap-2">
+        <a href="{{ route('laporan.index') }}"
+           class="px-4 py-1.5 rounded-full text-xs font-semibold text-white transition-all"
+           style="background:#ef4444; box-shadow:0 0 12px rgba(239,68,68,0.4);">
+            Riwayat
+        </a>
+        <a href="{{ route('insiden.index') }}"
+           class="px-4 py-1.5 rounded-full text-xs font-medium transition-all hover:bg-white/5"
+           style="color:#94a3b8;">
+            Insiden
+        </a>
+        <a href="{{ route('red-team-lab') }}"
+           class="px-4 py-1.5 rounded-full text-xs font-medium transition-all hover:bg-white/5"
+           style="color:#94a3b8;">
+            Red Team Lab
+        </a>
+    </div>
+    <button onclick="window.dispatchEvent(new CustomEvent('open-help', { detail: { feature: 'laporan' } }))"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+            style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Panduan Fitur
+    </button>
+</div>
+
+{{-- Stat Cards Row --}}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+    {{-- Total --}}
+    <div style="background:#161616;border:1px solid #242424;border-radius:12px;padding:20px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#555;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">TOTAL RIWAYAT</div>
+        <div style="font-size:28px;font-weight:800;color:#f6f6f8;font-family:'IBM Plex Mono',monospace;">{{ $totalRiwayat }}</div>
+    </div>
+    {{-- Avg Score --}}
+    <div style="background:#1f1a08;border:1px solid #4b3a10;border-radius:12px;padding:20px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#ca8a04;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">RATA-RATA SKOR</div>
+        <div style="font-size:28px;font-weight:800;color:#fbbf24;font-family:'IBM Plex Mono',monospace;">{{ $avgSkor ? round($avgSkor) : '—' }}</div>
+    </div>
+    {{-- Selesai --}}
+    <div style="background:#081a0f;border:1px solid #14532d;border-radius:12px;padding:20px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#16a34a;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">SCAN SELESAI</div>
+        <div style="font-size:28px;font-weight:800;color:#4ade80;font-family:'IBM Plex Mono',monospace;">{{ $selesai }}</div>
+    </div>
+    {{-- Gagal --}}
+    <div style="background:#1b1212;border:1px solid #3a1f1f;border-radius:12px;padding:20px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#ef4444;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">SCAN GAGAL</div>
+        <div style="font-size:28px;font-weight:800;color:#ef4444;font-family:'IBM Plex Mono',monospace;">{{ $gagal }}</div>
+    </div>
+</div>
+
 <div x-data="scanHistory()" class="space-y-4">
 
     {{-- Toolbar --}}
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2 flex-wrap">
+    <div class="flex flex-wrap items-center justify-between gap-3"
+         style="background:#161616;border:1px solid #242424;border-radius:12px;padding:14px 20px;margin-bottom:4px;">
+        <div class="flex items-center gap-2 flex-wrap flex-1">
             <button x-show="selected.length > 0"
                     x-cloak
                     @click="confirmBulkDelete()"
@@ -23,46 +85,69 @@
                     x-cloak
                     @click="toggleSelectAll()"
                     class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all"
-                    style="background:rgba(30,41,59,0.8);border:1px solid #1e293b;color:#94a3b8;">
+                    style="background:#161616;border:1px solid #2a2a2a;color:#aaa;border-radius:8px;padding:8px 14px;font-size:12px;">
                 <span x-text="selected.length === deletableScanIds.length && deletableScanIds.length > 0 ? 'Batalkan Semua' : 'Pilih Semua'"></span>
             </button>
+            {{-- Search & Filter --}}
+            <form method="GET" action="{{ route('laporan.index') }}" class="flex items-center gap-2 flex-wrap">
+                <div class="relative">
+                    <input type="text" name="q" value="{{ request('q') }}"
+                           placeholder="Cari target..."
+                           style="background:#111111;border:1px solid #2a2a2a;border-radius:8px;padding:7px 12px 7px 32px;font-size:12px;color:#ccc;outline:none;width:200px;"
+                           onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='#2a2a2a'">
+                    <svg class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2" style="color:#555;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <select name="status" onchange="this.form.submit()"
+                        style="background:#111111;border:1px solid #2a2a2a;border-radius:8px;padding:7px 12px;font-size:12px;color:#ccc;outline:none;">
+                    <option value="">Semua Status</option>
+                    <option value="selesai"   {{ request('status')==='selesai'   ? 'selected':'' }}>Selesai</option>
+                    <option value="gagal"     {{ request('status')==='gagal'     ? 'selected':'' }}>Gagal</option>
+                    <option value="memproses" {{ request('status')==='memproses' ? 'selected':'' }}>Memproses</option>
+                </select>
+                @if(request()->anyFilled(['q','status']))
+                <a href="{{ route('laporan.index') }}" style="font-size:11px;color:#666;">Reset</a>
+                @endif
+            </form>
         </div>
-        <div class="text-xs" style="color:#475569;">{{ $scans->total() }} total riwayat</div>
+        <div style="color:#555;font-size:12px;white-space:nowrap;">{{ $scans->total() }} total riwayat</div>
     </div>
 
     {{-- Table Card --}}
-    <div class="rs-card rounded-xl overflow-hidden">
-        <div class="px-6 py-4 flex items-center justify-between" style="border-bottom:1px solid #1e293b;">
+    <div style="background:#161616;border:1px solid #242424;border-radius:12px;overflow:hidden;">
+        <div class="px-6 py-4 flex items-center justify-between" style="border-bottom:1px solid #2a2a2a;">
             <div class="flex items-center gap-3">
                 <h3 class="font-semibold text-white">Riwayat Pemindaian</h3>
-                <span class="badge-security">Security Log</span>
+                <span style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;padding:3px 10px;border-radius:4px;">SECURITY LOG</span>
             </div>
         </div>
 
         <div class="overflow-x-auto">
-            <table class="rs-table">
-                <thead>
+            <table style="width:100%;border-collapse:collapse;">
+                <thead style="background:#111111;border-bottom:1px solid #242424;">
                     <tr>
-                        <th class="w-10">
+                        <th style="padding:10px 16px;font-size:10px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;width:40px;">
                             <input type="checkbox" class="w-4 h-4 rounded"
                                    style="accent-color:#ef4444;cursor:pointer;"
                                    @change="toggleSelectAll()"
                                    :checked="selected.length > 0 && selected.length === deletableScanIds.length"
                                    :indeterminate.prop="selected.length > 0 && selected.length < deletableScanIds.length">
                         </th>
-                        <th>Target / File</th>
-                        <th>Tipe</th>
-                        <th>Tanggal</th>
-                        <th>Skor</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
+                        <th style="padding:10px 16px;font-size:10px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-align:left;">TARGET / FILE</th>
+                        <th style="padding:10px 16px;font-size:10px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-align:left;">TIPE</th>
+                        <th style="padding:10px 16px;font-size:10px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-align:left;">TANGGAL</th>
+                        <th style="padding:10px 16px;font-size:10px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-align:left;">SKOR</th>
+                        <th style="padding:10px 16px;font-size:10px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-align:left;">STATUS</th>
+                        <th style="padding:10px 16px;font-size:10px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-align:left;">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($scans as $scan)
                     @php $isDeletable = !in_array($scan->status, ['memproses', 'antri']); @endphp
-                    <tr :class="selected.includes('{{ $scan->id }}') ? 'bg-red-500/5' : ''" class="transition-colors">
-                        <td>
+                    <tr :class="selected.includes('{{ $scan->id }}') ? 'bg-red-500/5' : ''"
+                        style="border-bottom:1px solid #1e1e1e;transition:background 0.15s;"
+                        onmouseover="if(!this.classList.contains('bg-red-500/5'))this.style.background='#1b1212'"
+                        onmouseout="if(!this.classList.contains('bg-red-500/5'))this.style.background='transparent'">
+                        <td style="padding:12px 16px;">
                             @if($isDeletable)
                             <input type="checkbox"
                                    class="w-4 h-4 rounded"
@@ -78,7 +163,7 @@
                             </span>
                             @endif
                         </td>
-                        <td>
+                        <td style="padding:12px 16px;">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center"
                                      style="{{ $scan->tipe_scan === 'zip' ? 'background:rgba(34,197,94,0.10);' : 'background:rgba(220,38,38,0.10);' }}">
@@ -95,24 +180,39 @@
                                 </span>
                             </div>
                         </td>
-                        <td>
+                        <td style="padding:12px 16px;">
                             <span class="px-2 py-0.5 rounded text-[11px] font-semibold uppercase"
-                                  style="{{ $scan->tipe_scan === 'zip' ? 'background:rgba(34,197,94,0.10);color:#4ade80;' : 'background:rgba(220,38,38,0.10);color:#f87171;' }}">
+                                  style="background:rgba(220,38,38,0.10);color:#f87171;">
                                 {{ $scan->tipe_scan }}
                             </span>
                         </td>
-                        <td class="text-xs" style="color:#64748b;font-family:monospace;">{{ $scan->created_at->format('d M Y H:i') }}</td>
-                        <td>
+                        <td style="padding:12px 16px;font-size:12px;color:#64748b;font-family:monospace;">{{ $scan->created_at->format('d M Y H:i') }}</td>
+                        <td style="padding:12px 16px;">
                             @if($scan->skor_keamanan !== null)
-                            <span class="text-sm font-bold {{ $scan->skor_keamanan >= 70 ? 'text-green-400' : ($scan->skor_keamanan >= 50 ? 'text-yellow-400' : 'text-red-400') }}">{{ $scan->skor_keamanan }}</span>
-                            @else<span style="color:#334155;">—</span>@endif
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="font-size:13px;font-weight:700;{{ $scan->skor_keamanan >= 70 ? 'color:#4ade80' : ($scan->skor_keamanan >= 50 ? 'color:#fbbf24' : 'color:#ef4444') }}">{{ $scan->skor_keamanan }}</span>
+                                <div style="width:50px;height:4px;background:#2a2a2a;border-radius:2px;overflow:hidden;">
+                                    <div style="width:{{ $scan->skor_keamanan }}%;height:100%;background:{{ $scan->skor_keamanan >= 70 ? '#4ade80' : ($scan->skor_keamanan >= 50 ? '#fbbf24' : '#ef4444') }};border-radius:2px;"></div>
+                                </div>
+                            </div>
+                            @else<span style="color:#333;">—</span>@endif
                         </td>
-                        <td>
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium {{ $scan->status === 'selesai' ? 'bg-green-500/10 text-green-400' : ($scan->status === 'gagal' ? 'bg-red-500/10 text-red-400' : 'bg-yellow-500/10 text-yellow-400') }}">
+                        <td style="padding:12px 16px;">
+                            @if($scan->status === 'selesai')
+                            <span style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">
                                 {{ $scan->status_label }}
                             </span>
+                            @elseif($scan->status === 'gagal')
+                            <span style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">
+                                {{ $scan->status_label }}
+                            </span>
+                            @else
+                            <span style="background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);color:#fbbf24;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">
+                                {{ $scan->status_label }}
+                            </span>
+                            @endif
                         </td>
-                        <td>
+                        <td style="padding:12px 16px;">
                             <div class="flex items-center gap-3">
                                 @if($scan->status === 'selesai')
                                 <a href="{{ route('laporan.detail', $scan) }}"
@@ -120,7 +220,7 @@
                                     Detail <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                 </a>
                                 <a href="{{ route('laporan.bandingkan', $scan) }}"
-                                   class="inline-flex items-center gap-1.5 text-xs font-medium transition-colors hover:text-cyan-300" style="color:#06b6d4;" title="Bandingkan">
+                                   class="inline-flex items-center gap-1.5 text-xs font-medium transition-colors" style="color:#ef4444;" title="Bandingkan">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                                 </a>
                                 @endif
@@ -149,7 +249,7 @@
         </div>
 
         @if($scans->hasPages())
-        <div class="px-6 py-4" style="border-top:1px solid #1e293b;">{{ $scans->links() }}</div>
+        <div class="px-6 py-4" style="border-top:1px solid #2a2a2a;">{{ $scans->links() }}</div>
         @endif
     </div>
 
@@ -163,7 +263,7 @@
              x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
              @click.outside="showModal = false"
              class="relative w-full max-w-sm rounded-2xl p-6"
-             style="background:#0f1629;border:1px solid #1e2d4a;box-shadow:0 25px 50px rgba(0,0,0,0.5);">
+             style="background:#161616;border:1px solid #242424;box-shadow:0 25px 50px rgba(0,0,0,0.5);">
             <div class="flex items-start gap-4 mb-5">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                      style="background:rgba(220,38,38,0.12);border:1px solid rgba(220,38,38,0.25);">
@@ -179,7 +279,7 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <button @click="showModal = false" class="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all" style="background:rgba(30,41,59,0.6);border:1px solid #1e293b;color:#94a3b8;">Batal</button>
+                <button @click="showModal = false" class="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all" style="background:rgba(30,41,59,0.6);border:1px solid #2a2a2a;color:#94a3b8;">Batal</button>
                 <button @click="executeDelete()" :disabled="deleting" class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-60" style="background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;">
                     <span x-show="!deleting">Hapus Permanen</span>
                     <span x-show="deleting" class="flex items-center justify-center gap-2">
@@ -190,6 +290,30 @@
             </div>
         </div>
     </div>
+
+    {{-- ── PANDUAN RIWAYAT SCAN (MATCHING POPUP MODAL PETUNJUK STYLE) ── --}}
+    <div class="rounded-xl p-4 flex items-start justify-between gap-4 flex-wrap mt-2"
+         style="background:#1b1212; border:1px solid #3a1f1f;">
+        <div class="flex items-start gap-3.5 max-w-3xl">
+            <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                 style="border:1.5px solid #ef4444; color:#ef4444; font-size:11px; font-weight:800;">!</div>
+            <div>
+                <p style="color:#ef4444; font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; font-weight:700; font-family:'IBM Plex Mono',monospace; margin-bottom:0.25rem;">
+                    PANDUAN RIWAYAT &amp; LAPORAN SCAN
+                </p>
+                <p style="color:#888; font-size:0.78rem; line-height:1.65;">
+                    Semua riwayat pemindaian tersimpan di sini. Klik <strong style="color:#ccc;">Detail</strong> untuk membuka laporan lengkap, unduh PDF, atau gunakan fitur
+                    <strong style="color:#ccc;">Bandingkan</strong> untuk melihat perubahan skor antar waktu. Gunakan filter Status dan kolom pencarian untuk menemukan scan tertentu.
+                </p>
+            </div>
+        </div>
+        <button onclick="window.dispatchEvent(new CustomEvent('open-help', { detail: { feature: 'laporan' } }))"
+                class="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90 shrink-0"
+                style="background:linear-gradient(135deg,#ef4444,#dc2626); box-shadow:0 2px 10px rgba(239,68,68,0.3);">
+            Buka Panduan
+        </button>
+    </div>
+
 </div>
 
 @push('scripts')

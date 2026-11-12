@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="RedSim — Platform Penilaian Keamanan Sistem Berbasis AI">
+    @hasSection('page_feature')
+    <meta name="page-feature" content="@yield('page_feature')">
+    @endif
     <title>@yield('title', 'RedSim — Platform Keamanan AI')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -99,8 +102,8 @@
                 @else
                 <div class="flex flex-col gap-2">
                     <a href="{{ route('masuk') }}"
-                       class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-cyan-400 transition-all duration-200 hover:bg-cyan-950/40"
-                       style="border:1px solid rgba(6,182,212,0.25);">
+                       class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 transition-all duration-200 hover:bg-red-950/40"
+                       style="border:1px solid rgba(239,68,68,0.25);">
                         Masuk
                     </a>
                     <a href="{{ route('daftar') }}"
@@ -134,26 +137,73 @@
                     </div>
 
                     <div class="flex items-center gap-3">
+                        {{-- ══ Tombol Panduan (muncul di semua halaman yang punya page_feature) ══ --}}
+                        @hasSection('page_feature')
+                        @php $pf = trim(\Illuminate\Support\Facades\View::yieldContent('page_feature')); @endphp
+                        @if($pf && $pf !== 'welcome')
+                        <button data-feature="{{ $pf }}"
+                                onclick="window.dispatchEvent(new CustomEvent('open-help', { detail: { feature: this.dataset.feature } }))"
+                                class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 hover:scale-105 group"
+                                style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;"
+                                title="Panduan penggunaan halaman ini">
+                            <svg class="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Panduan</span>
+                        </button>
+                        {{-- Mobile version --}}
+                        <button data-feature="{{ $pf }}"
+                                onclick="window.dispatchEvent(new CustomEvent('open-help', { detail: { feature: this.dataset.feature } }))"
+                                class="sm:hidden flex items-center justify-center w-8 h-8 rounded-lg transition-all"
+                                style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;"
+                                title="Panduan">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </button>
+                        @endif
+                        @endif
+
                         {{-- AI Status indicator --}}
                         <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium"
-                             style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);color:#22d3ee;">
-                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse inline-block"></span>
+                             style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);color:#34d399;">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
                             AI Aktif
                         </div>
 
                         @auth
+                        {{-- Monitoring Alert Badge --}}
+                        @php
+                            $monitoringUnreadCount = \App\Models\WebsiteIntegrityAlert::query()
+                                ->where('user_id', Auth::id())
+                                ->where('is_read', false)
+                                ->where('alert_type', '!=', 'clean')
+                                ->count();
+                        @endphp
+                        @if($monitoringUnreadCount > 0)
+                        <a href="{{ route('monitoring.alerts') }}"
+                           class="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-400 transition-all hover:bg-amber-500/10"
+                           style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.25);"
+                           title="{{ $monitoringUnreadCount }} alert monitoring belum dibaca">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                            <span>{{ $monitoringUnreadCount }}</span>
+                            <span class="hidden sm:inline text-amber-300/70">Alert</span>
+                        </a>
+                        @endif
+
                         <div class="text-xs px-3 py-1.5 rounded-lg" style="background:rgba(15,23,42,0.8);border:1px solid #1e293b;color:#64748b;">
                             Scan hari ini:
                             <span class="font-bold" style="color:#ef4444;">{{ Auth::user()->scan_count_today }}/{{ env('MAX_SCANS_PER_DAY_FREE', 10) }}</span>
                         </div>
                         @else
-                        <a href="{{ route('masuk') }}" class="text-xs text-cyan-400 hover:text-cyan-300 underline transition-colors">
+                        <a href="{{ route('masuk') }}" class="text-xs text-red-400 hover:text-red-300 underline transition-colors">
                             Masuk untuk Analisis
                         </a>
                         @endauth
                     </div>
                 </div>
             </header>
+
 
             {{-- Flash Messages --}}
             @if(session('success'))
@@ -226,44 +276,53 @@
     .chat-md-content p  { margin-bottom: 0.5rem; line-height: 1.6; }
     .chat-md-content strong { font-weight: 700; color: #fff; }
     .chat-md-content em { font-style: italic; color: #cbd5e1; }
+    .chat-md-content u, .chat-md-content ins { text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #38bdf8; color: #f1f5f9; }
+    .chat-md-content s, .chat-md-content del { text-decoration: line-through; color: #64748b; }
     .chat-md-content h1, .chat-md-content h2,
     .chat-md-content h3, .chat-md-content h4 { font-weight: 700; margin: 0.75rem 0 0.5rem; color: #fff; }
-    .chat-md-content ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
-    .chat-md-content ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0; }
+    .chat-md-content ul { list-style-type: disc !important; padding-left: 1.25rem !important; margin: 0.5rem 0 !important; }
+    .chat-md-content ol { list-style-type: decimal !important; padding-left: 1.25rem !important; margin: 0.5rem 0 !important; }
+    .chat-md-content li { display: list-item !important; margin-bottom: 0.25rem; }
+    .chat-md-content li::marker { color: #38bdf8 !important; font-weight: 700; }
     .chat-md-content a  { color: #22d3ee; text-decoration: underline; }
     .chat-md-content img { max-width: 100%; border-radius: 0.5rem; margin: 0.5rem 0; }
     .chat-md-content blockquote {
-        border-left: 2px solid #06b6d4;
+        border-left: 3px solid #06b6d4;
         margin: 0.5rem 0;
         padding: 0.5rem 0.75rem;
         background: rgba(6,182,212,0.06);
+        border-radius: 0 0.375rem 0.375rem 0;
     }
     .chat-md-content code:not(pre code) {
-        background: #000;
+        background: #111a2e;
         padding: 0.15em 0.35em;
         border-radius: 3px;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.85em;
-        color: #4ade80;
+        color: #38bdf8;
+        border: 1px solid #26364b;
     }
     .chat-md-content pre {
-        background: #000;
+        background: #080c16;
         margin: 0.5rem 0;
         padding: 0.75rem 1rem;
         overflow-x: auto;
         border-radius: 0.5rem;
-        border: 1px solid #1a1a1a;
+        border: 1px solid #1e293b;
     }
-    .md-code-block { margin: 0.5rem 0; border-radius: 0.5rem; overflow: hidden; border: 1px solid #1e293b; background: #000; }
-    .md-code-header { display: flex; align-items: center; justify-content: space-between; background: #0d1117; padding: 0.25rem 0.75rem; border-bottom: 1px solid #1e293b; }
-    .md-code-lang    { font-size: 0.65rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; font-family: monospace; }
-    .md-copy-btn { display: flex; align-items: center; gap: 0.25rem; font-size: 0.65rem; color: #64748b; background: none; border: 1px solid #1e293b; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; transition: color .2s; }
-    .md-copy-btn:hover { color: #22d3ee; border-color: rgba(6,182,212,0.4); }
-    .md-table-wrap { overflow-x: auto; margin: 0.5rem 0; }
-    .chat-md-content table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-    .chat-md-content th { padding: 0.4rem 0.6rem; background: #0d1117; color: #e2e8f0; text-align: left; border-bottom: 1px solid #1e293b; }
-    .chat-md-content td { padding: 0.4rem 0.6rem; color: #94a3b8; border-bottom: 1px solid #0d1117; }
-    .chat-md-content tr:hover td { background: rgba(30,41,59,0.4); }
+    .md-code-block { margin: 0.75rem 0; border-radius: 0.5rem; overflow: hidden; border: 1px solid #1e293b; background: #080c16; }
+    .md-code-block pre { margin: 0 !important; border: none !important; border-radius: 0 !important; padding: 0.75rem 1rem !important; }
+    .md-code-block pre code { background: transparent !important; border: none !important; padding: 0 !important; font-size: 0.75rem !important; }
+    .md-code-header { display: flex; align-items: center; justify-content: space-between; background: #0d1527; padding: 0.35rem 0.75rem; border-bottom: 1px solid #1e293b; }
+    .md-code-lang    { font-size: 0.65rem; color: #38bdf8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-family: monospace; }
+    .md-copy-btn { display: flex; align-items: center; gap: 0.25rem; font-size: 0.65rem; color: #94a3b8; background: rgba(30, 41, 59, 0.6); border: 1px solid #334155; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; transition: all .2s; }
+    .md-copy-btn:hover { color: #fff; border-color: #38bdf8; background: rgba(56, 189, 248, 0.15); }
+    .md-table-wrap { overflow-x: auto; margin: 0.75rem 0; border-radius: 0.5rem; border: 1px solid #26364b; }
+    .chat-md-content table { width: 100%; border-collapse: collapse; font-size: 0.75rem; border: 1px solid #26364b; }
+    .chat-md-content th { padding: 0.5rem 0.75rem; background: #111a2e; color: #38bdf8; font-weight: 700; text-align: left; border: 1px solid #26364b; text-transform: uppercase; }
+    .chat-md-content td { padding: 0.5rem 0.75rem; color: #cbd5e1; border: 1px solid #1e293b; }
+    .chat-md-content tr:nth-child(even) td { background: rgba(17, 26, 46, 0.45); }
+    .chat-md-content tr:hover td { background: rgba(56, 189, 248, 0.08); }
 
     /* ═══════════════════════════════════════════
        SCAN PROGRESS INDICATOR

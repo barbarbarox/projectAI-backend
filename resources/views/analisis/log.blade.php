@@ -2,6 +2,7 @@
 @section('title', 'Analisis Log — RedSim')
 @section('header', 'Analisis Log')
 @section('subheader', 'Upload atau tempel log server untuk analisis keamanan berbasis AI')
+@section('page_feature', 'analisis-log')
 
 @section('content')
 <div class="max-w-3xl" x-data="{ tab: 'file' }">

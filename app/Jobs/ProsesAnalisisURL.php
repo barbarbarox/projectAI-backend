@@ -30,7 +30,9 @@ class ProsesAnalisisURL implements ShouldQueue
         protected Scan $scan,
         protected string $url,
         protected string $modeScan = 'biasa'
-    ) {}
+    ) {
+        $this->onQueue('default');
+    }
 
     public function handle(
         ScanBiasaService $scanBiasa,
@@ -233,11 +235,12 @@ TUGAS;
             // Stage 6: Analisis AI
             $this->scan->update(['progress_step' => 'AI Sedang Mensintesis Laporan...', 'progress_persen' => 85, 'pipeline_stage' => 6]);
 
+            $selectedModel = !empty($this->scan->model_ai) ? trim($this->scan->model_ai) : null;
             $hasilAi = $ragService->analisis(
                 $targetedQuery,
                 $tugas,
                 $useRag,
-                $this->scan->model_ai,
+                $selectedModel,
                 $this->scan->user_id,
                 $customKonteks,
                 $customChunks
@@ -245,13 +248,22 @@ TUGAS;
 
             $this->scan->update(['progress_step' => 'Finalisasi Laporan...', 'progress_persen' => 97, 'pipeline_stage' => 6]);
 
+            $eksekutif = $hasilAi['ringkasan_eksekutif'] ?? null;
+            $teknis = $hasilAi['ringkasan_teknis'] ?? null;
+            if (is_array($eksekutif)) {
+                $eksekutif = implode("\n", array_map(fn($e) => is_array($e) ? json_encode($e) : (string)$e, $eksekutif));
+            }
+            if (is_array($teknis)) {
+                $teknis = implode("\n", array_map(fn($t) => is_array($t) ? json_encode($t) : (string)$t, $teknis));
+            }
+
             $this->scan->update([
                 'status' => 'selesai',
                 'data_mentah' => $dataMentah,
                 'skor_keamanan' => $hasilAi['skor_keamanan'] ?? ($dataMentah['skor_reputasi'] ?? 50),
                 'verdict' => $hasilAi['verdict'] ?? null,
-                'ringkasan_eksekutif' => $hasilAi['ringkasan_eksekutif'] ?? null,
-                'ringkasan_teknis' => $hasilAi['ringkasan_teknis'] ?? null,
+                'ringkasan_eksekutif' => $eksekutif,
+                'ringkasan_teknis' => $teknis,
                 'confidence_score' => $hasilAi['confidence_score'] ?? null,
                 'rag_references' => $hasilAi['rag_references'] ?? null,
                 'teknologi_terdeteksi' => $dataMentah['teknologi'] ?? [],

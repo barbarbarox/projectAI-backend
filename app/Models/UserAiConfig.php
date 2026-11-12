@@ -49,7 +49,8 @@ class UserAiConfig extends Model
     public function isTokenExpired(): bool
     {
         if (!$this->oauth_expires_at) return true;
-        return $this->oauth_expires_at->isPast();
+        // Refresh 5 menit sebelum benar-benar expired (safety margin untuk queue delay)
+        return $this->oauth_expires_at->subMinutes(5)->isPast();
     }
 
     /**

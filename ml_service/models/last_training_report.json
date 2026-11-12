@@ -1,0 +1,125 @@
+{
+  "timestamp": "2026-11-05 19:35:49",
+  "train_samples": 5000,
+  "test_samples": 10000,
+  "features_count": 47,
+  "rf_results": {
+    "n_estimators": 30,
+    "max_depth": 8,
+    "random_state": 42,
+    "duration_seconds": 0.06,
+    "accuracy": 0.9197,
+    "macro_f1": 0.7113,
+    "macro_precision": 0.7154,
+    "macro_recall": 0.7078,
+    "per_class": {
+      "CRITICAL": {
+        "f1": 0.8863,
+        "precision": 0.9228,
+        "recall": 0.8525
+      },
+      "HIGH": {
+        "f1": 0.9147,
+        "precision": 0.9025,
+        "recall": 0.9273
+      },
+      "LOW": {
+        "f1": 0.8159,
+        "precision": 0.8102,
+        "recall": 0.8216
+      },
+      "MEDIUM": {
+        "f1": 0.9395,
+        "precision": 0.9417,
+        "recall": 0.9373
+      },
+      "NONE": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "top_features": [
+      {
+        "feature": "cat__integ_impact_HIGH",
+        "importance": 0.0828
+      },
+      {
+        "feature": "cat__conf_impact_HIGH",
+        "importance": 0.078
+      },
+      {
+        "feature": "num__pub_month",
+        "importance": 0.0656
+      },
+      {
+        "feature": "cat__conf_impact_NONE",
+        "importance": 0.0619
+      },
+      {
+        "feature": "cat__avail_impact_HIGH",
+        "importance": 0.0613
+      },
+      {
+        "feature": "cat__privileges_required_NONE",
+        "importance": 0.0613
+      },
+      {
+        "feature": "num__desc_length",
+        "importance": 0.0595
+      },
+      {
+        "feature": "cat__integ_impact_NONE",
+        "importance": 0.0512
+      }
+    ]
+  },
+  "xgb_results": {
+    "n_estimators": 30,
+    "learning_rate": 0.1,
+    "max_depth": 5,
+    "random_state": 42,
+    "duration_seconds": 0.09,
+    "accuracy": 0.9042,
+    "macro_f1": 0.6996,
+    "macro_precision": 0.6796,
+    "macro_recall": 0.7312,
+    "per_class": {
+      "CRITICAL": {
+        "f1": 0.8889,
+        "precision": 0.8949,
+        "recall": 0.883
+      },
+      "HIGH": {
+        "f1": 0.9021,
+        "precision": 0.8772,
+        "recall": 0.9285
+      },
+      "LOW": {
+        "f1": 0.7846,
+        "precision": 0.6645,
+        "recall": 0.9577
+      },
+      "MEDIUM": {
+        "f1": 0.9226,
+        "precision": 0.9615,
+        "recall": 0.8868
+      },
+      "NONE": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    }
+  },
+  "ensemble_results": {
+    "strategy": "Soft Voting",
+    "weight_rf": 0.4,
+    "weight_xgb": 0.6,
+    "accuracy": 0.9209,
+    "macro_f1": 0.7178,
+    "macro_precision": 0.7075,
+    "macro_recall": 0.7321
+  },
+  "total_duration_seconds": 0.32
+}

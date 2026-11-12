@@ -448,8 +448,24 @@ const aiSidebar = (function() {
         const bubble = document.createElement('div');
         bubble.className = `ai-bubble ${role === 'user' ? 'from-user' : 'from-ai'}`;
 
-        if (role === 'ai' && typeof formatMessage === 'function') {
-            bubble.innerHTML = formatMessage(content, 'ai');
+        if (role === 'ai') {
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'chat-md-content md-content';
+            if (window.MarkdownRenderer && typeof window.MarkdownRenderer.parse === 'function') {
+                contentDiv.innerHTML = window.MarkdownRenderer.parse(content);
+            } else if (typeof marked !== 'undefined') {
+                try {
+                    let html = marked.parse(content);
+                    if (typeof DOMPurify !== 'undefined') html = DOMPurify.sanitize(html);
+                    contentDiv.innerHTML = html;
+                } catch(e) {
+                    contentDiv.textContent = content;
+                }
+            } else {
+                contentDiv.textContent = content;
+            }
+            bubble.appendChild(contentDiv);
+
             if (ragUsed) {
                 const badge = document.createElement('div');
                 badge.className = 'rag-badge';

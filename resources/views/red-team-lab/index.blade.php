@@ -2,11 +2,39 @@
 @section('title', 'Red Team Lab — CVSSv3 Calculator & Attack Visualizer')
 @section('header', 'Red Team Lab')
 @section('subheader', 'CVSSv3.1 Calculator · Attack Path Visualizer · MITRE ATT&CK Matrix · Risk Scoring')
+@section('page_feature', 'red-team-lab')
 
 @section('content')
 <div class="max-w-7xl mx-auto pb-24 space-y-8"
      x-data="redTeamLab()"
      x-init="init()">
+
+    {{-- SUB-NAVIGATION TABS (RIWAYAT | INSIDEN | RED TEAM LAB) --}}
+    <div class="flex items-center justify-between gap-4 flex-wrap pb-2" style="border-bottom:1px solid #242424;">
+        <div class="flex items-center gap-2">
+            <a href="{{ route('laporan.index') }}"
+               class="px-4 py-1.5 rounded-full text-xs font-medium transition-all hover:bg-white/5"
+               style="color:#94a3b8;">
+                Riwayat
+            </a>
+            <a href="{{ route('insiden.index') }}"
+               class="px-4 py-1.5 rounded-full text-xs font-medium transition-all hover:bg-white/5"
+               style="color:#94a3b8;">
+                Insiden
+            </a>
+            <a href="{{ route('red-team-lab') }}"
+               class="px-4 py-1.5 rounded-full text-xs font-semibold text-white transition-all"
+               style="background:#ef4444; box-shadow:0 0 12px rgba(239,68,68,0.4);">
+                Red Team Lab
+            </a>
+        </div>
+        <button onclick="window.dispatchEvent(new CustomEvent('open-help', { detail: { feature: 'red-team-lab' } }))"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Panduan Fitur
+        </button>
+    </div>
 
     {{-- ══════════════════════════════════════════════
          SECTION 1: CVSSv3.1 REAL-TIME CALCULATOR
@@ -14,20 +42,23 @@
     <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
 
         {{-- ── LEFT: Form Calculator ── --}}
-        <div class="xl:col-span-3 p-6 rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950">
+        <div class="xl:col-span-3 p-6 rounded-2xl"
+             style="border:1px solid #242424;background:linear-gradient(135deg,#161616,#111111)">
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/30 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                             style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.3);">
+                            <svg class="w-4 h-4" style="color:#ef4444" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
                             </svg>
                         </div>
                         <h2 class="text-sm font-bold text-white">CVSSv3.1 Base Score Calculator</h2>
                     </div>
-                    <p class="text-xs text-slate-500 mt-1 ml-10">Formula resmi FIRST.org — diupdate real-time</p>
+                    <p class="text-xs mt-1 ml-10" style="color:#666">Formula resmi FIRST.org — diupdate real-time</p>
                 </div>
-                <button @click="resetForm()" class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1">
+                <button @click="resetForm()" class="text-xs flex items-center gap-1 transition-colors"
+                        style="color:#666" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#666'">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                     Reset
                 </button>
@@ -40,9 +71,9 @@
                     'AC' => ['label' => 'Attack Complexity',       'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'color' => 'orange'],
                     'PR' => ['label' => 'Privileges Required',     'icon' => 'M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z', 'color' => 'amber'],
                     'UI' => ['label' => 'User Interaction',        'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', 'color' => 'yellow'],
-                    'S'  => ['label' => 'Scope',                   'icon' => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064', 'color' => 'cyan'],
+                    'S'  => ['label' => 'Scope',                   'icon' => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064', 'color' => 'emerald'],
                     'C'  => ['label' => 'Confidentiality Impact',  'icon' => 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', 'color' => 'purple'],
-                    'I'  => ['label' => 'Integrity Impact',        'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'color' => 'blue'],
+                    'I'  => ['label' => 'Integrity Impact',        'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'color' => 'violet'],
                     'A'  => ['label' => 'Availability Impact',     'icon' => 'M13 10V3L4 14h7v7l9-11h-7z', 'color' => 'green'],
                 ];
                 $optionLabels = [
@@ -61,7 +92,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 @foreach($metricLabels as $key => $meta)
                 <div class="space-y-1.5">
-                    <label class="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                    <label class="text-xs font-semibold flex items-center gap-1.5" style="color:#888">
                         <svg class="w-3.5 h-3.5 text-{{ $meta['color'] }}-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $meta['icon'] }}"/>
                         </svg>
@@ -72,8 +103,9 @@
                         <button @click="setMetric('{{ $key }}', '{{ $optKey }}')"
                                 :class="form['{{ $key }}'] === '{{ $optKey }}'
                                     ? 'bg-{{ $meta['color'] }}-500/20 border-{{ $meta['color'] }}-500/60 text-{{ $meta['color'] }}-300 ring-1 ring-{{ $meta['color'] }}-500/40'
-                                    : 'bg-slate-800/60 border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-300'"
-                                class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-150">
+                                    : 'border-zinc-700 text-zinc-500 hover:border-zinc-500 hover:text-zinc-300'"
+                                class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-150"
+                                :style="form['{{ $key }}'] !== '{{ $optKey }}' ? 'background:#1a1a1a' : ''">
                             {{ $optKey }}: {{ $optLabel }}
                         </button>
                         @endforeach
@@ -83,8 +115,8 @@
             </div>
 
             {{-- Risk Score Extra Inputs --}}
-            <div class="mt-5 pt-4 border-t border-slate-800">
-                <div class="text-xs font-semibold text-slate-400 mb-3 flex items-center gap-1.5">
+            <div class="mt-5 pt-4" style="border-top:1px solid #242424">
+                <div class="text-xs font-semibold mb-3 flex items-center gap-1.5" style="color:#888">
                     <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
@@ -92,27 +124,31 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-[11px] text-slate-500 block mb-1">Exploitability Score <span class="text-slate-600">(0–1)</span></label>
+                        <label class="text-[11px] block mb-1" style="color:#666">Exploitability Score <span style="color:#444">(0–1)</span></label>
                         <input type="range" min="0" max="1" step="0.1" x-model="form.exploitability"
                                @input="calculate()"
-                               class="w-full h-1.5 bg-slate-700 rounded-lg accent-orange-500">
+                               class="w-full h-1.5 rounded-lg accent-orange-500"
+                               style="background:#2a2a2a">
                         <div class="text-xs text-orange-400 font-bold mt-1" x-text="parseFloat(form.exploitability).toFixed(1)"></div>
                     </div>
                     <div>
-                        <label class="text-[11px] text-slate-500 block mb-1">Asset Value <span class="text-slate-600">(0–1)</span></label>
+                        <label class="text-[11px] block mb-1" style="color:#666">Asset Value <span style="color:#444">(0–1)</span></label>
                         <input type="range" min="0" max="1" step="0.1" x-model="form.asset_value"
                                @input="calculate()"
-                               class="w-full h-1.5 bg-slate-700 rounded-lg accent-purple-500">
+                               class="w-full h-1.5 rounded-lg accent-purple-500"
+                               style="background:#2a2a2a">
                         <div class="text-xs text-purple-400 font-bold mt-1" x-text="parseFloat(form.asset_value).toFixed(1)"></div>
                     </div>
                 </div>
             </div>
 
             {{-- Vector String Output --}}
-            <div class="mt-4 p-3 rounded-xl bg-black/50 border border-slate-700 flex items-center gap-2">
-                <span class="text-[10px] text-slate-600 shrink-0">VECTOR:</span>
-                <code class="text-xs text-cyan-400 font-mono flex-1 truncate" x-text="vectorString"></code>
-                <button @click="copyVector()" class="shrink-0 text-slate-500 hover:text-slate-300 transition-colors">
+            <div class="mt-4 p-3 rounded-xl flex items-center gap-2"
+                 style="background:#0a0a0a;border:1px solid #2a2a2a;border-radius:12px">
+                <span class="text-[10px] shrink-0" style="color:#444">VECTOR:</span>
+                <code class="flex-1 truncate" style="color:#ef4444;font-family:monospace;font-size:12px;" x-text="vectorString"></code>
+                <button @click="copyVector()" class="shrink-0 transition-colors" style="color:#666"
+                        onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#666'">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                     </svg>
@@ -124,11 +160,12 @@
         <div class="xl:col-span-2 space-y-4">
 
             {{-- Score Gauge --}}
-            <div class="p-6 rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 text-center">
-                <div class="text-xs text-slate-500 uppercase tracking-widest mb-4">CVSSv3.1 Base Score</div>
+            <div class="p-6 rounded-2xl text-center"
+                 style="border:1px solid #242424;background:linear-gradient(135deg,#161616,#111111)">
+                <div class="text-xs uppercase tracking-widest mb-4" style="color:#666">CVSSv3.1 Base Score</div>
                 <div class="relative inline-flex items-center justify-center w-36 h-36 mx-auto mb-4">
                     <svg class="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="54" fill="none" stroke="#1e293b" stroke-width="10"/>
+                        <circle cx="60" cy="60" r="54" fill="none" stroke="#1e1e1e" stroke-width="10"/>
                         <circle cx="60" cy="60" r="54" fill="none"
                                 :stroke="severityColor"
                                 stroke-width="10"
@@ -145,52 +182,53 @@
 
                 {{-- ISS / ESS breakdown --}}
                 <div class="grid grid-cols-2 gap-3 text-center mt-2">
-                    <div class="p-2 rounded-lg bg-slate-800/50">
-                        <div class="text-lg font-bold text-blue-400" x-text="iss"></div>
-                        <div class="text-[10px] text-slate-500">Impact Sub-Score</div>
+                    <div style="background:#1a1a1a;border-radius:8px;padding:8px;">
+                        <div class="text-lg font-bold" style="color:#ef4444" x-text="iss"></div>
+                        <div class="text-[10px]" style="color:#666">Impact Sub-Score</div>
                     </div>
-                    <div class="p-2 rounded-lg bg-slate-800/50">
+                    <div style="background:#1a1a1a;border-radius:8px;padding:8px;">
                         <div class="text-lg font-bold text-orange-400" x-text="esc"></div>
-                        <div class="text-[10px] text-slate-500">Exploit Sub-Score</div>
+                        <div class="text-[10px]" style="color:#666">Exploit Sub-Score</div>
                     </div>
                 </div>
             </div>
 
             {{-- Risk Score --}}
-            <div class="p-5 rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-950/30 to-slate-950">
-                <div class="text-xs text-slate-500 uppercase tracking-widest mb-1">Composite Risk Score</div>
-                <div class="text-xs text-slate-600 mb-3">RedSim Formula: (CVSS×0.4) + (Exploit×0.3) + (Asset×0.3)</div>
+            <div class="p-5 rounded-2xl"
+                 style="background:linear-gradient(135deg,#1a1218,#111111);border:1px solid #2a1a2a">
+                <div class="text-xs uppercase tracking-widest mb-1" style="color:#666">Composite Risk Score</div>
+                <div class="text-xs mb-3" style="color:#444">RedSim Formula: (CVSS×0.4) + (Exploit×0.3) + (Asset×0.3)</div>
                 <div class="flex items-end gap-3">
                     <div class="text-4xl font-black text-purple-400" x-text="riskScore.toFixed(2)"></div>
-                    <div class="text-xl text-slate-600 mb-1">/5.0</div>
+                    <div class="text-xl mb-1" style="color:#444">/5.0</div>
                     <div class="ml-auto px-3 py-1 rounded-full text-xs font-bold"
                          :class="{
                              'bg-red-500/20 text-red-300 border border-red-500/30': riskLevel === 'EXTREME',
                              'bg-orange-500/20 text-orange-300 border border-orange-500/30': riskLevel === 'HIGH',
                              'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30': riskLevel === 'MODERATE',
-                             'bg-sky-500/20 text-sky-300 border border-sky-500/30': riskLevel === 'LOW',
-                             'bg-slate-500/20 text-slate-400 border border-slate-500/30': riskLevel === 'MINIMAL',
+                             'bg-green-900/20 text-green-400 border border-green-700/30': riskLevel === 'LOW',
+                             'bg-zinc-800/40 text-zinc-400 border border-zinc-600/30': riskLevel === 'MINIMAL',
                          }"
                          x-text="riskLevel">
                     </div>
                 </div>
 
                 {{-- Formula breakdown --}}
-                <div class="mt-3 pt-3 border-t border-slate-800 space-y-1.5">
+                <div class="mt-3 pt-3 space-y-1.5" style="border-top:1px solid #242424">
                     <div class="flex justify-between text-[11px]">
-                        <span class="text-slate-500">CVSS (<span x-text="cvssScore.toFixed(1)"></span>/10) × 0.4</span>
-                        <span class="text-blue-400 font-mono" x-text="formulaCvss"></span>
+                        <span style="color:#666">CVSS (<span x-text="cvssScore.toFixed(1)"></span>/10) × 0.4</span>
+                        <span style="color:#ef4444" class="font-mono" x-text="formulaCvss"></span>
                     </div>
                     <div class="flex justify-between text-[11px]">
-                        <span class="text-slate-500">Exploitability (<span x-text="parseFloat(form.exploitability).toFixed(1)"></span>) × 0.3</span>
+                        <span style="color:#666">Exploitability (<span x-text="parseFloat(form.exploitability).toFixed(1)"></span>) × 0.3</span>
                         <span class="text-orange-400 font-mono" x-text="formulaExploit"></span>
                     </div>
                     <div class="flex justify-between text-[11px]">
-                        <span class="text-slate-500">Asset Value (<span x-text="parseFloat(form.asset_value).toFixed(1)"></span>) × 0.3</span>
+                        <span style="color:#666">Asset Value (<span x-text="parseFloat(form.asset_value).toFixed(1)"></span>) × 0.3</span>
                         <span class="text-purple-400 font-mono" x-text="formulaAsset"></span>
                     </div>
-                    <div class="flex justify-between text-[11px] pt-1 border-t border-slate-800">
-                        <span class="text-slate-400 font-semibold">Total (×5 scaled)</span>
+                    <div class="flex justify-between text-[11px] pt-1" style="border-top:1px solid #242424">
+                        <span class="font-semibold" style="color:#aaa">Total (×5 scaled)</span>
                         <span class="text-white font-bold font-mono" x-text="riskScore.toFixed(2) + ' / 5.0'"></span>
                     </div>
                 </div>
@@ -201,30 +239,41 @@
     {{-- ══════════════════════════════════════════════
          SECTION 2: ATTACK PATH VISUALIZER
     ══════════════════════════════════════════════ --}}
-    <div class="p-6 rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950">
+    <div class="p-6 rounded-2xl"
+         style="border:1px solid #242424;background:linear-gradient(135deg,#161616,#111111)">
         <div class="flex items-center justify-between mb-6">
             <div>
                 <div class="flex items-center gap-2 mb-1">
-                    <div class="w-8 h-8 rounded-lg bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                         style="background:rgba(249,115,22,0.2);border:1px solid rgba(249,115,22,0.3);">
                         <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
                         </svg>
                     </div>
                     <h2 class="text-sm font-bold text-white">Attack Path Visualizer</h2>
                 </div>
-                <p class="text-xs text-slate-500 ml-10">Buat dan visualisasikan rantai serangan menggunakan notasi ATT&CK Kill Chain</p>
+                <p class="text-xs ml-10" style="color:#666">Buat dan visualisasikan rantai serangan menggunakan notasi ATT&CK Kill Chain</p>
             </div>
             <div class="flex gap-2">
-                <button @click="loadTemplate('web')" class="px-3 py-1.5 text-xs rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors">Web App</button>
-                <button @click="loadTemplate('ransomware')" class="px-3 py-1.5 text-xs rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors">Ransomware</button>
-                <button @click="loadTemplate('apts')" class="px-3 py-1.5 text-xs rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors">APT-style</button>
+                <button @click="loadTemplate('web')"
+                        class="px-3 py-1.5 text-xs rounded-lg transition-colors"
+                        style="background:#1a1a1a;border:1px solid #2a2a2a;color:#888;"
+                        onmouseover="this.style.color='#fff';this.style.borderColor='#3a3a3a'" onmouseout="this.style.color='#888';this.style.borderColor='#2a2a2a'">Web App</button>
+                <button @click="loadTemplate('ransomware')"
+                        class="px-3 py-1.5 text-xs rounded-lg transition-colors"
+                        style="background:#1a1a1a;border:1px solid #2a2a2a;color:#888;"
+                        onmouseover="this.style.color='#fff';this.style.borderColor='#3a3a3a'" onmouseout="this.style.color='#888';this.style.borderColor='#2a2a2a'">Ransomware</button>
+                <button @click="loadTemplate('apts')"
+                        class="px-3 py-1.5 text-xs rounded-lg transition-colors"
+                        style="background:#1a1a1a;border:1px solid #2a2a2a;color:#888;"
+                        onmouseover="this.style.color='#fff';this.style.borderColor='#3a3a3a'" onmouseout="this.style.color='#888';this.style.borderColor='#2a2a2a'">APT-style</button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {{-- Attack Chain Builder --}}
             <div>
-                <div class="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">Rantai Serangan</div>
+                <div class="text-xs font-semibold mb-3 uppercase tracking-wider" style="color:#888">Rantai Serangan</div>
                 <div class="space-y-2" id="attack-chain">
                     <template x-for="(step, idx) in attackChain" :key="idx">
                         <div class="flex items-start gap-2">
@@ -233,35 +282,74 @@
                                  x-text="idx + 1"></div>
                             <div class="flex-1 grid grid-cols-5 gap-1.5">
                                 <select x-model="step.tactic" @change="renderMermaid()"
-                                        class="col-span-2 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-slate-500">
+                                        class="col-span-2 rounded-lg px-2 py-1.5 text-xs focus:outline-none"
+                                        style="background:#1a1a1a;border:1px solid #2a2a2a;color:#aaa;">
                                     @foreach($mitreTactics as $tid => $tactic)
                                     <option value="{{ $tid }}">{{ $tactic['name'] }}</option>
                                     @endforeach
                                 </select>
                                 <input x-model="step.action" @input="renderMermaid()" placeholder="Deskripsi serangan..." type="text"
-                                       class="col-span-3 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-slate-500"/>
+                                       class="col-span-3 rounded-lg px-2 py-1.5 text-xs focus:outline-none"
+                                       style="background:#1a1a1a;border:1px solid #2a2a2a;color:#aaa;"/>
                             </div>
-                            <button @click="removeStep(idx)" class="text-slate-600 hover:text-red-400 transition-colors shrink-0 mt-1.5">
+                            <button @click="removeStep(idx)" class="transition-colors shrink-0 mt-1.5" style="color:#444"
+                                    onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#444'">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                         </div>
                     </template>
                 </div>
-                <button @click="addStep()" class="mt-3 w-full py-2 rounded-xl border border-dashed border-slate-700 text-xs text-slate-500 hover:border-slate-500 hover:text-slate-300 transition-colors flex items-center justify-center gap-1.5">
+                <button @click="addStep()" class="mt-3 w-full py-2 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                        style="border:1px dashed #2a2a2a;color:#666;"
+                        onmouseover="this.style.borderColor='#3a3a3a';this.style.color='#aaa'" onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#666'">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     Tambah Langkah
                 </button>
             </div>
 
-            {{-- Mermaid Diagram Output --}}
+            {{-- Visual Attack Flow Diagram --}}
             <div>
-                <div class="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">Diagram Alur Serangan</div>
-                <div class="rounded-xl bg-white/5 border border-slate-700 p-4 min-h-[200px] overflow-auto"
-                     id="mermaid-output">
-                    <div class="mermaid text-sm" id="mermaid-diagram" x-text="mermaidCode"></div>
+                <div class="text-xs font-semibold mb-3 uppercase tracking-wider" style="color:#888;font-family:'IBM Plex Mono',monospace;">Diagram Alur Serangan</div>
+                <div class="rounded-xl p-4 min-h-[200px] overflow-auto"
+                     id="visual-flow-output"
+                     style="background:#0d0d0d;border:1px solid #2a2a2a;">
+                    <template x-if="attackChain.length === 0">
+                        <div class="flex items-center justify-center h-32" style="color:#333;">
+                            <div class="text-center">
+                                <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                                <p style="font-size:11px;">Tambah langkah untuk memvisualisasikan rantai serangan</p>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="attackChain.length > 0">
+                        <div class="flex gap-3 overflow-x-auto pb-2 items-stretch flex-wrap md:flex-nowrap">
+                            <template x-for="(step, idx) in attackChain" :key="idx">
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <div class="rounded-xl p-3 min-w-[140px] max-w-[180px]"
+                                         :style="'background:' + getTacticColor(step.tactic) + '18; border:1px solid ' + getTacticColor(step.tactic) + '55'">
+                                        <div class="text-[9px] font-bold uppercase tracking-widest mb-1.5"
+                                             :style="'color:' + getTacticColor(step.tactic)"
+                                             x-text="(idx + 1) + '. ' + (tacticNames[step.tactic] || step.tactic).toUpperCase()">
+                                        </div>
+                                        <div class="text-xs leading-snug font-medium" style="color:#e2e8f0;"
+                                             x-text="step.action || '—'">
+                                        </div>
+                                    </div>
+                                    <template x-if="idx < attackChain.length - 1">
+                                        <div class="flex items-center shrink-0" style="color:#333;">
+                                            <div style="width:16px;height:1px;border-top:1.5px dashed #3a3a3a;"></div>
+                                            <svg class="w-3 h-3 ml-[-1px]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
                 </div>
                 <div class="mt-2 flex gap-2">
-                    <button @click="copyMermaid()" class="px-3 py-1.5 text-xs rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
+                    <button @click="copyMermaid()" class="px-3 py-1.5 text-xs rounded-lg transition-colors flex items-center gap-1.5"
+                            style="background:#1a1a1a;border:1px solid #2a2a2a;color:#888;"
+                            onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#888'">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                         Salin Kode Mermaid
                     </button>
@@ -273,16 +361,18 @@
     {{-- ══════════════════════════════════════════════
          SECTION 3: MITRE ATT&CK MATRIX HEATMAP
     ══════════════════════════════════════════════ --}}
-    <div class="p-6 rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950">
+    <div class="p-6 rounded-2xl"
+         style="border:1px solid #242424;background:linear-gradient(135deg,#161616,#111111)">
         <div class="flex items-center gap-2 mb-2">
-            <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                 style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.3);">
+                <svg class="w-4 h-4" style="color:#ef4444" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
                 </svg>
             </div>
             <h2 class="text-sm font-bold text-white">MITRE ATT&CK Matrix — Kill Chain Mapping</h2>
         </div>
-        <p class="text-xs text-slate-500 mb-5 ml-10">Klik taktik untuk highlight. Warna menunjukkan fase dalam rantai serangan.</p>
+        <p class="text-xs mb-5 ml-10" style="color:#666">Klik taktik untuk highlight. Warna menunjukkan fase dalam rantai serangan.</p>
 
         <div class="overflow-x-auto pb-2">
             <div class="flex gap-2 min-w-max">
@@ -294,7 +384,7 @@
                              ? 'background: {{ $tactic['color'] }}40; border: 1px solid {{ $tactic['color'] }}80'
                              : 'background: {{ $tactic['color'] }}15; border: 1px solid {{ $tactic['color'] }}30'"
                          @click="selectedTactic = selectedTactic === '{{ $tid }}' ? null : '{{ $tid }}'">
-                        <div class="text-[8px] font-mono text-slate-500">{{ $tid }}</div>
+                        <div class="text-[8px] font-mono" style="color:#666">{{ $tid }}</div>
                         <div class="text-[10px] font-bold leading-tight mt-0.5" style="color: {{ $tactic['color'] }}">
                             {{ $tactic['name'] }}
                         </div>
@@ -305,13 +395,13 @@
                         <div class="px-2 py-1.5 rounded-md text-center transition-all cursor-default"
                              :style="selectedTactic === '{{ $tid }}'
                                  ? 'background: {{ $tactic['color'] }}25; border: 1px solid {{ $tactic['color'] }}40'
-                                 : 'background: #0f172a; border: 1px solid #1e293b'"
+                                 : 'background:#111111; border: 1px solid #1e1e1e'"
                              x-tooltip="'{{ $tech }}'">
                             <div class="text-[9px] font-mono font-bold" style="color: {{ $tactic['color'] }}">{{ $tech }}</div>
                             @php
                                 $names = ['T1595'=>'Active Scan','T1592'=>'Gather Victim','T1589'=>'Gather Victim ID','T1591'=>'Gather Org','T1598'=>'Phishing Info','T1583'=>'Acquire Infra','T1584'=>'Compromise Infra','T1585'=>'Est Accounts','T1586'=>'Compromise Acc','T1587'=>'Dev Capabilities','T1190'=>'Exploit Public App','T1566'=>'Phishing','T1078'=>'Valid Accounts','T1189'=>'Drive-by','T1195'=>'Supply Chain','T1059'=>'Command Line','T1203'=>'Client Exploit','T1072'=>'Software Deploy','T1106'=>'API Exec','T1129'=>'Module Load','T1053'=>'Sched Task','T1136'=>'Create Account','T1505'=>'Server Software','T1543'=>'Create Service','T1574'=>'Hijack Flow','T1548'=>'Abuse Elevation','T1134'=>'Token Manip','T1068'=>'Privilege Esc','T1611'=>'Escape to Host','T1070'=>'Indicator Remove','T1562'=>'Disable Defense','T1027'=>'Obfuscation','T1055'=>'Process Inject','T1110'=>'Brute Force','T1555'=>'Cred Stores','T1552'=>'Unsecured Creds','T1539'=>'Steal Cookies','T1557'=>'MITM','T1082'=>'Sys Info','T1083'=>'File Discovery','T1046'=>'Port Scan','T1018'=>'Remote Discovery','T1057'=>'Process Discovery','T1021'=>'Remote Service','T1210'=>'Remote Exploit','T1534'=>'Internal Spear','T1550'=>'Alt Auth Material','T1563'=>'Remote Session','T1005'=>'Data from Local','T1039'=>'Data from Network','T1025'=>'Data from Drive','T1114'=>'Email Collection','T1071'=>'C2 Protocol','T1090'=>'Proxy','T1095'=>'Non-App Layer','T1102'=>'Web Service','T1132'=>'Data Encoding','T1041'=>'Exfil over C2','T1048'=>'Exfil Alt Proto','T1052'=>'Exfil Physical','T1030'=>'Data Transfer Limit','T1567'=>'Exfil Web Service','T1485'=>'Data Destruction','T1486'=>'Ransomware','T1489'=>'Service Stop','T1491'=>'Defacement','T1499'=>'Endpoint DoS'];
                             @endphp
-                            <div class="text-[8px] text-slate-600 truncate leading-tight mt-0.5">{{ $names[$tech] ?? $tech }}</div>
+                            <div class="text-[8px] truncate leading-tight mt-0.5" style="color:#555">{{ $names[$tech] ?? $tech }}</div>
                         </div>
                         @endforeach
                     </div>
@@ -320,15 +410,43 @@
             </div>
         </div>
 
-        <div class="mt-4 p-3 rounded-xl bg-slate-800/30 border border-slate-700 flex items-start gap-2">
-            <svg class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="mt-4 p-3 rounded-xl flex items-start gap-2"
+             style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:12px;">
+            <svg class="w-4 h-4 shrink-0 mt-0.5" style="color:#ef4444" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <p class="text-xs text-slate-400">
+            <p class="text-xs" style="color:#888">
                 Klik header taktik untuk highlight semua teknik di kolom tersebut. Teknik yang dipilih di Attack Chain Builder
-                akan otomatis ter-highlight di matrix ini. Data ini menggunakan framework <strong class="text-slate-300">MITRE ATT&CK Enterprise v15</strong>.
+                akan otomatis ter-highlight di matrix ini. Data ini menggunakan framework <strong class="text-white">MITRE ATT&CK Enterprise v15</strong>.
             </p>
         </div>
+    </div>
+
+    {{-- ── PANDUAN RED TEAM LAB (MATCHING POPUP MODAL PETUNJUK STYLE) ── --}}
+    <div class="rounded-xl p-4 flex items-start justify-between gap-4 flex-wrap"
+         style="background:#1b1212; border:1px solid #3a1f1f;">
+        <div class="flex items-start gap-3.5 max-w-3xl">
+            <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                 style="border:1.5px solid #ef4444; color:#ef4444; font-size:11px; font-weight:800;">!</div>
+            <div>
+                <p style="color:#ef4444; font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; font-weight:700; font-family:'IBM Plex Mono',monospace; margin-bottom:0.25rem;">
+                    CARA KERJA CVSS &amp; RED TEAM LAB
+                </p>
+                <p style="color:#888; font-size:0.78rem; line-height:1.65;">
+                    Skor CVSS dihitung berdasarkan formula resmi <strong style="color:#ccc;">FIRST.org</strong>:
+                    <span style="font-family:'IBM Plex Mono',monospace;color:#ef4444;">0–3.9 Low</span> ·
+                    <span style="font-family:'IBM Plex Mono',monospace;color:#ca8a04;">4–6.9 Medium</span> ·
+                    <span style="font-family:'IBM Plex Mono',monospace;color:#ea580c;">7–8.9 High</span> ·
+                    <span style="font-family:'IBM Plex Mono',monospace;color:#dc2626;">9–10 Critical</span>.
+                    Gunakan <strong style="color:#ccc;">Attack Path Visualizer</strong> untuk memodelkan rantai serangan dengan notasi MITRE ATT&amp;CK Kill Chain.
+                </p>
+            </div>
+        </div>
+        <button onclick="window.dispatchEvent(new CustomEvent('open-help', { detail: { feature: 'red-team-lab' } }))"
+                class="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90 shrink-0"
+                style="background:linear-gradient(135deg,#ef4444,#dc2626); box-shadow:0 2px 10px rgba(239,68,68,0.3);">
+            Buka Panduan
+        </button>
     </div>
 
 </div>
@@ -340,13 +458,13 @@ mermaid.initialize({
     startOnLoad: false,
     theme: 'dark',
     themeVariables: {
-        primaryColor: '#1e293b',
+        primaryColor: '#1a0a0a',
         primaryTextColor: '#e2e8f0',
-        primaryBorderColor: '#334155',
-        lineColor: '#64748b',
-        secondaryColor: '#0f172a',
-        tertiaryColor: '#020617',
-        edgeLabelBackground: '#1e293b',
+        primaryBorderColor: '#3a1f1f',
+        lineColor: '#ef4444',
+        secondaryColor: '#1a1a1a',
+        tertiaryColor: '#111111',
+        edgeLabelBackground: '#1a0a0a',
         fontSize: '11px',
     },
     flowchart: { curve: 'basis', htmlLabels: true }
@@ -413,7 +531,7 @@ function redTeamLab() {
                     this.severity  = d.cvss.severity;
                     this.iss       = d.cvss.iss;
                     this.esc       = d.cvss.esc;
-                    const sc = { 'CRITICAL':'#dc2626', 'HIGH':'#ea580c', 'MEDIUM':'#ca8a04', 'LOW':'#3b82f6', 'NONE':'#64748b' };
+                    const sc = { 'CRITICAL':'#dc2626', 'HIGH':'#ea580c', 'MEDIUM':'#ca8a04', 'LOW':'#4ade80', 'NONE':'#64748b' };
                     this.severityColor = sc[this.severity] || '#64748b';
                     if (d.risk) {
                         this.riskScore  = d.risk.risk_score;

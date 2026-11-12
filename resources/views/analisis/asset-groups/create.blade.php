@@ -3,6 +3,7 @@
 @section('title', 'Buat Grup Aset Baru — RedSim ASM')
 @section('header', 'Buat Grup Aset Baru')
 @section('subheader', 'Kelompokkan URL dan domain target untuk pemantauan terpusat dan pemindaian massal')
+@section('page_feature', 'asset-groups')
 
 @section('content')
 <div class="max-w-3xl mx-auto space-y-6 pb-12">

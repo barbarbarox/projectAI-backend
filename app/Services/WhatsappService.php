@@ -210,19 +210,46 @@ class WhatsappService
     }
 
     /**
-     * Kirim link verifikasi akun via WhatsApp.
+     * Kirim notifikasi alert integritas website via WhatsApp.
+     *
+     * @param string $phone     Nomor tujuan
+     * @param array  $alertData ['monitor_name','target_url','alert_type','severity','diff_score','ai_summary','alert_id']
      */
-    public function sendVerificationLink(string $phone, string $userName, string $verificationUrl): bool
+    public function sendIntegrityAlert(string $phone, array $alertData): bool
     {
-        $message = "✅ *Verifikasi Akun RedSim*\n\n"
-            . "Halo *{$userName}*,\n\n"
-            . "Terima kasih telah mendaftar di RedSim!\n"
-            . "Klik link berikut untuk mengaktifkan akun Anda:\n\n"
-            . "{$verificationUrl}\n\n"
-            . "⏰ Link ini berlaku selama *30 menit*.\n"
-            . "Jika Anda tidak merasa mendaftar, abaikan pesan ini.\n\n"
-            . "— Tim RedSim";
+        $icon = match ($alertData['severity'] ?? 'info') {
+            'critical' => '🚨',
+            'high'     => '⚠️',
+            'warning'  => '⚡',
+            default    => 'ℹ️',
+        };
+
+        $severityLabel = match ($alertData['severity'] ?? 'info') {
+            'critical' => 'KRITIS',
+            'high'     => 'TINGGI',
+            'warning'  => 'PERINGATAN',
+            default    => 'INFO',
+        };
+
+        $waktu    = now()->setTimezone('Asia/Jakarta')->format('d M Y, H:i:s') . ' WIB';
+        $diffScore = $alertData['diff_score'] ?? 0;
+        $name      = $alertData['monitor_name'] ?? $alertData['target_url'] ?? '-';
+        $alertType = $alertData['alert_type'] ?? 'Perubahan Terdeteksi';
+
+        $message = "{$icon} *ALERT INTEGRITAS WEBSITE — RedSim*\n\n"
+            . "Monitor : *{$name}*\n"
+            . "Target  : {$alertData['target_url']}\n"
+            . "Waktu   : {$waktu}\n"
+            . "Tipe    : {$alertType}\n"
+            . "Risiko  : *{$severityLabel}* (Skor Perubahan: {$diffScore}/100)\n";
+
+        if (!empty($alertData['ai_summary'])) {
+            $message .= "\n📋 *Ringkasan AI:*\n{$alertData['ai_summary']}\n";
+        }
+
+        $message .= "\n🔗 Lihat detail di dashboard RedSim untuk mengambil tindakan.\n\n— Tim RedSim";
 
         return $this->sendMessage($phone, $message);
     }
 }
+

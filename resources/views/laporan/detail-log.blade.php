@@ -2,6 +2,7 @@
 @section('title', 'Hasil Analisis Log — RedSim')
 @section('header', 'Hasil Analisis Log')
 @section('subheader', $scan->target . ' — ' . $scan->created_at->format('d M Y H:i'))
+@section('page_feature', 'analisis-log')
 
 @section('content')
 @php

@@ -3,6 +3,7 @@
 @section('title', 'Threat Hunt by CVE — RedSim ASM')
 @section('header', 'Threat Hunting by CVE')
 @section('subheader', 'Deteksi proaktif paparan kerentanan CVE global ke seluruh aset dan subdomain Anda')
+@section('page_feature', 'threat-hunt')
 
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6 pb-12"

@@ -227,16 +227,21 @@ class PineconeService
     {
         $baseUrl = $this->getBaseUrl();
 
-        $payload = [
-            'query' => [
-                'inputs' => ['text' => $queryText],
-                'top_k' => $topK,
+        // 1. Coba Documents Search API terlebih dahulu (untuk index dengan document schema seperti redsim-rag-v2)
+        $docPayload = [
+            'top_k' => $topK,
+            'score_by' => [
+                [
+                    'type' => 'embed',
+                    'fields' => ['text'],
+                    'query' => $queryText,
+                ],
             ],
-            'fields' => ['*'],
+            'include_fields' => ['*'],
         ];
 
         if (!empty($filter)) {
-            $payload['query']['filter'] = $filter;
+            $docPayload['filter'] = $filter;
         }
 
         try {
@@ -245,21 +250,58 @@ class PineconeService
                 ->withHeaders([
                     'Api-Key' => $this->apiKey,
                     'Content-Type' => 'application/json',
-                    'X-Pinecone-Api-Version' => '2025-01',
+                    'X-Pinecone-Api-Version' => '2026-07',
                 ])
-                ->post("{$baseUrl}/records/namespaces/{$namespace}/search", $payload);
+                ->post("{$baseUrl}/namespaces/{$namespace}/documents/search", $docPayload);
 
             if ($response->successful()) {
                 $data = $response->json();
+                $matches = [];
+                foreach ($data['matches'] ?? [] as $hit) {
+                    $matches[] = [
+                        'id' => $hit['_id'] ?? ($hit['id'] ?? ''),
+                        'score' => (float) ($hit['_score'] ?? ($hit['score'] ?? 0)),
+                        'metadata' => array_merge(
+                            $hit,
+                            ['content' => $hit['text'] ?? ($hit['content'] ?? '')]
+                        ),
+                    ];
+                }
+                return $matches;
+            }
+
+            // 2. Fallback ke Records Search API jika bukan document schema index
+            $legacyPayload = [
+                'query' => [
+                    'inputs' => ['text' => $queryText],
+                    'top_k' => $topK,
+                ],
+                'fields' => ['*'],
+            ];
+
+            if (!empty($filter)) {
+                $legacyPayload['query']['filter'] = $filter;
+            }
+
+            $legacyResp = Http::timeout(20)
+                ->retry(1, 0)
+                ->withHeaders([
+                    'Api-Key' => $this->apiKey,
+                    'Content-Type' => 'application/json',
+                    'X-Pinecone-Api-Version' => '2025-01',
+                ])
+                ->post("{$baseUrl}/records/namespaces/{$namespace}/search", $legacyPayload);
+
+            if ($legacyResp->successful()) {
+                $data = $legacyResp->json();
                 $hits = $data['result']['hits'] ?? [];
 
-                // Normalisasi format agar kompatibel dengan RetrievalService
                 $matches = [];
                 foreach ($hits as $hit) {
                     $fields = $hit['fields'] ?? [];
                     $matches[] = [
                         'id' => $hit['_id'] ?? '',
-                        'score' => $hit['_score'] ?? 0,
+                        'score' => (float) ($hit['_score'] ?? 0),
                         'metadata' => array_merge(
                             $fields,
                             ['content' => $fields['text'] ?? '']

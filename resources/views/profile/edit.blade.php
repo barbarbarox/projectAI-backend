@@ -2,6 +2,7 @@
 @section('title', 'Edit Profil — RedSim')
 @section('header', 'Edit Profil')
 @section('subheader', 'Kelola informasi pribadi dan pengaturan keamanan Anda')
+@section('page_feature', 'profil')
 
 @section('content')
 <link rel="stylesheet" href="{{ asset('css/profile-card.css') }}">

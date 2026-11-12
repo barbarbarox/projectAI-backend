@@ -22,6 +22,8 @@ class GeminiService
      */
     public function generate(string $prompt, ?string $modelOverride = null, bool $isJson = true, ?int $userId = null): string
     {
+        $modelOverride = !empty($modelOverride) ? trim($modelOverride) : null;
+
         // 1. PRIORITAS PERTAMA: Config AI milik user sendiri
         if ($userId) {
             $userConfig = UserAiConfig::getActiveForUser($userId);
@@ -37,7 +39,9 @@ class GeminiService
 
                     $apiKey = $userConfig->getActiveKey();
                     $provider = $userConfig->provider;
-                    $model = $modelOverride ?? $userConfig->selected_model;
+                    // Pastikan model tidak pernah string kosong (bisa terjadi jika selected_model = "")
+                    $rawModel = !empty($modelOverride) ? trim($modelOverride) : (trim($userConfig->selected_model ?? '') ?: null);
+                    $model = $rawModel ?: (($provider === 'google') ? 'gemini-3.5-flash-lite' : 'openai/gpt-oss-120b');
 
                     if ($apiKey) {
                         // Track usage
@@ -66,7 +70,14 @@ class GeminiService
         if ($config) {
             $provider = $config->detected_provider ?? $config->provider;
             $apiKey = $config->api_key;
-            $model = $modelOverride ?? $config->selected_model;
+            $model = (!empty($modelOverride)) ? $modelOverride : $config->selected_model;
+
+            // Jika fallback ke provider admin tapi modelOverride berasal dari provider lain:
+            if ($provider === 'groq' && (empty($model) || str_contains(strtolower($model), 'gemini'))) {
+                $model = $config->selected_model ?: 'openai/gpt-oss-120b';
+            } elseif ($provider === 'google' && (empty($model) || !str_contains(strtolower($model), 'gemini'))) {
+                $model = $config->selected_model ?: 'gemini-3.5-flash-lite';
+            }
 
             try {
                 return $this->aiProviderService->generate($provider, $apiKey, $model, $prompt, $isJson);
@@ -82,9 +93,10 @@ class GeminiService
 
     protected function generateFromEnv(string $prompt, ?string $modelOverride = null, bool $isJson = true): string
     {
+        $modelOverride = !empty($modelOverride) ? trim($modelOverride) : null;
         $apiKey = env('GEMINI_API_KEY', '');
-        $defaultModel = env('GEMINI_MODEL', 'gemini-1.5-flash');
-        $model = $modelOverride ?? $defaultModel;
+        $defaultModel = env('GEMINI_MODEL', 'gemini-3.5-flash-lite');
+        $model = (!empty($modelOverride)) ? $modelOverride : $defaultModel;
 
         // Deteksi provider berdasarkan key
         $isGroqKey   = str_starts_with($apiKey, 'gsk_');
@@ -96,7 +108,8 @@ class GeminiService
             $googleKey = env('GOOGLE_GEMINI_API_KEY', '');
             if (!empty($googleKey)) {
                 try {
-                    return $this->aiProviderService->generate('google', $googleKey, $model, $prompt, $isJson);
+                    $geminiModel = in_array($model, ['gemini-1.5-flash', 'gemini-2.5-flash']) ? 'gemini-3.5-flash-lite' : $model;
+                    return $this->aiProviderService->generate('google', $googleKey, $geminiModel, $prompt, $isJson);
                 } catch (\Throwable $e) {
                     Log::warning('[GeminiService] Google fallback dengan GOOGLE_GEMINI_API_KEY gagal: ' . $e->getMessage());
                 }
@@ -105,46 +118,56 @@ class GeminiService
             try {
                 $googleAdminKey = $this->aiProviderService->getGoogleAdminApiKeyPublic();
                 if ($googleAdminKey) {
-                    return $this->aiProviderService->generate('google', $googleAdminKey, $model, $prompt, $isJson);
+                    $geminiModel = in_array($model, ['gemini-1.5-flash', 'gemini-2.5-flash']) ? 'gemini-3.5-flash-lite' : $model;
+                    return $this->aiProviderService->generate('google', $googleAdminKey, $geminiModel, $prompt, $isJson);
                 }
             } catch (\Throwable $e) {
                 Log::warning('[GeminiService] Google DB fallback gagal: ' . $e->getMessage());
             }
             // Tidak ada Google key yang tersedia → fallback model Groq default
-            $model = $defaultModel;
+            $model = 'openai/gpt-oss-120b';
             Log::warning("[GeminiService] Model Gemini ({$modelOverride}) tidak bisa diakses. Fallback ke Groq dengan model default: {$model}");
         }
 
         if ($isGroqKey) {
-            return $this->aiProviderService->generate('groq', $apiKey, $model, $prompt, $isJson);
+            $groqModel = (!empty($model) && !str_contains(strtolower($model), 'gemini')) ? $model : 'openai/gpt-oss-120b';
+            return $this->aiProviderService->generate('groq', $apiKey, $groqModel, $prompt, $isJson);
         }
 
         if ($isNvidiaKey) {
             return $this->aiProviderService->generate('nvidia', $apiKey, $model, $prompt, $isJson);
         }
 
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
-        
-        $generationConfig = [
-            'temperature' => 0.1,
-            'maxOutputTokens' => 8192,
-        ];
-        
-        if ($isJson) {
-            $generationConfig['responseMimeType'] = 'application/json';
+        // Panggil Google direct HANYA jika key berformat Google
+        if (!empty($apiKey) && (str_starts_with($apiKey, 'AIza') || str_starts_with($apiKey, 'AQ.'))) {
+            $googleModel = (!empty($model) && str_contains(strtolower($model), 'gemini') && !in_array($model, ['gemini-1.5-flash', 'gemini-2.5-flash']))
+                ? $model
+                : 'gemini-3.5-flash-lite';
+            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$googleModel}:generateContent?key={$apiKey}";
+            
+            $generationConfig = [
+                'temperature' => 0.1,
+                'maxOutputTokens' => 8192,
+            ];
+            
+            if ($isJson) {
+                $generationConfig['responseMimeType'] = 'application/json';
+            }
+
+            $response = Http::timeout(120)->post($url, [
+                'contents' => [['parts' => [['text' => $prompt]]]],
+                'generationConfig' => $generationConfig,
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Gemini API error: ' . $response->body());
+                throw new \RuntimeException('Gemini API gagal: ' . $response->status());
+            }
+
+            return $response->json('candidates.0.content.parts.0.text') ?? '{}';
         }
 
-        $response = Http::timeout(120)->post($url, [
-            'contents' => [['parts' => [['text' => $prompt]]]],
-            'generationConfig' => $generationConfig,
-        ]);
-
-        if (!$response->successful()) {
-            Log::error('Gemini API error: ' . $response->body());
-            throw new \RuntimeException('Gemini API gagal: ' . $response->status());
-        }
-
-        return $response->json('candidates.0.content.parts.0.text') ?? '{}';
+        throw new \RuntimeException('Tidak ada API Key AI yang valid untuk memproses permintaan.');
     }
 
 

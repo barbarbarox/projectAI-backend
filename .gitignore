@@ -35,3 +35,4 @@ ml_service/__pycache__/
 ml_service/nohup.out
 ml_service/models/*.pkl
 *.pkl
+make_session.php

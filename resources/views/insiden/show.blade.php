@@ -3,6 +3,7 @@
 @section('title', $insiden->nomor_insiden . ' — ' . $insiden->judul)
 @section('header', 'Detail Insiden ' . $insiden->nomor_insiden)
 @section('subheader', 'Pelacakan triase, investigasi mendalam, dan verifikasi perbaikan kerentanan')
+@section('page_feature', 'insiden')
 
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6 pb-12" x-data="{ editing: false }">

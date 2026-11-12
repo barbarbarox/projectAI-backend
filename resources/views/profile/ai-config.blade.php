@@ -2,6 +2,7 @@
 @section('title', 'Pengaturan Model AI — RedSim')
 @section('header', 'Pengaturan Model AI')
 @section('subheader', 'Hubungkan model AI Anda sendiri untuk analisis keamanan')
+@section('page_feature', 'model-ai')
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6">

@@ -11,7 +11,7 @@
         *, ::before, ::after { box-sizing: border-box; }
         html, body { background:#050816; min-height:100vh; overflow-x:hidden; max-width:100vw; width:100%; }
         body { padding-top:80px; font-family:'Inter',sans-serif; }
-        .lb-bg { position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,212,255,.07) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 70%,rgba(124,58,237,.06) 0%,transparent 55%),#050816; }
+        .lb-bg { position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(240,68,82,.06) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 70%,rgba(110,42,54,.05) 0%,transparent 55%),#050816; }
         :root { --cn-panel:rgba(6,8,18,.82);--cn-edge:rgba(255,255,255,.08);--cn-highlight:rgba(255,255,255,.07);--cn-shadow:0 24px 48px -20px rgba(0,0,0,.9),0 6px 16px -8px rgba(0,0,0,.6);--cn-text:#e8edf5;--cn-muted:rgba(180,200,225,.55);--cn-hover:rgba(255,255,255,.06);--cn-tile:linear-gradient(180deg,rgba(10,15,35,.95) 0%,rgba(6,8,20,.98) 100%);--cn-tile-rim:inset 0 0 0 1px rgba(255,255,255,.07),inset 0 1px 0 rgba(255,255,255,.1),0 4px 10px -4px rgba(0,0,0,.8);--cn-cta:linear-gradient(135deg,#00d4ff 0%,#7c3aed 100%);--cn-cta-ink:#fff;--cn-cta-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 18px -6px rgba(0,212,255,.4);--cn-blur:blur(24px) saturate(1.6);--cn-max:960px;--cn-bar:62px;--cn-inset:8px;--cn-radius:20px; }
         .cn-root{position:fixed;top:0;left:0;right:0;z-index:200;padding:10px 20px;font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;box-sizing:border-box;width:100%;}
         .cn-root-inner{max-width:var(--cn-max);margin:0 auto;position:relative;width:100%;box-sizing:border-box;}
@@ -70,20 +70,9 @@
         @media(min-width:1025px){.cn-mobile-drawer{display:none!important}}
         @media(max-width:640px){:root{--cn-bar:56px;--cn-radius:16px;}.cn-root{padding:8px 10px;}.cn-mobile-drawer{top:72px;left:10px;right:10px;width:calc(100% - 20px);max-height:calc(100dvh - 86px);}}
         /* Leaderboard Page Styles */
-        .lb-page{position:relative;z-index:10;max-width:820px;margin:0 auto;padding:40px 20px 80px}
-        .lb-header{text-align:center;margin-bottom:36px}
-        .lb-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:99px;background:rgba(250,204,21,.08);border:1px solid rgba(250,204,21,.2);margin-bottom:16px}
-        .lb-badge span{font-size:.78rem;font-weight:600;color:#facc15;letter-spacing:.04em;text-transform:uppercase}
-        .lb-title{font-family:'Montserrat',sans-serif;font-size:2.4rem;font-weight:900;color:#fff;margin-bottom:8px;line-height:1.1}
-        @media(max-width:600px){.lb-title{font-size:1.75rem}}
-        .lb-subtitle{font-size:.95rem;color:rgba(180,200,225,.6)}
+        .lb-page{position:relative;z-index:10;max-width:980px;margin:0 auto;padding:40px 20px 80px}
         .lb-cta-section{text-align:center;margin-top:36px}
-        .lb-cta-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;border-radius:99px;background:linear-gradient(135deg,#00d4ff,#7c3aed);color:#fff;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 0 24px rgba(0,212,255,.25);transition:all .2s}
-        .lb-cta-btn:hover{box-shadow:0 0 36px rgba(0,212,255,.4);transform:translateY(-2px)}
-        .lb-ghost-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:99px;border:1px solid rgba(255,255,255,.12);color:rgba(180,200,225,.75);font-weight:600;font-size:.9rem;text-decoration:none;margin-left:12px;transition:all .2s}
-        .lb-ghost-btn:hover{color:#fff;border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.05)}
-        @media(max-width:500px){.lb-ghost-btn{margin-left:0;margin-top:8px}.lb-cta-section{display:flex;flex-direction:column;align-items:center;gap:8px}}
-        @keyframes pulse-slow{0%,100%{box-shadow:0 0 0 0 rgba(251,204,21,.4)}50%{box-shadow:0 0 20px 5px rgba(251,204,21,.12)}}
+        @keyframes pulse-slow{0%,100%{box-shadow:0 0 0 0 rgba(240,68,82,.4)}50%{box-shadow:0 0 20px 5px rgba(240,68,82,.12)}}
         .animate-pulse-slow{animation:pulse-slow 3s ease-in-out infinite}
     </style>
 </head>
@@ -184,26 +173,69 @@
     </div>
 
     <main class="lb-page">
-        <div class="lb-header">
-            <div class="lb-badge">
-                <svg width="13" height="13" fill="none" stroke="#facc15" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                <span>Papan Peringkat</span>
+
+        {{-- ── Pengantar Peringkat (Header + Stat Komunitas) ── --}}
+        @php
+            $totalPengguna  = $leaders->count();
+            $poinTertinggi  = $leaders->isNotEmpty() ? $leaders->first()->total_poin : 0;
+        @endphp
+
+        <div class="lb-pengantar">
+
+            {{-- Breadcrumb --}}
+            <div class="lb-breadcrumb">
+                <span class="lb-breadcrumb__root">RedSim</span>
+                <span class="lb-breadcrumb__sep">/</span>
+                <span class="lb-breadcrumb__page">Papan Peringkat</span>
             </div>
-            <h1 class="lb-title">Hall of Fame</h1>
-            <p class="lb-subtitle">Peringkat pengguna berdasarkan poin tantangan keamanan siber</p>
+
+            {{-- Judul + Stat --}}
+            <div class="lb-judul-dan-ringkasan">
+                <div class="lb-judul-halaman">
+                    <h1 class="lb-judul-utama">Papan Peringkat</h1>
+                    <p class="lb-judul-desc">Pengguna terbaik berdasarkan poin tantangan keamanan.</p>
+                </div>
+                <div class="lb-ringkasan">
+                    <div class="lb-stat">
+                        <div class="lb-stat__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                            </svg>
+                        </div>
+                        <div class="lb-stat__data">
+                            <div class="lb-stat__nilai">{{ $totalPengguna }}</div>
+                            <div class="lb-stat__label">Total pengguna</div>
+                        </div>
+                    </div>
+                    <div class="lb-stat-pemisah"></div>
+                    <div class="lb-stat">
+                        <div class="lb-stat__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                        </div>
+                        <div class="lb-stat__data">
+                            <div class="lb-stat__nilai">{{ $poinTertinggi }}</div>
+                            <div class="lb-stat__label">Poin tertinggi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
+        {{-- ── Konten Leaderboard ── --}}
         @include('edukasi._leaderboard_content', ['leaders' => $leaders, 'isAuth' => false])
 
+        {{-- ── CTA Section ── --}}
         <div class="lb-cta-section">
             @auth
                 <a href="/edukasi/tantangan" class="lb-cta-btn">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     Buka Modul Tantangan
                 </a>
-                <a href="{{ route('dashboard') }}" class="lb-ghost-btn">
-                    Ke Dashboard
-                </a>
+                <a href="{{ route('dashboard') }}" class="lb-ghost-btn">Ke Dashboard</a>
             @else
                 <a href="{{ route('daftar') }}" class="lb-cta-btn">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
@@ -215,7 +247,143 @@
                 </a>
             @endauth
         </div>
+
     </main>
+
+    <style>
+    /* ── Guest Page: Pengantar ── */
+    .lb-page { max-width: 980px; }
+    .lb-pengantar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+    .lb-breadcrumb {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+    }
+    .lb-breadcrumb__root {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 12px;
+        color: #686a77;
+    }
+    .lb-breadcrumb__sep {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 12px;
+        color: #686a77;
+    }
+    .lb-breadcrumb__page {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 12px;
+        color: #a0a1ac;
+    }
+    .lb-judul-dan-ringkasan {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .lb-judul-halaman {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .lb-judul-utama {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 400;
+        font-size: 36px;
+        color: #f6f6f8;
+        letter-spacing: -1.5px;
+        line-height: 1.15;
+        margin: 0;
+    }
+    .lb-judul-desc {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 14px;
+        color: #a0a1ac;
+        line-height: 1.5;
+        margin: 0;
+    }
+    .lb-ringkasan {
+        display: inline-flex;
+        align-items: center;
+        gap: 28px;
+        flex-shrink: 0;
+    }
+    .lb-stat {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .lb-stat__icon {
+        width: 20px;
+        height: 20px;
+        color: #686a77;
+        flex-shrink: 0;
+    }
+    .lb-stat__icon svg { width: 100%; height: 100%; }
+    .lb-stat__data { display: flex; flex-direction: column; gap: 5px; }
+    .lb-stat__nilai {
+        font-family: 'IBM Plex Mono', 'Courier New', monospace;
+        font-weight: 500;
+        font-size: 22px;
+        color: #f6f6f8;
+        line-height: 1;
+    }
+    .lb-stat__label {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 12px;
+        color: #a0a1ac;
+        line-height: 1;
+    }
+    .lb-stat-pemisah {
+        width: 1px;
+        height: 44px;
+        background: #292a31;
+        flex-shrink: 0;
+    }
+
+    /* ── Guest CTA overrides ── */
+    .lb-cta-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 28px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #f04452 0%, #dc2626 100%);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        box-shadow: 0 4px 18px rgba(240,68,82,0.28);
+        transition: all 0.2s;
+    }
+    .lb-cta-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .lb-ghost-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: 1px solid #292a31;
+        color: #a0a1ac;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        margin-left: 10px;
+        transition: all 0.2s;
+    }
+    .lb-ghost-btn:hover { color: #f6f6f8; border-color: #444; background: rgba(255,255,255,0.03); }
+    @media (max-width: 600px) {
+        .lb-judul-utama { font-size: 26px; }
+        .lb-judul-dan-ringkasan { flex-direction: column; align-items: flex-start; }
+        .lb-ghost-btn { margin-left: 0; margin-top: 8px; }
+        .lb-cta-section { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    }
+    </style>
 
     <script>
         window.cnToggle = function(id) {

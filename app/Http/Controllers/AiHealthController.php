@@ -67,7 +67,7 @@ class AiHealthController extends Controller
 
     protected function testEnvKey(string $key, array $availableModels): JsonResponse
     {
-        $model = env('GEMINI_MODEL', 'gemini-1.5-pro');
+        $model = env('GEMINI_MODEL', 'gemini-3.5-flash-lite');
 
         if (str_starts_with($key, 'gsk_')) {
             return response()->json([

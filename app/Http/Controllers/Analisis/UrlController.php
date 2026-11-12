@@ -41,7 +41,7 @@ class UrlController extends Controller
         $url      = $request->url;
         $modeAi   = $request->input('mode_ai', 'dengan_ai');
         $modeRag  = $request->input('mode_rag', 'dengan_rag');
-        $modelAi  = $request->input('model_ai');
+        $modelAi  = $request->filled('model_ai') ? trim($request->input('model_ai')) : null;
 
         // SSRF Protection — cegah scan ke IP internal/private
         $ssrf = app(SSRFProtectionService::class)->validate($url);

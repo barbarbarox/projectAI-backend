@@ -101,6 +101,58 @@ def load_models():
     return _rf_model, _xgb_model, _feature_names
 
 
+def reload_models():
+    """Reset singleton state and reload fresh models from disk."""
+    global _rf_model, _xgb_model, _feature_names
+    _rf_model = None
+    _xgb_model = None
+    _feature_names = None
+    return load_models()
+
+
+def restore_defaults():
+    """Restore models from defaults backup directory and reload."""
+    import shutil
+    defaults_dir = os.path.join(BASE_DIR, "models/defaults")
+    if os.path.exists(defaults_dir):
+        for fname in ["random_forest_model.pkl", "xgboost_model.pkl"]:
+            src = os.path.join(defaults_dir, fname)
+            dst = os.path.join(BASE_DIR, "models", fname)
+            if os.path.exists(src):
+                shutil.copy2(src, dst)
+        return reload_models()
+    return False
+
+
+def get_current_params() -> dict:
+    """Mengambil parameter aktif dari kedua model."""
+    rf, xgb, feats = load_models()
+    rf_params = {
+        "n_estimators": getattr(rf, "n_estimators", 200),
+        "max_depth": getattr(rf, "max_depth", None),
+        "random_state": getattr(rf, "random_state", 42),
+        "class_weight": str(getattr(rf, "class_weight", "balanced")),
+        "n_features": getattr(rf, "n_features_in_", len(feats)),
+        "n_classes": getattr(rf, "n_classes_", 5)
+    }
+
+    xgb_params = {
+        "n_estimators": int(getattr(xgb, "n_estimators", 300)),
+        "max_depth": int(getattr(xgb, "max_depth", 6)),
+        "learning_rate": float(getattr(xgb, "learning_rate", 0.1)),
+        "random_state": int(getattr(xgb, "random_state", 42)),
+        "subsample": float(getattr(xgb, "subsample", 0.8)),
+        "colsample_bytree": float(getattr(xgb, "colsample_bytree", 0.8)),
+        "n_features": int(getattr(xgb, "n_features_in_", len(feats)))
+    }
+
+    return {
+        "random_forest": rf_params,
+        "xgboost": xgb_params,
+        "features_count": len(feats)
+    }
+
+
 # ─── Backward compatibility shim (untuk kode lama yang pakai load_model()) ───
 def load_model():
     """Legacy shim — return (rf_model, feature_names). Gunakan load_models() untuk ensemble."""

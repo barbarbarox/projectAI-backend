@@ -3,6 +3,7 @@
 @section('title', 'Hub Seluruh Temuan Keamanan — RedSim')
 @section('header', 'Hub Seluruh Temuan Keamanan')
 @section('subheader', 'Agregasi terpusat seluruh kerentanan dari pemindaian URL, repositori kode, dan log sistem Anda')
+@section('page_feature', 'hub-temuan')
 
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6 pb-12">

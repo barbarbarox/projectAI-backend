@@ -44,6 +44,7 @@ class Temuan extends Model
         'resolved_at',
         'resolved_by',
         'resolution_notes',
+        'ai_remediasi',
     ];
 
     protected function casts(): array
@@ -53,6 +54,7 @@ class Temuan extends Model
             'ml_confidence'          => 'float',
             'ml_class_probabilities' => 'array',
             'resolved_at'            => 'datetime',
+            'ai_remediasi'           => 'array',
         ];
     }
 

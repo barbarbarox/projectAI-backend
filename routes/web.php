@@ -7,7 +7,6 @@ use App\Http\Controllers\Analisis\KodeController;
 use App\Http\Controllers\Analisis\UrlController;
 use App\Http\Controllers\Analisis\CveIntelController;
 
-use App\Http\Controllers\Analisis\LogController;
 use App\Http\Controllers\EdukasiController;
 use App\Http\Controllers\LaporanController;
 use Illuminate\Support\Facades\Route;
@@ -89,6 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profil', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profil/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::post('/profil/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar');
 
     // User AI Configuration
     Route::get('/profil/ai', [\App\Http\Controllers\UserAiConfigController::class, 'index'])->name('profile.ai');
@@ -116,8 +116,6 @@ Route::middleware('auth')->group(function () {
         // Generate token verifikasi (menerima metode yang dipilih)
         Route::post('/analisis/url/generate-verifikasi', [UrlController::class, 'generateVerifikasi'])->name('analisis.url.generate-verifikasi');
 
-        Route::get('/analisis/log', [LogController::class, 'form'])->name('analisis.log');
-        Route::post('/analisis/log', [LogController::class, 'proses']);
 
         // Fase 2: CVE Intelligence Dashboard
         Route::get('/analisis/cve-intel', [CveIntelController::class, 'form'])->name('analisis.cve-intel');
@@ -193,7 +191,8 @@ Route::middleware('auth')->group(function () {
     // Hub Seluruh Temuan Keamanan (All Findings Hub) & Resolusi
     Route::get('/temuan', [\App\Http\Controllers\TemuanController::class, 'index'])->name('temuan.index');
     Route::patch('/temuan/{temuan}/resolve', [\App\Http\Controllers\TemuanController::class, 'resolve'])->name('temuan.resolve');
-    Route::patch('/temuan/{temuan}/reopen', [\App\Http\Controllers\TemuanController::class, 'reopen'])->name('temuan.reopen');
+    Route::patch('/temuan/{temuan}/reopen',  [\App\Http\Controllers\TemuanController::class, 'reopen'])->name('temuan.reopen');
+    Route::post('/temuan/{temuan}/ai-remediasi', [\App\Http\Controllers\TemuanController::class, 'generateAiRemediasi'])->name('temuan.ai-remediasi');
 
     // Chat AI (semua user)
     Route::get('/chat-ai', [\App\Http\Controllers\ChatController::class, 'indexPublic'])->name('chat-ai');

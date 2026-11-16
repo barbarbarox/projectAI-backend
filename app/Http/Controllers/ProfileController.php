@@ -12,8 +12,14 @@ class ProfileController extends Controller
 {
     public function edit()
     {
+        $user        = Auth::user();
+        $batasHarian = $user->tier === 'gratis' ? (int) env('MAX_SCANS_PER_DAY_FREE', 10) : 999;
+        $scanHariIni = min($user->scan_count_today ?? 0, $batasHarian);
+
         return view('profile.edit', [
-            'user' => Auth::user(),
+            'user'        => $user,
+            'scanHariIni' => $scanHariIni,
+            'batasHarian' => $batasHarian,
         ]);
     }
 
@@ -75,5 +81,28 @@ class ProfileController extends Controller
         ]);
 
         return back()->with('success', 'Kata sandi berhasil diperbarui.');
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
+        ], [
+            'avatar.max'   => 'Ukuran foto maksimal 2MB.',
+            'avatar.mimes' => 'Format foto harus jpeg, png, jpg, gif, atau webp.',
+        ]);
+
+        $user = Auth::user();
+
+        // Hapus avatar lama jika bukan URL eksternal
+        if ($user->avatar && !str_starts_with($user->avatar, 'http')) {
+            \Storage::disk('public')->delete($user->avatar);
+        }
+
+        $path = $request->file('avatar')->store('avatars', 'public');
+
+        $user->update(['avatar' => \Storage::disk('public')->url($path)]);
+
+        return back()->with('success', 'Foto profil berhasil diperbarui.');
     }
 }

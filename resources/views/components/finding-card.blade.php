@@ -232,6 +232,184 @@
         @endif
 
         {{-- ══════════════════════════════════════════════════════════
+             🤖 AI PANDUAN PERBAIKAN — Generate on-demand, cache ke DB
+        ══════════════════════════════════════════════════════════ --}}
+        <div x-data="aiRemediasi('{{ $temuan->id }}', {{ $temuan->ai_remediasi ? 'true' : 'false' }})"
+             x-init="init()"
+             class="mt-1">
+
+            {{-- Header & Tombol --}}
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-semibold flex items-center gap-1.5" style="color:#ef4444;">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.346A3.5 3.5 0 0014.5 20h-5a3.5 3.5 0 00-2.5-1.054l-.347-.346z"/>
+                    </svg>
+                    AI Panduan Perbaikan
+                    <span x-show="hasCache" class="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                          style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);">
+                        Tersimpan ✓
+                    </span>
+                </h4>
+                <div class="flex items-center gap-1.5">
+                    <button x-show="!loading && !hasCache"
+                            @click="generate(false)"
+                            class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all"
+                            style="background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;box-shadow:0 2px 8px rgba(239,68,68,0.3);">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        Generate AI Fix
+                    </button>
+                    <button x-show="!loading && hasCache"
+                            @click="generate(true)"
+                            class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] transition-all"
+                            style="background:#1a1a1a;border:1px solid #2a2a2a;color:#666;"
+                            onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#666'"
+                            title="Generate ulang (hapus cache)">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Ulang
+                    </button>
+                    {{-- Loading spinner --}}
+                    <div x-show="loading" class="flex items-center gap-1.5" style="color:#888;">
+                        <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        <span class="text-[11px]">AI sedang menganalisis...</span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Error state --}}
+            <div x-show="errorMsg" x-text="errorMsg"
+                 class="text-xs px-3 py-2 rounded-lg mb-2"
+                 style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#f87171;"></div>
+
+            {{-- Panel Hasil AI --}}
+            <div x-show="hasCache && data" x-collapse
+                 class="rounded-xl overflow-hidden"
+                 style="border:1px solid #2a2a2a;background:#0d0d0d;">
+
+                {{-- Ringkasan & Dampak --}}
+                <div class="p-4 space-y-3" style="border-bottom:1px solid #1a1a1a;">
+                    <div x-show="data?.ringkasan">
+                        <div class="text-[9px] font-bold uppercase tracking-widest mb-1" style="color:#555;font-family:'IBM Plex Mono',monospace;">Ringkasan</div>
+                        <p class="text-xs leading-relaxed" style="color:#ccc;" x-text="data?.ringkasan"></p>
+                    </div>
+                    <div x-show="data?.dampak_jika_tidak_diperbaiki"
+                         class="flex gap-2 p-2.5 rounded-lg" style="background:#1b1212;border:1px solid #3a1f1f;">
+                        <span class="shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold mt-0.5"
+                              style="border:1.5px solid #ef4444;color:#ef4444;">!</span>
+                        <div>
+                            <div class="text-[9px] font-bold uppercase tracking-widest mb-0.5" style="color:#ef4444;font-family:'IBM Plex Mono',monospace;">Dampak Jika Dibiarkan</div>
+                            <p class="text-xs" style="color:#888;" x-text="data?.dampak_jika_tidak_diperbaiki"></p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Langkah Perbaikan --}}
+                <div class="p-4">
+                    <div class="text-[9px] font-bold uppercase tracking-widest mb-3" style="color:#555;font-family:'IBM Plex Mono',monospace;">Langkah Perbaikan</div>
+                    <div class="space-y-3">
+                        <template x-for="(step, idx) in (data?.langkah_perbaikan || [])" :key="idx">
+                            <div class="rounded-lg p-3" style="background:#111;border:1px solid #1e1e1e;">
+                                <div class="flex items-start gap-2 mb-1.5">
+                                    <span class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                                          style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);"
+                                          x-text="step.urutan"></span>
+                                    <div>
+                                        <div class="text-xs font-semibold" style="color:#e2e8f0;" x-text="step.judul"></div>
+                                        <div class="text-xs mt-1 leading-relaxed" style="color:#888;" x-text="step.detail"></div>
+                                    </div>
+                                </div>
+                                <template x-if="step.kode_contoh">
+                                    <pre class="mt-2 p-2.5 rounded-lg overflow-x-auto text-[10px] leading-relaxed"
+                                         style="background:#0a0a0a;border:1px solid #1a1a1a;color:#4ade80;font-family:'IBM Plex Mono',monospace;"
+                                         x-text="step.kode_contoh"></pre>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Footer: referensi, estimasi, tools --}}
+                    <div class="mt-3 pt-3 flex flex-wrap gap-x-4 gap-y-1.5" style="border-top:1px solid #1a1a1a;">
+                        <template x-if="data?.estimasi_waktu">
+                            <span class="text-[10px]" style="color:#666;">
+                                ⏱ <span x-text="data.estimasi_waktu"></span>
+                                · <span class="capitalize" x-text="data?.tingkat_kesulitan || ''"></span>
+                            </span>
+                        </template>
+                        <template x-if="data?.referensi?.length">
+                            <span class="text-[10px]" style="color:#666;">
+                                📋 <span x-text="(data.referensi || []).join(' · ')"></span>
+                            </span>
+                        </template>
+                        <template x-if="data?.tools_disarankan?.length">
+                            <span class="text-[10px]" style="color:#666;">
+                                🛠 <span x-text="(data.tools_disarankan || []).join(', ')"></span>
+                            </span>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        function aiRemediasi(temuanId, hasExistingCache) {
+            return {
+                temuanId: temuanId,
+                hasCache: hasExistingCache,
+                data: null,
+                loading: false,
+                errorMsg: '',
+
+                init() {
+                    // Jika sudah ada cache di DB, fetch langsung tanpa generate
+                    if (this.hasCache) {
+                        this.generate(false);
+                    }
+                },
+
+                async generate(regenerate = false) {
+                    this.loading  = true;
+                    this.errorMsg = '';
+
+                    try {
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                        const url = `/temuan/${this.temuanId}/ai-remediasi${regenerate ? '?regenerate=1' : ''}`;
+
+                        const res  = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept':       'application/json',
+                                'Content-Type': 'application/json',
+                            },
+                        });
+
+                        const json = await res.json();
+
+                        if (!res.ok) {
+                            this.errorMsg = json.error || 'Terjadi kesalahan. Silakan coba lagi.';
+                            return;
+                        }
+
+                        this.data     = json.data;
+                        this.hasCache = true;
+
+                    } catch (err) {
+                        this.errorMsg = 'Gagal terhubung ke server. Periksa koneksi Anda.';
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+            };
+        }
+        </script>
+
+        {{-- ══════════════════════════════════════════════════════════
              🔍 EVIDENCE / BUKTI — Panel Koleksi Bukti per Temuan
         ══════════════════════════════════════════════════════════ --}}
         <div x-data="evidencePanel('{{ $temuan->id }}', {{ $temuan->evidence->count() }})" class="evidence-panel">

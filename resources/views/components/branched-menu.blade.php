@@ -25,13 +25,6 @@
                     'icon' => 'search',
                 ],
                 [
-                    'value' => 'analisis.log',
-                    'label' => 'Analisis Log',
-                    'url' => route('analisis.log'),
-                    'active' => request()->routeIs('analisis.log') || request()->routeIs('analisis.log.*'),
-                    'icon' => 'file-text',
-                ],
-                [
                     'value' => 'analisis.cve-intel',
                     'label' => 'CVE Intelligence',
                     'url' => route('analisis.cve-intel'),

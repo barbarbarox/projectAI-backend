@@ -16,7 +16,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="min-h-screen antialiased" style="background-color:#020609;color:#f1f5f9;"
+<body class="min-h-screen antialiased" style="background-color:#0a0a0a;color:#f1f5f9;"
     x-data="{
         sidebarOpen: window.innerWidth >= 1024,
         isMobile: window.innerWidth < 1024
@@ -39,17 +39,17 @@
              x-cloak></div>
 
         <aside class="fixed left-0 top-0 h-full w-64 flex flex-col z-50 transition-transform duration-300"
-               style="background-color:#080c18;border-right:1px solid #1e293b;"
+               style="background-color:#111111;border-right:1px solid #242424;"
                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
 
             {{-- Logo --}}
-            <div class="px-5 py-5" style="border-bottom:1px solid #1e293b;">
+            <div class="px-5 py-5" style="border-bottom:1px solid #242424;">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
                     {{-- RedSim Shield Icon --}}
                     <img src="{{ asset('logo-redsim1:1.svg') }}" alt="RedSim Logo" class="w-10 h-10 rounded-xl transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(220,38,38,0.45)] object-contain">
                     <div>
-                        <h1 class="text-base font-bold tracking-tight" style="background:linear-gradient(135deg,#ef4444,#06b6d4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">RedSim</h1>
-                        <p class="text-[10px] uppercase tracking-widest" style="color:#475569;">AI Security Platform</p>
+                        <h1 class="text-base font-bold tracking-tight" style="background:linear-gradient(135deg,#ef4444,#dc2626);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">RedSim</h1>
+                        <p class="text-[10px] uppercase tracking-widest" style="color:#888;">AI Security Platform</p>
                     </div>
                 </a>
             </div>
@@ -60,14 +60,14 @@
             </div>
 
             {{-- User + Logout --}}
-            <div class="px-3 py-4" style="border-top:1px solid #1e293b;">
+            <div class="px-3 py-4" style="border-top:1px solid #242424;">
                 @auth
                 <div class="flex items-center gap-3 px-3 py-2 mb-3">
                     @if(Auth::user()->avatar)
                     <img src="{{ Auth::user()->avatar }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-red-600/30" alt="Avatar" referrerpolicy="no-referrer">
                     @else
                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                         style="background:linear-gradient(135deg,#dc2626,#06b6d4);">
+                         style="background:linear-gradient(135deg,#dc2626,#991b1b);">
                         {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                     </div>
                     @endif
@@ -78,9 +78,9 @@
                 </div>
                 <div class="flex flex-col gap-1.5">
                     <a href="{{ route('profile.edit') }}"
-                       class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 transition-all duration-200 hover:text-white hover:bg-slate-800/70"
-                       style="border:1px solid #1e293b;">
-                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 hover:text-white hover:bg-white/5"
+                       style="color:#aaa;border:1px solid #242424;">
+                        <svg class="w-4 h-4" style="color:#555;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
@@ -120,12 +120,13 @@
         <main class="flex-1 min-h-screen transition-all duration-300" :style="sidebarOpen && !isMobile ? 'margin-left:256px;' : 'margin-left:0;'">
 
             {{-- Top Bar --}}
-            <header class="sticky top-0 z-40 px-6 py-3.5" style="background:rgba(2,6,9,0.85);backdrop-filter:blur(20px);border-bottom:1px solid #1e293b;">
+            <header class="sticky top-0 z-40 px-6 py-3.5" style="background:rgba(10,10,10,0.90);backdrop-filter:blur(20px);border-bottom:1px solid #242424;">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         {{-- Sidebar toggle --}}
                         <button @click="sidebarOpen = !sidebarOpen"
-                                class="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800/60 transition-all duration-200">
+                                class="p-1.5 rounded-lg transition-all duration-200 hover:text-white hover:bg-white/5"
+                                style="color:#555;">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
                             </svg>
@@ -191,7 +192,7 @@
                         </a>
                         @endif
 
-                        <div class="text-xs px-3 py-1.5 rounded-lg" style="background:rgba(15,23,42,0.8);border:1px solid #1e293b;color:#64748b;">
+                        <div class="text-xs px-3 py-1.5 rounded-lg" style="background:rgba(20,20,20,0.9);border:1px solid #2a2a2a;color:#64748b;">
                             Scan hari ini:
                             <span class="font-bold" style="color:#ef4444;">{{ Auth::user()->scan_count_today }}/{{ env('MAX_SCANS_PER_DAY_FREE', 10) }}</span>
                         </div>
@@ -276,53 +277,53 @@
     .chat-md-content p  { margin-bottom: 0.5rem; line-height: 1.6; }
     .chat-md-content strong { font-weight: 700; color: #fff; }
     .chat-md-content em { font-style: italic; color: #cbd5e1; }
-    .chat-md-content u, .chat-md-content ins { text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #38bdf8; color: #f1f5f9; }
+    .chat-md-content u, .chat-md-content ins { text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #ef4444; color: #f1f5f9; }
     .chat-md-content s, .chat-md-content del { text-decoration: line-through; color: #64748b; }
     .chat-md-content h1, .chat-md-content h2,
     .chat-md-content h3, .chat-md-content h4 { font-weight: 700; margin: 0.75rem 0 0.5rem; color: #fff; }
     .chat-md-content ul { list-style-type: disc !important; padding-left: 1.25rem !important; margin: 0.5rem 0 !important; }
     .chat-md-content ol { list-style-type: decimal !important; padding-left: 1.25rem !important; margin: 0.5rem 0 !important; }
     .chat-md-content li { display: list-item !important; margin-bottom: 0.25rem; }
-    .chat-md-content li::marker { color: #38bdf8 !important; font-weight: 700; }
-    .chat-md-content a  { color: #22d3ee; text-decoration: underline; }
+    .chat-md-content li::marker { color: #ef4444 !important; font-weight: 700; }
+    .chat-md-content a  { color: #ef4444; text-decoration: underline; }
     .chat-md-content img { max-width: 100%; border-radius: 0.5rem; margin: 0.5rem 0; }
     .chat-md-content blockquote {
-        border-left: 3px solid #06b6d4;
+        border-left: 3px solid #ef4444;
         margin: 0.5rem 0;
         padding: 0.5rem 0.75rem;
-        background: rgba(6,182,212,0.06);
+        background: rgba(239,68,68,0.06);
         border-radius: 0 0.375rem 0.375rem 0;
     }
     .chat-md-content code:not(pre code) {
-        background: #111a2e;
+        background: #1a1212;
         padding: 0.15em 0.35em;
         border-radius: 3px;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.85em;
-        color: #38bdf8;
-        border: 1px solid #26364b;
+        color: #f87171;
+        border: 1px solid #3a1f1f;
     }
     .chat-md-content pre {
-        background: #080c16;
+        background: #111111;
         margin: 0.5rem 0;
         padding: 0.75rem 1rem;
         overflow-x: auto;
         border-radius: 0.5rem;
-        border: 1px solid #1e293b;
+        border: 1px solid #242424;
     }
-    .md-code-block { margin: 0.75rem 0; border-radius: 0.5rem; overflow: hidden; border: 1px solid #1e293b; background: #080c16; }
+    .md-code-block { margin: 0.75rem 0; border-radius: 0.5rem; overflow: hidden; border: 1px solid #242424; background: #111111; }
     .md-code-block pre { margin: 0 !important; border: none !important; border-radius: 0 !important; padding: 0.75rem 1rem !important; }
     .md-code-block pre code { background: transparent !important; border: none !important; padding: 0 !important; font-size: 0.75rem !important; }
-    .md-code-header { display: flex; align-items: center; justify-content: space-between; background: #0d1527; padding: 0.35rem 0.75rem; border-bottom: 1px solid #1e293b; }
-    .md-code-lang    { font-size: 0.65rem; color: #38bdf8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-family: monospace; }
-    .md-copy-btn { display: flex; align-items: center; gap: 0.25rem; font-size: 0.65rem; color: #94a3b8; background: rgba(30, 41, 59, 0.6); border: 1px solid #334155; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; transition: all .2s; }
-    .md-copy-btn:hover { color: #fff; border-color: #38bdf8; background: rgba(56, 189, 248, 0.15); }
-    .md-table-wrap { overflow-x: auto; margin: 0.75rem 0; border-radius: 0.5rem; border: 1px solid #26364b; }
-    .chat-md-content table { width: 100%; border-collapse: collapse; font-size: 0.75rem; border: 1px solid #26364b; }
-    .chat-md-content th { padding: 0.5rem 0.75rem; background: #111a2e; color: #38bdf8; font-weight: 700; text-align: left; border: 1px solid #26364b; text-transform: uppercase; }
-    .chat-md-content td { padding: 0.5rem 0.75rem; color: #cbd5e1; border: 1px solid #1e293b; }
-    .chat-md-content tr:nth-child(even) td { background: rgba(17, 26, 46, 0.45); }
-    .chat-md-content tr:hover td { background: rgba(56, 189, 248, 0.08); }
+    .md-code-header { display: flex; align-items: center; justify-content: space-between; background: #1a1212; padding: 0.35rem 0.75rem; border-bottom: 1px solid #2a2a2a; }
+    .md-code-lang    { font-size: 0.65rem; color: #ef4444; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-family: monospace; }
+    .md-copy-btn { display: flex; align-items: center; gap: 0.25rem; font-size: 0.65rem; color: #888; background: rgba(40,20,20,0.6); border: 1px solid #3a1f1f; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; transition: all .2s; }
+    .md-copy-btn:hover { color: #fff; border-color: #ef4444; background: rgba(239,68,68,0.15); }
+    .md-table-wrap { overflow-x: auto; margin: 0.75rem 0; border-radius: 0.5rem; border: 1px solid #3a1f1f; }
+    .chat-md-content table { width: 100%; border-collapse: collapse; font-size: 0.75rem; border: 1px solid #3a1f1f; }
+    .chat-md-content th { padding: 0.5rem 0.75rem; background: #1b1212; color: #ef4444; font-weight: 700; text-align: left; border: 1px solid #3a1f1f; text-transform: uppercase; }
+    .chat-md-content td { padding: 0.5rem 0.75rem; color: #cbd5e1; border: 1px solid #242424; }
+    .chat-md-content tr:nth-child(even) td { background: rgba(30,10,10,0.5); }
+    .chat-md-content tr:hover td { background: rgba(239,68,68,0.06); }
 
     /* ═══════════════════════════════════════════
        SCAN PROGRESS INDICATOR
@@ -333,16 +334,16 @@
         gap: 0.5rem;
         padding: 0.375rem 0.75rem;
         border-radius: 9999px;
-        background: rgba(6,182,212,0.1);
-        border: 1px solid rgba(6,182,212,0.25);
-        color: #22d3ee;
+        background: rgba(239,68,68,0.10);
+        border: 1px solid rgba(239,68,68,0.25);
+        color: #f87171;
         font-size: 0.75rem;
         font-weight: 600;
     }
     .scanning-indicator .dot {
         width: 7px; height: 7px;
         border-radius: 50%;
-        background: #06b6d4;
+        background: #ef4444;
         animation: scan-dot 1.2s ease-in-out infinite;
     }
     @keyframes scan-dot {
@@ -359,20 +360,20 @@
         border: 1px solid rgba(220,38,38,0.25) !important;
     }
     .nav-active-default {
-        background: rgba(6,182,212,0.10) !important;
-        color: #06b6d4 !important;
-        border: 1px solid rgba(6,182,212,0.20) !important;
+        background: rgba(239,68,68,0.10) !important;
+        color: #ef4444 !important;
+        border: 1px solid rgba(239,68,68,0.20) !important;
     }
     .badge-ai {
         display: inline-flex;
         align-items: center;
         padding: 0.1rem 0.4rem;
         border-radius: 9999px;
-        background: rgba(6,182,212,0.12);
-        color: #22d3ee;
+        background: rgba(239,68,68,0.12);
+        color: #f87171;
         font-size: 0.6rem;
         font-weight: 700;
-        border: 1px solid rgba(6,182,212,0.22);
+        border: 1px solid rgba(239,68,68,0.22);
         letter-spacing: 0.06em;
         text-transform: uppercase;
         line-height: 1.2;

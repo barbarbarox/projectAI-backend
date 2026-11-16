@@ -848,6 +848,30 @@ foreach ($cfiles as $f) {
         </div>
         @endif
 
+        {{-- AI Panduan Perbaikan (hanya tampil jika sudah di-generate) --}}
+        @if($t->ai_remediasi && !empty($t->ai_remediasi['langkah_perbaikan']))
+        <div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border-left:3px solid #22c55e;border-radius:4px;page-break-inside:avoid;">
+            <div style="font-size:9px;font-weight:700;color:#15803d;margin-bottom:4px;">🤖 AI Panduan Perbaikan</div>
+            @if(!empty($t->ai_remediasi['ringkasan']))
+            <div style="font-size:8px;color:#374151;margin-bottom:4px;font-style:italic;">{{ $t->ai_remediasi['ringkasan'] }}</div>
+            @endif
+            @foreach($t->ai_remediasi['langkah_perbaikan'] as $step)
+            <div style="margin-bottom:3px;font-size:8px;">
+                <span style="font-weight:700;color:#15803d;">{{ $step['urutan'] ?? ($loop->iteration) }}. {{ $step['judul'] ?? '' }}</span>
+                <span style="color:#4b5563;"> — {{ $step['detail'] ?? '' }}</span>
+            </div>
+            @endforeach
+            @if(!empty($t->ai_remediasi['estimasi_waktu']))
+            <div style="font-size:7.5px;color:#6b7280;margin-top:4px;">
+                Estimasi: {{ $t->ai_remediasi['estimasi_waktu'] }}
+                @if(!empty($t->ai_remediasi['referensi']))
+                · Ref: {{ implode(', ', $t->ai_remediasi['referensi']) }}
+                @endif
+            </div>
+            @endif
+        </div>
+        @endif
+
         <div style="font-size:8px;color:#64748b;margin-top:4px">
             @if(!empty($t->lokasi))<span>Lokasi: <span class="mn">{{ $t->lokasi }}</span></span> &bull; @endif
             @if(!empty($t->estimasi_usaha))<span>Usaha: <strong>{{ ucfirst($t->estimasi_usaha) }}</strong></span> &bull; @endif

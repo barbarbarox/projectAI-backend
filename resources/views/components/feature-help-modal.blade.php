@@ -214,8 +214,7 @@
             getFeatureIcon(key) {
                 const icons = {
                     'scan-url': '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>',
-                    'analisis-log': '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>',
-                    'cve-intel': '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="1.8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4m0 4h.01"/></svg>',
+                                        'cve-intel': '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="1.8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4m0 4h.01"/></svg>',
                     'ai-assistant': '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>',
                 };
                 return icons[key] || '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
@@ -232,9 +231,7 @@
                     subtitle: 'Platform keamanan siber berbasis AI untuk menganalisis ancaman, mendeteksi kerentanan, dan melindungi aset digital Anda.',
                     description: null,
                     featureGrid: [
-                        { iconKey: 'scan-url',     title: 'Scan URL',       desc: 'Cek keamanan website' },
-                        { iconKey: 'analisis-log', title: 'Analisis Log',   desc: 'Deteksi serangan' },
-                        { iconKey: 'cve-intel',    title: 'CVE Intel',      desc: 'AI prediksi ancaman' },
+                        { iconKey: 'scan-url',     title: 'Scan URL',       desc: 'Cek keamanan website' },                        { iconKey: 'cve-intel',    title: 'CVE Intel',      desc: 'AI prediksi ancaman' },
                         { iconKey: 'ai-assistant', title: 'AI Assistant',   desc: 'Tanya pakar keamanan' },
                     ],
                     tips: 'Setiap halaman menu memiliki tombol Panduan. Klik kapan saja untuk melihat cara penggunaan fitur.',
@@ -267,34 +264,6 @@
                     tips: 'Gunakan Scan Intens untuk laporan yang lebih komprehensif. Pastikan Anda memiliki hak akses atas domain yang dipindai. Jangan memindai website tanpa izin pemiliknya.',
                     tipsLabel: 'AKSES DAN IZIN',
                 },
-
-                // ─── ANALISIS LOG ────────────────────────────────────────
-                'analisis-log': {
-                    title: 'Analisis Log',
-                    subtitle: 'Deteksi anomali dan serangan dari file log server',
-                    description: 'Analisis file log server (Apache, Nginx, Laravel, auth.log) menggunakan AI untuk menemukan pola serangan, akses mencurigakan, dan anomali keamanan secara otomatis dalam hitungan detik.',
-                    stepTitles: [
-                        'Upload atau tempelkan log',
-                        'Pilih tipe log',
-                        'Mulai analisis',
-                        'Tinjau hasil temuan',
-                    ],
-                    steps: [
-                        'Pilih tab "Upload File Log" untuk mengunggah file (.log/.txt/.csv, maks 10MB), atau tab "Tempel Teks Log" untuk paste langsung.',
-                        'Pilih tipe log sesuai server Anda (Apache, Nginx, Laravel, dll.) atau gunakan "Deteksi Otomatis".',
-                        'Klik "Mulai Analisis Log" dan tunggu proses AI selesai.',
-                        'Tinjau IP mencurigakan, pola serangan yang terdeteksi, dan rekomendasi tindakan.',
-                    ],
-                    benefits: [
-                        'Mendeteksi brute force, SQL injection, dan XSS dari log secara otomatis.',
-                        'Mengidentifikasi IP berbahaya dan pola akses yang tidak wajar.',
-                        'Menghemat waktu analisis log manual yang bisa memakan berjam-jam.',
-                        'Mendukung format log populer: Apache, Nginx, Laravel, auth.log.',
-                    ],
-                    tips: 'Pastikan log yang diunggah sudah dianonimkan atau tidak mengandung data sensitif pengguna (misalnya email/password) untuk menjaga privasi.',
-                    tipsLabel: 'PRIVASI DATA',
-                },
-
                 // ─── ANALISIS KODE ───────────────────────────────────────
                 'analisis-kode': {
                     title: 'Analisis Kode',

@@ -36,3 +36,7 @@ ml_service/nohup.out
 ml_service/models/*.pkl
 *.pkl
 make_session.php
+.env.backup_recaptcha
+.env*
+.env.backup_recaptcha
+.env*
